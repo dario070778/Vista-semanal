@@ -1,45 +1,369 @@
 <!doctype html>
 <html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-title" content="Vista semanal" />
-  <meta name="theme-color" content="#ffffff" />
-  <title>Vista semanal</title>
-  <link rel="manifest" href="manifest.json" />
-  <link rel="stylesheet" href="style.css" />
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Vista semanal">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<title>Vista semanal</title>
+
+<style>
+:root{
+  --grid:#c8c8ce;
+  --head:#f3f3f7;
+  --red:#e2465b;
+  --text:#111;
+  --muted:#9b9ba3;
+  --chip:#f7f7f9;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{
+  margin:0;padding:0;background:white;color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
+  overscroll-behavior:none;
+}
+body{padding-top:env(safe-area-inset-top)}
+header{
+  position:sticky;top:0;z-index:10;background:white;
+  border-bottom:1px solid var(--grid);
+  padding:4px 4px 5px;
+}
+.topbar{
+  display:grid;grid-template-columns:1fr auto 1fr;align-items:center;
+  height:34px;
+}
+h1{font-size:25px;margin:0;line-height:1;font-weight:650;text-align:center}
+button{
+  font:inherit;border:1px solid var(--grid);background:#fafafa;border-radius:7px;
+  padding:4px 7px;font-size:13px;color:#1677d2;
+}
+button.danger{color:#b80016}
+#togglePast{justify-self:start}
+#clearAll{justify-self:end}
+
+.wordbar{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:4px;
+  padding-top:4px;
+}
+.chip{
+  min-height:25px;border:1px solid var(--grid);border-radius:7px;
+  background:var(--chip);
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  padding:2px 4px;user-select:none;
+}
+.chip.active{outline:2px solid var(--red);outline-offset:-2px;font-weight:650}
+
+.gridwrap{width:100vw;overflow:hidden}
+table{border-collapse:collapse;width:100%;table-layout:fixed}
+th,td{border:1px solid var(--grid);text-align:center;vertical-align:middle;padding:0}
+thead th{height:28px;background:var(--head);font-size:17px;font-weight:650}
+thead th:first-child{width:39px;font-size:14px;font-weight:500;color:#777}
+tbody th{width:39px;background:var(--head);font-size:17px;font-weight:600}
+td{
+  height:29px;font-size:13px;line-height:1.05;
+  overflow:hidden;white-space:nowrap;text-overflow:ellipsis;position:relative;
+}
+.daynum{font-size:13px;color:#aaa;font-weight:400;margin-left:2px}
+.todayHead{outline:2px solid var(--red);outline-offset:-2px;color:var(--red)}
+.currentHour{outline:2px solid var(--red);outline-offset:-2px;color:var(--red)}
+.currentCell{outline:2px solid var(--red);outline-offset:-2px}
+.hiddenPast .pastNow{color:transparent!important;background:white!important}
+.hiddenPast .pastNow *{visibility:hidden}
+
+.modal{
+  position:fixed;inset:0;background:rgba(0,0,0,.25);
+  display:none;align-items:flex-end;z-index:30;
+}
+.modal.show{display:flex}
+.sheet{
+  width:100%;background:white;border-radius:16px 16px 0 0;
+  padding:14px 14px calc(14px + env(safe-area-inset-bottom));
+  box-shadow:0 -8px 30px rgba(0,0,0,.18);
+}
+.sheet h2{margin:0 0 9px;font-size:18px}
+input[type=text]{
+  width:100%;font:inherit;font-size:18px;padding:10px;
+  border:1px solid var(--grid);border-radius:8px;margin-bottom:10px;
+}
+.colorline{display:flex;gap:10px;align-items:center;margin-bottom:10px}
+input[type=color]{width:54px;height:38px;border:1px solid var(--grid);border-radius:8px;background:white;padding:2px}
+.palette{display:grid;grid-template-columns:repeat(8,1fr);gap:6px;margin:8px 0 12px}
+.sw{height:34px;border:1px solid var(--grid);border-radius:8px;background:white}
+.actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.actions button{font-size:16px;padding:9px}
+.hint{font-size:12px;color:#777;margin-top:8px;line-height:1.25}
+</style>
 </head>
-<body>
-  <header class="topbar">
-    <button id="togglePast" type="button">Ocultar pasado</button>
+
+<body class="hiddenPast">
+<header>
+  <div class="topbar">
+    <button id="togglePast">Mostrar pasado</button>
     <h1>Vista semanal</h1>
-    <button id="clearWeek" class="danger" type="button">Borrar</button>
-  </header>
+    <button id="clearAll" class="danger">Borrar</button>
+  </div>
+  <div class="wordbar" id="wordbar"></div>
+</header>
 
-  <main class="grid-wrap">
-    <table id="weekGrid" aria-label="Vista semanal 24 por 7">
-      <thead>
-        <tr id="dayHeader"></tr>
-      </thead>
-      <tbody id="gridBody"></tbody>
-    </table>
-  </main>
+<div class="gridwrap">
+<table>
+  <thead><tr id="dayRow"><th>Notas</th></tr></thead>
+  <tbody id="grid"></tbody>
+</table>
+</div>
 
-  <dialog id="editDialog">
-    <form method="dialog" id="editForm">
-      <h2 id="editTitle">Editar celda</h2>
-      <input id="cellText" type="text" autocomplete="off" />
-      <div class="color-label">Color</div>
-      <div id="colorPalette" class="color-palette" aria-label="Colores"></div>
-      <menu>
-        <button value="delete" id="deleteCell" type="button">Borrar</button>
-        <button value="cancel">Cancelar</button>
-        <button value="ok" id="saveCell">Guardar</button>
-      </menu>
-    </form>
-  </dialog>
+<div class="modal" id="modal">
+  <div class="sheet">
+    <h2 id="modalTitle">Editar</h2>
+    <input id="textInput" type="text" autocomplete="off">
+    <div class="colorline">
+      <input id="colorInput" type="color" value="#ffffff">
+      <span style="font-size:13px;color:#777">Color de la celda o palabra</span>
+    </div>
+    <div class="palette" id="palette"></div>
+    <div class="actions">
+      <button id="saveBtn">Guardar</button>
+      <button id="deleteBtn" class="danger">Vaciar</button>
+      <button id="cancelBtn">Cerrar</button>
+    </div>
+    <div class="hint">
+      Toca una palabra rápida y luego una celda. Mantén pulsada una palabra para editarla. Mantén pulsada una celda y arrastra para copiar varias horas.
+    </div>
+  </div>
+</div>
 
-  <script src="app.js"></script>
+<script>
+(() => {
+  const DAYS = ["L","M","X","J","V","S","D"];
+  const KEY = "vista-semanal-data-v2";
+  const WORDS_KEY = "vista-semanal-words-v2";
+  const HIDE_KEY = "vista-semanal-hide-v2";
+  const DEFAULT_WORDS = [
+    {text:"Casa", color:"#d8ebff"},
+    {text:"Oficina", color:"#fff3a8"},
+    {text:"Gym", color:"#d8f6d4"},
+    {text:"Cardio", color:"#ffe1c2"},
+    {text:"", color:"#ffffff"},
+    {text:"", color:"#ffffff"},
+    {text:"", color:"#ffffff"},
+    {text:"", color:"#ffffff"}
+  ];
+  const PALETTE = ["#ffffff","#ffd6d6","#ffe1c2","#fff3a8","#d8f6d4","#d8ebff","#eadcff","#e9e9ee"];
+
+  let data = load(KEY, {});
+  let words = load(WORDS_KEY, DEFAULT_WORDS);
+  let hidePast = localStorage.getItem(HIDE_KEY) !== "0";
+  let selectedWord = null;
+  let editTarget = null;
+  let drag = false, dragValue = null, longTimer = null, suppressClick = false;
+
+  const dayRow = document.getElementById("dayRow");
+  const grid = document.getElementById("grid");
+  const wordbar = document.getElementById("wordbar");
+  const modal = document.getElementById("modal");
+  const textInput = document.getElementById("textInput");
+  const colorInput = document.getElementById("colorInput");
+  const modalTitle = document.getElementById("modalTitle");
+  const palette = document.getElementById("palette");
+  const togglePast = document.getElementById("togglePast");
+
+  function load(k, fb){ try{return JSON.parse(localStorage.getItem(k)) ?? fb}catch{return fb} }
+  function save(){ localStorage.setItem(KEY, JSON.stringify(data)); }
+  function saveWords(){ localStorage.setItem(WORDS_KEY, JSON.stringify(words)); }
+  function key(d,h){ return d+"-"+h; }
+  function todayIndex(){ return (new Date().getDay()+6)%7; }
+  function monday(dt=new Date()){
+    const d = new Date(dt.getFullYear(), dt.getMonth(), dt.getDate());
+    d.setDate(d.getDate() - ((d.getDay()+6)%7));
+    return d;
+  }
+  function norm(c){ return (c && c[0]==="#") ? c : "#ffffff"; }
+
+  PALETTE.forEach(c=>{
+    const b=document.createElement("button");
+    b.className="sw"; b.type="button"; b.style.background=c;
+    b.onclick=()=>colorInput.value=c;
+    palette.appendChild(b);
+  });
+
+  function render(){
+    document.body.classList.toggle("hiddenPast", hidePast);
+    togglePast.textContent = hidePast ? "Mostrar pasado" : "Ocultar pasado";
+    renderWords(); renderHeader(); renderGrid();
+  }
+
+  function renderWords(){
+    wordbar.innerHTML="";
+    words.forEach((w,i)=>{
+      const div=document.createElement("div");
+      div.className="chip"+(selectedWord===i?" active":"");
+      div.textContent=w.text || "+";
+      div.style.background = w.color || "#f7f7f9";
+      div.onclick=()=>{
+        if(suppressClick){suppressClick=false;return}
+        if(!w.text){openWord(i);return}
+        selectedWord = selectedWord===i ? null : i;
+        renderWords();
+      };
+      let t;
+      const start=()=>{clearTimeout(t);t=setTimeout(()=>{suppressClick=true;openWord(i)},520)};
+      const end=()=>clearTimeout(t);
+      div.addEventListener("touchstart",start,{passive:true});
+      div.addEventListener("touchend",end,{passive:true});
+      div.addEventListener("mousedown",start);
+      div.addEventListener("mouseup",end);
+      wordbar.appendChild(div);
+    });
+  }
+
+  function renderHeader(){
+    dayRow.innerHTML="<th>Notas</th>";
+    const mon=monday(), t=todayIndex();
+    DAYS.forEach((d,i)=>{
+      const th=document.createElement("th");
+      const date=new Date(mon); date.setDate(mon.getDate()+i);
+      th.innerHTML = d+"<span class='daynum'>"+date.getDate()+"</span>";
+      if(i===t) th.classList.add("todayHead");
+      dayRow.appendChild(th);
+    });
+  }
+
+  function renderGrid(){
+    grid.innerHTML="";
+    const now=new Date(), t=todayIndex(), hr=now.getHours();
+    for(let h=0;h<24;h++){
+      const tr=document.createElement("tr");
+      const th=document.createElement("th");
+      th.textContent=h;
+      if(h===hr) th.classList.add("currentHour");
+      tr.appendChild(th);
+      for(let d=0;d<7;d++){
+        const td=document.createElement("td");
+        td.dataset.d=d; td.dataset.h=h;
+        const v=data[key(d,h)] || {text:"",color:"#ffffff"};
+        td.textContent=v.text || "";
+        td.style.background=norm(v.color);
+        if(d===t && h===hr) td.classList.add("currentCell");
+        if(d===t && h<hr) td.classList.add("pastNow");
+        bindCell(td);
+        tr.appendChild(td);
+      }
+      grid.appendChild(tr);
+    }
+  }
+
+  function bindCell(td){
+    td.onclick=()=>{
+      if(suppressClick){suppressClick=false;return}
+      const d=+td.dataset.d,h=+td.dataset.h;
+      if(selectedWord!==null && words[selectedWord]?.text){
+        setCell(d,h,words[selectedWord].text,words[selectedWord].color);
+        renderGrid();
+      }else openCell(d,h);
+    };
+    td.addEventListener("touchstart", startDrag, {passive:false});
+    td.addEventListener("touchmove", moveDrag, {passive:false});
+    td.addEventListener("touchend", endDrag, {passive:false});
+    td.addEventListener("mousedown", startDrag);
+    td.addEventListener("mouseenter", moveDragMouse);
+  }
+  window.addEventListener("mouseup", endDrag);
+
+  function startDrag(e){
+    const td=e.currentTarget;
+    clearTimeout(longTimer);
+    longTimer=setTimeout(()=>{
+      suppressClick=true; drag=true;
+      const d=+td.dataset.d,h=+td.dataset.h;
+      dragValue = data[key(d,h)] || (selectedWord!==null ? words[selectedWord] : {text:"",color:"#ffffff"});
+      dragValue = {text:dragValue.text||"", color:norm(dragValue.color)};
+      applyDrag(td);
+      if(navigator.vibrate) navigator.vibrate(25);
+    },360);
+  }
+  function cellFromTouch(e){
+    const t=e.touches?.[0]; if(!t) return null;
+    return document.elementFromPoint(t.clientX,t.clientY)?.closest("td");
+  }
+  function moveDrag(e){
+    if(!drag) return;
+    e.preventDefault();
+    const td=cellFromTouch(e);
+    if(td) applyDrag(td);
+  }
+  function moveDragMouse(e){ if(drag) applyDrag(e.currentTarget); }
+  function endDrag(){
+    clearTimeout(longTimer);
+    if(drag){drag=false;dragValue=null;save();renderGrid();}
+  }
+  function applyDrag(td){
+    const d=+td.dataset.d,h=+td.dataset.h;
+    if(dragValue.text) data[key(d,h)]={...dragValue};
+    else delete data[key(d,h)];
+    td.textContent=dragValue.text || "";
+    td.style.background=norm(dragValue.color);
+  }
+
+  function setCell(d,h,text,color){
+    if(text) data[key(d,h)]={text, color:norm(color)};
+    else delete data[key(d,h)];
+    save();
+  }
+
+  function openCell(d,h){
+    editTarget={type:"cell",d,h};
+    const v=data[key(d,h)] || {text:"",color:"#ffffff"};
+    modalTitle.textContent = DAYS[d]+" "+h+":00";
+    textInput.value=v.text||"";
+    colorInput.value=norm(v.color);
+    modal.classList.add("show");
+    setTimeout(()=>textInput.focus(),50);
+  }
+  function openWord(i){
+    editTarget={type:"word",i};
+    const w=words[i] || {text:"",color:"#ffffff"};
+    modalTitle.textContent="Palabra rápida";
+    textInput.value=w.text||"";
+    colorInput.value=norm(w.color);
+    modal.classList.add("show");
+    setTimeout(()=>textInput.focus(),50);
+  }
+
+  document.getElementById("saveBtn").onclick=()=>{
+    const text=textInput.value.trim();
+    const color=norm(colorInput.value);
+    if(editTarget?.type==="cell") setCell(editTarget.d,editTarget.h,text,color);
+    if(editTarget?.type==="word"){words[editTarget.i]={text,color};saveWords();}
+    modal.classList.remove("show"); render();
+  };
+  document.getElementById("deleteBtn").onclick=()=>{
+    if(editTarget?.type==="cell") setCell(editTarget.d,editTarget.h,"","#ffffff");
+    if(editTarget?.type==="word"){words[editTarget.i]={text:"",color:"#ffffff"};saveWords();}
+    modal.classList.remove("show"); render();
+  };
+  document.getElementById("cancelBtn").onclick=()=>modal.classList.remove("show");
+  modal.onclick=e=>{ if(e.target===modal) modal.classList.remove("show") };
+
+  togglePast.onclick=()=>{
+    hidePast=!hidePast;
+    localStorage.setItem(HIDE_KEY, hidePast?"1":"0");
+    render();
+  };
+  document.getElementById("clearAll").onclick=()=>{
+    if(confirm("¿Borrar toda la hoja?")){
+      data={}; save(); renderGrid();
+    }
+  };
+
+  render();
+  setInterval(render,60000);
+})();
+</script>
 </body>
 </html>

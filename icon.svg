@@ -1,1 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="100" fill="#f2f2f7"/><path d="M88 150h336M88 220h336M88 290h336M88 360h336M150 100v320M220 100v320M290 100v320M360 100v320" stroke="#b8b8c2" stroke-width="10"/><rect x="220" y="220" width="70" height="70" fill="none" stroke="#e04755" stroke-width="12"/><text x="256" y="72" font-family="Arial" font-size="46" text-anchor="middle" fill="#111">Vista</text></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+<rect width="512" height="512" rx="96" fill="#f7f7f9"/>
+<g stroke="#c8c8ce" stroke-width="14">
+<path d="M84 150h344M84 210h344M84 270h344M84 330h344"/>
+<path d="M146 92v328M208 92v328M270 92v328M332 92v328M394 92v328"/>
+</g>
+<rect x="208" y="210" width="62" height="60" fill="none" stroke="#e2465b" stroke-width="16"/>
+</svg>
