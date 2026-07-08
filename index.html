@@ -7,8 +7,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Vista semanal">
 <meta name="mobile-web-app-capable" content="yes">
-<link rel="manifest" href="manifest.json?v=10">
-<link rel="icon" href="icon.svg?v=10" type="image/svg+xml">
+<link rel="manifest" href="manifest.json?v=11">
+<link rel="icon" href="icon.svg?v=11" type="image/svg+xml">
 <title>Vista semanal</title>
 <style>
 :root{
@@ -19,98 +19,53 @@
   --chip:#f7f7f9;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{
-  margin:0;padding:0;background:#fff;color:var(--text);
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
-  overscroll-behavior:none;
-}
-body{padding-top:env(safe-area-inset-top)}
-header{
-  position:sticky;top:0;z-index:10;background:#fff;
-  border-bottom:1px solid var(--grid);
-  padding:2px 4px 4px;
-}
-.topbar{
-  display:grid;grid-template-columns:1fr auto 1fr;align-items:center;
-  height:30px;
-}
-h1{font-size:22px;margin:0;line-height:1;font-weight:650;text-align:center}
-button{
-  font:inherit;border:1px solid var(--grid);background:#fafafa;border-radius:7px;
-  padding:4px 7px;font-size:12px;color:#1677d2;
-}
-button.danger{color:#b80016}
-#togglePast{justify-self:start}
-#clearAll{justify-self:end}
-.wordbar{
-  display:grid;
-  grid-template-columns:repeat(4,1fr);
-  gap:3px;
-  padding-top:2px;
-}
-.chip{
-  min-height:22px;border:1px solid var(--grid);border-radius:7px;
-  background:var(--chip);
-  display:flex;align-items:center;justify-content:center;
-  font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-  padding:1px 4px;user-select:none;
-}
-.chip.active{outline:2px solid var(--red);outline-offset:-2px;font-weight:650}
-.gridwrap{width:100vw;overflow:hidden;padding-bottom:env(safe-area-inset-bottom)}
+html,body{margin:0;padding:0;background:#fff;color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;overscroll-behavior:none}
+body{padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
+header{background:#fff;padding:5px 4px 3px;border-bottom:1px solid var(--grid)}
+.month-title{height:25px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:650}
+.gridwrap{width:100vw;overflow:hidden}
 table{border-collapse:collapse;width:100%;table-layout:fixed}
 th,td{border:1px solid var(--grid);text-align:center;vertical-align:middle;padding:0}
-thead th{height:24px;background:var(--head);font-size:16px;font-weight:650}
+thead th{height:25px;background:var(--head);font-size:16px;font-weight:650}
 thead th:first-child{width:39px;font-size:13px;font-weight:500;color:#777}
 tbody th{width:39px;background:var(--head);font-size:16px;font-weight:600}
-td{
-  height:25px;font-size:12px;line-height:1.05;
-  overflow:hidden;white-space:nowrap;text-overflow:ellipsis;position:relative;
-}
+td{height:26px;font-size:12px;line-height:1.05;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;position:relative}
 .daynum{font-size:12px;color:#aaa;font-weight:400;margin-left:2px}
 .todayHead{outline:2px solid var(--red);outline-offset:-2px;color:var(--red)}
 .currentHour{outline:2px solid var(--red);outline-offset:-2px;color:var(--red)}
 .currentCell{outline:2px solid var(--red);outline-offset:-2px}
-.hiddenPast .pastNow{color:transparent!important;background:white!important}
-.hiddenPast .pastNow *{visibility:hidden}
-.modal{
-  position:fixed;inset:0;background:rgba(0,0,0,.25);
-  display:none;align-items:flex-end;z-index:30;
-}
+.bottom-panel{border-top:1px solid var(--grid);background:#fff;padding:5px 4px 7px}
+.wordbar{display:grid;grid-template-columns:repeat(4,1fr);gap:3px}
+.chip{min-height:25px;border:1px solid var(--grid);border-radius:7px;background:var(--chip);display:flex;align-items:center;justify-content:center;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:1px 4px;user-select:none}
+.chip.active{outline:2px solid var(--red);outline-offset:-2px;font-weight:650}
+.chip.danger{color:#b80016;background:#fff}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.25);display:none;align-items:flex-end;z-index:30}
 .modal.show{display:flex}
-.sheet{
-  width:100%;background:white;border-radius:16px 16px 0 0;
-  padding:14px 14px calc(14px + env(safe-area-inset-bottom));
-  box-shadow:0 -8px 30px rgba(0,0,0,.18);
-}
+.sheet{width:100%;background:white;border-radius:16px 16px 0 0;padding:14px 14px calc(14px + env(safe-area-inset-bottom));box-shadow:0 -8px 30px rgba(0,0,0,.18)}
 .sheet h2{margin:0 0 9px;font-size:18px}
-input[type=text]{
-  width:100%;font:inherit;font-size:18px;padding:10px;
-  border:1px solid var(--grid);border-radius:8px;margin-bottom:10px;
-}
+input[type=text]{width:100%;font:inherit;font-size:18px;padding:10px;border:1px solid var(--grid);border-radius:8px;margin-bottom:10px}
 .colorline{display:flex;gap:10px;align-items:center;margin-bottom:10px}
 input[type=color]{width:54px;height:38px;border:1px solid var(--grid);border-radius:8px;background:white;padding:2px}
 .palette{display:grid;grid-template-columns:repeat(8,1fr);gap:6px;margin:8px 0 12px}
 .sw{height:34px;border:1px solid var(--grid);border-radius:8px;background:white}
 .actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
-.actions button{font-size:16px;padding:9px}
+.actions button{font:inherit;border:1px solid var(--grid);background:#fafafa;border-radius:7px;font-size:16px;padding:9px;color:#1677d2}
+.actions button.danger{color:#b80016}
 .hint{font-size:12px;color:#777;margin-top:8px;line-height:1.25}
 </style>
 </head>
-<body class="hiddenPast">
-<header>
-  <div class="topbar">
-    <button id="togglePast">Mostrar pasado</button>
-    <h1>Vista semanal</h1>
-    <button id="clearAll" class="danger">Borrar</button>
-  </div>
-  <div class="wordbar" id="wordbar"></div>
-</header>
+<body>
+<header><div class="month-title" id="monthTitle"></div></header>
 
 <div class="gridwrap">
 <table>
   <thead><tr id="dayRow"><th>Notas</th></tr></thead>
   <tbody id="grid"></tbody>
 </table>
+</div>
+
+<div class="bottom-panel">
+  <div class="wordbar" id="wordbar"></div>
 </div>
 
 <div class="modal" id="modal">
@@ -127,21 +82,18 @@ input[type=color]{width:54px;height:38px;border:1px solid var(--grid);border-rad
       <button id="deleteBtn" class="danger">Vaciar</button>
       <button id="cancelBtn">Cerrar</button>
     </div>
-    <div class="hint">
-      Toca una palabra y luego una celda. Mantén pulsada una palabra para editarla. Mantén pulsada una celda y arrastra para copiar varias horas.
-    </div>
+    <div class="hint">Toca una palabra y luego una celda. Mantén pulsada una palabra para editarla. Mantén pulsada una celda y arrastra para copiar varias horas.</div>
   </div>
 </div>
 
 <script>
 (() => {
   const DAYS = ["L","M","X","J","V","S","D"];
+  const MONTHS = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
 
-  /* No cambiar estas claves: así no se pierden los datos al actualizar */
   const DATA_KEYS = ["vista-semanal-data-v2","vista-semanal-simple-v4"];
   const KEY = "vista-semanal-data-v2";
   const WORDS_KEY = "vista-semanal-words-v2";
-  const HIDE_KEY = "vista-semanal-hide-v2";
 
   const DEFAULT_WORDS = [
     {text:"Casa", color:"#d8ebff"},
@@ -151,7 +103,7 @@ input[type=color]{width:54px;height:38px;border:1px solid var(--grid);border-rad
     {text:"Compra", color:"#eadcff"},
     {text:"Médico", color:"#ffd6d6"},
     {text:"Libre", color:"#e9e9ee"},
-    {text:"", color:"#ffffff"}
+    {text:"Borrar", color:"#ffffff", action:"clear"}
   ];
   const PALETTE = ["#ffffff","#ffd6d6","#ffe1c2","#fff3a8","#d8f6d4","#d8ebff","#eadcff","#e9e9ee"];
 
@@ -166,11 +118,12 @@ input[type=color]{width:54px;height:38px;border:1px solid var(--grid);border-rad
 
   let data = firstAvailableData();
   let words = load(WORDS_KEY, DEFAULT_WORDS);
-  let hidePast = localStorage.getItem(HIDE_KEY) !== "0";
+  if (words.length < 8) words = [...words, ...DEFAULT_WORDS.slice(words.length)];
   let selectedWord = null;
   let editTarget = null;
   let drag = false, dragValue = null, longTimer = null, suppressClick = false;
 
+  const monthTitle = document.getElementById("monthTitle");
   const dayRow = document.getElementById("dayRow");
   const grid = document.getElementById("grid");
   const wordbar = document.getElementById("wordbar");
@@ -179,17 +132,11 @@ input[type=color]{width:54px;height:38px;border:1px solid var(--grid);border-rad
   const colorInput = document.getElementById("colorInput");
   const modalTitle = document.getElementById("modalTitle");
   const palette = document.getElementById("palette");
-  const togglePast = document.getElementById("togglePast");
 
   function save(){ localStorage.setItem(KEY, JSON.stringify(data)); }
   function saveWords(){ localStorage.setItem(WORDS_KEY, JSON.stringify(words)); }
   function key(d,h){ return d+"-"+h; }
   function todayIndex(){ return (new Date().getDay()+6)%7; }
-  function monday(dt=new Date()){
-    const d = new Date(dt.getFullYear(), dt.getMonth(), dt.getDate());
-    d.setDate(d.getDate() - ((d.getDay()+6)%7));
-    return d;
-  }
   function norm(c){ return (c && c[0]==="#") ? c : "#ffffff"; }
 
   PALETTE.forEach(c=>{
@@ -200,20 +147,49 @@ input[type=color]{width:54px;height:38px;border:1px solid var(--grid);border-rad
   });
 
   function render(){
-    document.body.classList.toggle("hiddenPast", hidePast);
-    togglePast.textContent = hidePast ? "Mostrar pasado" : "Ocultar pasado";
-    renderWords(); renderHeader(); renderGrid();
+    renderMonth(); renderHeader(); renderGrid(); renderWords();
+  }
+
+  function renderMonth(){
+    const now = new Date();
+    monthTitle.textContent = MONTHS[now.getMonth()] + " " + now.getFullYear();
+  }
+
+  function renderHeader(){
+    dayRow.innerHTML="<th>Notas</th>";
+    const now = new Date();
+    const t = todayIndex();
+
+    DAYS.forEach((d,i)=>{
+      const th=document.createElement("th");
+
+      // Vista circular: días ya pasados pasan a la semana siguiente.
+      // El cálculo usa Date real, por lo que respeta cambios de mes y años bisiestos.
+      const offset = (i - t + 7) % 7;
+      const date = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      date.setDate(date.getDate() + offset);
+
+      th.innerHTML = d+"<span class='daynum'>"+date.getDate()+"</span>";
+      if(i===t) th.classList.add("todayHead");
+      dayRow.appendChild(th);
+    });
   }
 
   function renderWords(){
     wordbar.innerHTML="";
     words.forEach((w,i)=>{
       const div=document.createElement("div");
-      div.className="chip"+(selectedWord===i?" active":"");
+      div.className="chip"+(selectedWord===i?" active":"")+(w.action==="clear"?" danger":"");
       div.textContent=w.text || "+";
       div.style.background = w.color || "#f7f7f9";
       div.onclick=()=>{
         if(suppressClick){suppressClick=false;return}
+        if(w.action==="clear"){
+          if(confirm("¿Borrar toda la hoja?")){
+            data={}; save(); renderGrid();
+          }
+          return;
+        }
         if(!w.text){openWord(i);return}
         selectedWord = selectedWord===i ? null : i;
         renderWords();
@@ -226,18 +202,6 @@ input[type=color]{width:54px;height:38px;border:1px solid var(--grid);border-rad
       div.addEventListener("mousedown",start);
       div.addEventListener("mouseup",end);
       wordbar.appendChild(div);
-    });
-  }
-
-  function renderHeader(){
-    dayRow.innerHTML="<th>Notas</th>";
-    const mon=monday(), t=todayIndex();
-    DAYS.forEach((d,i)=>{
-      const th=document.createElement("th");
-      const date=new Date(mon); date.setDate(mon.getDate()+i);
-      th.innerHTML = d+"<span class='daynum'>"+date.getDate()+"</span>";
-      if(i===t) th.classList.add("todayHead");
-      dayRow.appendChild(th);
     });
   }
 
@@ -257,7 +221,6 @@ input[type=color]{width:54px;height:38px;border:1px solid var(--grid);border-rad
         td.textContent=v.text || "";
         td.style.background=norm(v.color);
         if(d===t && h===hr) td.classList.add("currentCell");
-        if(d===t && h<hr) td.classList.add("pastNow");
         bindCell(td);
         tr.appendChild(td);
       }
@@ -332,11 +295,12 @@ input[type=color]{width:54px;height:38px;border:1px solid var(--grid);border-rad
     modal.classList.add("show");
     setTimeout(()=>textInput.focus(),50);
   }
+
   function openWord(i){
     editTarget={type:"word",i};
     const w=words[i] || {text:"",color:"#ffffff"};
     modalTitle.textContent="Palabra rápida";
-    textInput.value=w.text||"";
+    textInput.value=w.action==="clear" ? "Borrar" : (w.text||"");
     colorInput.value=norm(w.color);
     modal.classList.add("show");
     setTimeout(()=>textInput.focus(),50);
@@ -346,7 +310,12 @@ input[type=color]{width:54px;height:38px;border:1px solid var(--grid);border-rad
     const text=textInput.value.trim();
     const color=norm(colorInput.value);
     if(editTarget?.type==="cell") setCell(editTarget.d,editTarget.h,text,color);
-    if(editTarget?.type==="word"){words[editTarget.i]={text,color};saveWords();}
+    if(editTarget?.type==="word"){
+      const oldAction = words[editTarget.i]?.action;
+      words[editTarget.i]={text,color};
+      if(oldAction==="clear" && text.toLowerCase()==="borrar") words[editTarget.i].action="clear";
+      saveWords();
+    }
     modal.classList.remove("show"); render();
   };
   document.getElementById("deleteBtn").onclick=()=>{
@@ -356,17 +325,6 @@ input[type=color]{width:54px;height:38px;border:1px solid var(--grid);border-rad
   };
   document.getElementById("cancelBtn").onclick=()=>modal.classList.remove("show");
   modal.onclick=e=>{ if(e.target===modal) modal.classList.remove("show") };
-
-  togglePast.onclick=()=>{
-    hidePast=!hidePast;
-    localStorage.setItem(HIDE_KEY, hidePast?"1":"0");
-    render();
-  };
-  document.getElementById("clearAll").onclick=()=>{
-    if(confirm("¿Borrar toda la hoja?")){
-      data={}; save(); renderGrid();
-    }
-  };
 
   save();
   render();
