@@ -1,0 +1,35 @@
+:root{
+  --grid:#c9c9cf;
+  --head:#f2f2f7;
+  --red:#e04755;
+  --blue:#147efb;
+  --text:#111;
+  --pastText:transparent;
+  --pastBg:#fff;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;background:#fff;color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;overscroll-behavior:none;user-select:none}
+body{padding-top:env(safe-area-inset-top);}
+.topbar{height:86px;display:grid;grid-template-columns:1fr auto 1fr;grid-template-areas:"left title right" "left title right";align-items:center;gap:4px;padding:6px 8px 5px;border-bottom:1px solid var(--grid);background:#fff;position:sticky;top:0;z-index:10}
+h1{grid-area:title;margin:0;font-size:31px;font-weight:500;line-height:1;text-align:center;white-space:nowrap}
+button{font:inherit;font-size:14px;border:1px solid var(--grid);background:#f7f7f7;border-radius:6px;padding:5px 7px;color:var(--blue)}
+button.danger{color:#c91920}
+#togglePast{grid-area:left;justify-self:end;align-self:end}
+#clearWeek{grid-area:right;justify-self:start;align-self:end}
+.grid-wrap{width:100vw;overflow:hidden}
+table{border-collapse:collapse;width:100vw;table-layout:fixed;font-size:15px;line-height:1}
+th,td{border:1px solid var(--grid);height:25px;text-align:center;vertical-align:middle;overflow:hidden;white-space:nowrap;padding:0;background:#fff}
+th{height:31px;background:var(--head);font-weight:600;font-size:17px;position:relative}
+th.timehead,td.hour{width:46px;background:var(--head);font-size:18px;font-weight:500}
+th .date{font-size:14px;color:#b5b5bb;font-weight:400;margin-left:2px}
+th.today,td.current-hour{outline:2px solid var(--red);outline-offset:-2px;background:#fff}
+th .dow.today-letter{color:var(--red)}
+td.cell{font-size:14px;cursor:pointer;touch-action:none}
+td.selected,td.dragging{background:#e9f2ff!important}
+td.now{outline:2px solid var(--red);outline-offset:-2px;background:#fff!important}
+td.past{color:var(--pastText);background:var(--pastBg)}
+td.past::selection{background:transparent}
+dialog{border:none;border-radius:13px;padding:0;width:min(340px,92vw);box-shadow:0 18px 60px rgba(0,0,0,.25)}
+dialog::backdrop{background:rgba(0,0,0,.25)}
+form{padding:16px}h2{font-size:18px;margin:0 0 12px}input{width:100%;font-size:20px;padding:10px;border:1px solid var(--grid);border-radius:8px}menu{display:flex;gap:8px;justify-content:flex-end;padding:12px 0 0;margin:0}
+@media (max-height: 780px){.topbar{height:66px}h1{font-size:26px}th,td{height:23px}th{height:28px}table{font-size:14px}td.cell{font-size:13px}}

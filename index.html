@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="Vista semanal" />
+  <meta name="theme-color" content="#ffffff" />
+  <title>Vista semanal</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <button id="togglePast" type="button">Ocultar pasado</button>
+    <h1>Vista semanal</h1>
+    <button id="clearWeek" class="danger" type="button">Borrar</button>
+  </header>
+
+  <main class="grid-wrap">
+    <table id="weekGrid" aria-label="Vista semanal 24 por 7">
+      <thead>
+        <tr id="dayHeader"></tr>
+      </thead>
+      <tbody id="gridBody"></tbody>
+    </table>
+  </main>
+
+  <dialog id="editDialog">
+    <form method="dialog" id="editForm">
+      <h2 id="editTitle">Editar celda</h2>
+      <input id="cellText" type="text" autocomplete="off" />
+      <menu>
+        <button value="delete" id="deleteCell" type="button">Borrar</button>
+        <button value="cancel">Cancelar</button>
+        <button value="ok" id="saveCell">Guardar</button>
+      </menu>
+    </form>
+  </dialog>
+
+  <script src="app.js"></script>
+</body>
+</html>
