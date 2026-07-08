@@ -3,79 +3,75 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#ffffff">
+<meta name="theme-color" content="#0b0b0f">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Vista semanal">
-<link rel="manifest" href="manifest.json">
-<link rel="icon" href="icon.svg" type="image/svg+xml">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.json?v=10">
+<link rel="icon" href="icon.svg?v=10" type="image/svg+xml">
 <title>Vista semanal</title>
-
 <style>
 :root{
   --grid:#c8c8ce;
   --head:#f3f3f7;
   --red:#e2465b;
   --text:#111;
-  --muted:#9b9ba3;
   --chip:#f7f7f9;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{
-  margin:0;padding:0;background:white;color:var(--text);
+  margin:0;padding:0;background:#fff;color:var(--text);
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
   overscroll-behavior:none;
 }
 body{padding-top:env(safe-area-inset-top)}
 header{
-  position:sticky;top:0;z-index:10;background:white;
+  position:sticky;top:0;z-index:10;background:#fff;
   border-bottom:1px solid var(--grid);
-  padding:4px 4px 5px;
+  padding:2px 4px 4px;
 }
 .topbar{
   display:grid;grid-template-columns:1fr auto 1fr;align-items:center;
-  height:34px;
+  height:30px;
 }
-h1{font-size:25px;margin:0;line-height:1;font-weight:650;text-align:center}
+h1{font-size:22px;margin:0;line-height:1;font-weight:650;text-align:center}
 button{
   font:inherit;border:1px solid var(--grid);background:#fafafa;border-radius:7px;
-  padding:4px 7px;font-size:13px;color:#1677d2;
+  padding:4px 7px;font-size:12px;color:#1677d2;
 }
 button.danger{color:#b80016}
 #togglePast{justify-self:start}
 #clearAll{justify-self:end}
-
 .wordbar{
   display:grid;
   grid-template-columns:repeat(4,1fr);
-  gap:4px;
-  padding-top:4px;
+  gap:3px;
+  padding-top:2px;
 }
 .chip{
-  min-height:25px;border:1px solid var(--grid);border-radius:7px;
+  min-height:22px;border:1px solid var(--grid);border-radius:7px;
   background:var(--chip);
   display:flex;align-items:center;justify-content:center;
-  font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-  padding:2px 4px;user-select:none;
+  font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  padding:1px 4px;user-select:none;
 }
 .chip.active{outline:2px solid var(--red);outline-offset:-2px;font-weight:650}
-
-.gridwrap{width:100vw;overflow:hidden}
+.gridwrap{width:100vw;overflow:hidden;padding-bottom:env(safe-area-inset-bottom)}
 table{border-collapse:collapse;width:100%;table-layout:fixed}
 th,td{border:1px solid var(--grid);text-align:center;vertical-align:middle;padding:0}
-thead th{height:28px;background:var(--head);font-size:17px;font-weight:650}
-thead th:first-child{width:39px;font-size:14px;font-weight:500;color:#777}
-tbody th{width:39px;background:var(--head);font-size:17px;font-weight:600}
+thead th{height:24px;background:var(--head);font-size:16px;font-weight:650}
+thead th:first-child{width:39px;font-size:13px;font-weight:500;color:#777}
+tbody th{width:39px;background:var(--head);font-size:16px;font-weight:600}
 td{
-  height:29px;font-size:13px;line-height:1.05;
+  height:25px;font-size:12px;line-height:1.05;
   overflow:hidden;white-space:nowrap;text-overflow:ellipsis;position:relative;
 }
-.daynum{font-size:13px;color:#aaa;font-weight:400;margin-left:2px}
+.daynum{font-size:12px;color:#aaa;font-weight:400;margin-left:2px}
 .todayHead{outline:2px solid var(--red);outline-offset:-2px;color:var(--red)}
 .currentHour{outline:2px solid var(--red);outline-offset:-2px;color:var(--red)}
 .currentCell{outline:2px solid var(--red);outline-offset:-2px}
 .hiddenPast .pastNow{color:transparent!important;background:white!important}
 .hiddenPast .pastNow *{visibility:hidden}
-
 .modal{
   position:fixed;inset:0;background:rgba(0,0,0,.25);
   display:none;align-items:flex-end;z-index:30;
@@ -100,7 +96,6 @@ input[type=color]{width:54px;height:38px;border:1px solid var(--grid);border-rad
 .hint{font-size:12px;color:#777;margin-top:8px;line-height:1.25}
 </style>
 </head>
-
 <body class="hiddenPast">
 <header>
   <div class="topbar">
@@ -124,7 +119,7 @@ input[type=color]{width:54px;height:38px;border:1px solid var(--grid);border-rad
     <input id="textInput" type="text" autocomplete="off">
     <div class="colorline">
       <input id="colorInput" type="color" value="#ffffff">
-      <span style="font-size:13px;color:#777">Color de la celda o palabra</span>
+      <span style="font-size:13px;color:#777">Color</span>
     </div>
     <div class="palette" id="palette"></div>
     <div class="actions">
@@ -133,7 +128,7 @@ input[type=color]{width:54px;height:38px;border:1px solid var(--grid);border-rad
       <button id="cancelBtn">Cerrar</button>
     </div>
     <div class="hint">
-      Toca una palabra rápida y luego una celda. Mantén pulsada una palabra para editarla. Mantén pulsada una celda y arrastra para copiar varias horas.
+      Toca una palabra y luego una celda. Mantén pulsada una palabra para editarla. Mantén pulsada una celda y arrastra para copiar varias horas.
     </div>
   </div>
 </div>
@@ -141,22 +136,35 @@ input[type=color]{width:54px;height:38px;border:1px solid var(--grid);border-rad
 <script>
 (() => {
   const DAYS = ["L","M","X","J","V","S","D"];
+
+  /* No cambiar estas claves: así no se pierden los datos al actualizar */
+  const DATA_KEYS = ["vista-semanal-data-v2","vista-semanal-simple-v4"];
   const KEY = "vista-semanal-data-v2";
   const WORDS_KEY = "vista-semanal-words-v2";
   const HIDE_KEY = "vista-semanal-hide-v2";
+
   const DEFAULT_WORDS = [
     {text:"Casa", color:"#d8ebff"},
     {text:"Oficina", color:"#fff3a8"},
     {text:"Gym", color:"#d8f6d4"},
     {text:"Cardio", color:"#ffe1c2"},
-    {text:"", color:"#ffffff"},
-    {text:"", color:"#ffffff"},
-    {text:"", color:"#ffffff"},
+    {text:"Compra", color:"#eadcff"},
+    {text:"Médico", color:"#ffd6d6"},
+    {text:"Libre", color:"#e9e9ee"},
     {text:"", color:"#ffffff"}
   ];
   const PALETTE = ["#ffffff","#ffd6d6","#ffe1c2","#fff3a8","#d8f6d4","#d8ebff","#eadcff","#e9e9ee"];
 
-  let data = load(KEY, {});
+  function load(k, fb){ try{return JSON.parse(localStorage.getItem(k)) ?? fb}catch{return fb} }
+  function firstAvailableData(){
+    for(const k of DATA_KEYS){
+      const v = load(k, null);
+      if(v && Object.keys(v).length) return v;
+    }
+    return {};
+  }
+
+  let data = firstAvailableData();
   let words = load(WORDS_KEY, DEFAULT_WORDS);
   let hidePast = localStorage.getItem(HIDE_KEY) !== "0";
   let selectedWord = null;
@@ -173,7 +181,6 @@ input[type=color]{width:54px;height:38px;border:1px solid var(--grid);border-rad
   const palette = document.getElementById("palette");
   const togglePast = document.getElementById("togglePast");
 
-  function load(k, fb){ try{return JSON.parse(localStorage.getItem(k)) ?? fb}catch{return fb} }
   function save(){ localStorage.setItem(KEY, JSON.stringify(data)); }
   function saveWords(){ localStorage.setItem(WORDS_KEY, JSON.stringify(words)); }
   function key(d,h){ return d+"-"+h; }
@@ -361,6 +368,7 @@ input[type=color]{width:54px;height:38px;border:1px solid var(--grid);border-rad
     }
   };
 
+  save();
   render();
   setInterval(render,60000);
 })();

@@ -1,3 +1,11 @@
 # Vista semanal
 
-Hoja semanal 24x7 sencilla para iPhone. Versión simple con dos filas de palabras rápidas editables, colores y arrastrar para rellenar.
+Aplicación semanal 24×7 sencilla para iPhone.
+
+Versión estable:
+- Icono negro.
+- Dos filas de palabras rápidas.
+- Palabras editables.
+- Color configurable por palabra.
+- Arrastrar para rellenar varias celdas.
+- Guardado local automático.
