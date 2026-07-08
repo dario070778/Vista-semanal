@@ -1,8 +1,9 @@
 # Vista semanal
 
-Versión limpia:
+Versión definitiva:
 - Mes y año arriba.
 - Cuadrícula debajo.
-- Palabras rápidas debajo de la cuadrícula.
-- Fechas circulares correctas.
-- Icono negro.
+- Palabras rápidas debajo.
+- Colores más vivos.
+- Modo Borrar por celda.
+- Tarjeta inferior que replica la celda seleccionada.

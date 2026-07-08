@@ -7,8 +7,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Vista semanal">
 <meta name="mobile-web-app-capable" content="yes">
-<link rel="manifest" href="manifest.json?v=11">
-<link rel="icon" href="icon.svg?v=11" type="image/svg+xml">
+<link rel="manifest" href="manifest.json?v=12">
+<link rel="icon" href="icon.svg?v=12" type="image/svg+xml">
 <title>Vista semanal</title>
 <style>
 :root{
@@ -34,10 +34,12 @@ td{height:26px;font-size:12px;line-height:1.05;overflow:hidden;white-space:nowra
 .todayHead{outline:2px solid var(--red);outline-offset:-2px;color:var(--red)}
 .currentHour{outline:2px solid var(--red);outline-offset:-2px;color:var(--red)}
 .currentCell{outline:2px solid var(--red);outline-offset:-2px}
-.bottom-panel{border-top:1px solid var(--grid);background:#fff;padding:5px 4px 7px}
+.selectedCell{box-shadow:inset 0 0 0 2px #111}
+.bottom-panel{border-top:1px solid var(--grid);background:#fff;padding:5px 4px 8px}
 .wordbar{display:grid;grid-template-columns:repeat(4,1fr);gap:3px}
 .chip{min-height:25px;border:1px solid var(--grid);border-radius:7px;background:var(--chip);display:flex;align-items:center;justify-content:center;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:1px 4px;user-select:none}
 .chip.active{outline:2px solid var(--red);outline-offset:-2px;font-weight:650}
+.chip.deleteMode{color:#fff!important;background:#e2465b!important;border-color:#e2465b}
 .chip.danger{color:#b80016;background:#fff}
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.25);display:none;align-items:flex-end;z-index:30}
 .modal.show{display:flex}
@@ -51,6 +53,7 @@ input[type=color]{width:54px;height:38px;border:1px solid var(--grid);border-rad
 .actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
 .actions button{font:inherit;border:1px solid var(--grid);background:#fafafa;border-radius:7px;font-size:16px;padding:9px;color:#1677d2}
 .actions button.danger{color:#b80016}
+.previewWrap{padding:8px 4px 0}.previewCard{display:none;align-items:center;justify-content:center;margin:0 auto;width:100%;min-height:90px;border:1px solid var(--grid);border-radius:14px;font-size:36px;font-weight:800;box-shadow:0 1px 2px rgba(0,0,0,.08)}.previewCard.show{display:flex}
 .hint{font-size:12px;color:#777;margin-top:8px;line-height:1.25}
 </style>
 </head>
@@ -66,6 +69,7 @@ input[type=color]{width:54px;height:38px;border:1px solid var(--grid);border-rad
 
 <div class="bottom-panel">
   <div class="wordbar" id="wordbar"></div>
+  <div class="previewWrap"><div class="previewCard" id="previewCard"></div></div>
 </div>
 
 <div class="modal" id="modal">
@@ -96,16 +100,16 @@ input[type=color]{width:54px;height:38px;border:1px solid var(--grid);border-rad
   const WORDS_KEY = "vista-semanal-words-v2";
 
   const DEFAULT_WORDS = [
-    {text:"Casa", color:"#d8ebff"},
-    {text:"Oficina", color:"#fff3a8"},
-    {text:"Gym", color:"#d8f6d4"},
-    {text:"Cardio", color:"#ffe1c2"},
-    {text:"Compra", color:"#eadcff"},
-    {text:"Médico", color:"#ffd6d6"},
-    {text:"Libre", color:"#e9e9ee"},
+    {text:"Casa", color:"#4A90E2"},
+    {text:"Oficina", color:"#FFD54A"},
+    {text:"Gym", color:"#63D471"},
+    {text:"Cardio", color:"#FF9F43"},
+    {text:"Compra", color:"#B57BFF"},
+    {text:"Médico", color:"#FF6B6B"},
+    {text:"Libre", color:"#D9D9D9"},
     {text:"Borrar", color:"#ffffff", action:"clear"}
   ];
-  const PALETTE = ["#ffffff","#ffd6d6","#ffe1c2","#fff3a8","#d8f6d4","#d8ebff","#eadcff","#e9e9ee"];
+  const PALETTE = ["#ffffff","#FF6B6B","#FF9F43","#FFD54A","#63D471","#4A90E2","#B57BFF","#D9D9D9"];
 
   function load(k, fb){ try{return JSON.parse(localStorage.getItem(k)) ?? fb}catch{return fb} }
   function firstAvailableData(){
@@ -120,6 +124,7 @@ input[type=color]{width:54px;height:38px;border:1px solid var(--grid);border-rad
   let words = load(WORDS_KEY, DEFAULT_WORDS);
   if (words.length < 8) words = [...words, ...DEFAULT_WORDS.slice(words.length)];
   let selectedWord = null;
+  let selectedCell = null;
   let editTarget = null;
   let drag = false, dragValue = null, longTimer = null, suppressClick = false;
 
@@ -132,6 +137,7 @@ input[type=color]{width:54px;height:38px;border:1px solid var(--grid);border-rad
   const colorInput = document.getElementById("colorInput");
   const modalTitle = document.getElementById("modalTitle");
   const palette = document.getElementById("palette");
+  const previewCard = document.getElementById("previewCard");
 
   function save(){ localStorage.setItem(KEY, JSON.stringify(data)); }
   function saveWords(){ localStorage.setItem(WORDS_KEY, JSON.stringify(words)); }
@@ -147,7 +153,7 @@ input[type=color]{width:54px;height:38px;border:1px solid var(--grid);border-rad
   });
 
   function render(){
-    renderMonth(); renderHeader(); renderGrid(); renderWords();
+    renderMonth(); renderHeader(); renderGrid(); renderWords(); renderPreview();
   }
 
   function renderMonth(){
@@ -179,15 +185,14 @@ input[type=color]{width:54px;height:38px;border:1px solid var(--grid);border-rad
     wordbar.innerHTML="";
     words.forEach((w,i)=>{
       const div=document.createElement("div");
-      div.className="chip"+(selectedWord===i?" active":"")+(w.action==="clear"?" danger":"");
+      div.className="chip"+(selectedWord===i?" active":"")+(w.action==="clear" && selectedWord===i?" deleteMode":"");
       div.textContent=w.text || "+";
       div.style.background = w.color || "#f7f7f9";
       div.onclick=()=>{
         if(suppressClick){suppressClick=false;return}
         if(w.action==="clear"){
-          if(confirm("¿Borrar toda la hoja?")){
-            data={}; save(); renderGrid();
-          }
+          selectedWord = selectedWord===i ? null : i;
+          renderWords();
           return;
         }
         if(!w.text){openWord(i);return}
@@ -221,6 +226,7 @@ input[type=color]{width:54px;height:38px;border:1px solid var(--grid);border-rad
         td.textContent=v.text || "";
         td.style.background=norm(v.color);
         if(d===t && h===hr) td.classList.add("currentCell");
+        if(selectedCell && selectedCell.d===d && selectedCell.h===h) td.classList.add("selectedCell");
         bindCell(td);
         tr.appendChild(td);
       }
@@ -232,10 +238,21 @@ input[type=color]{width:54px;height:38px;border:1px solid var(--grid);border-rad
     td.onclick=()=>{
       if(suppressClick){suppressClick=false;return}
       const d=+td.dataset.d,h=+td.dataset.h;
+      if(selectedWord!==null && words[selectedWord]?.action==="clear"){
+        setCell(d,h,"","#ffffff");
+        selectedCell = {d,h};
+        renderGrid(); renderPreview();
+        return;
+      }
       if(selectedWord!==null && words[selectedWord]?.text){
         setCell(d,h,words[selectedWord].text,words[selectedWord].color);
-        renderGrid();
-      }else openCell(d,h);
+        selectedCell = {d,h};
+        renderGrid(); renderPreview();
+      }else{
+        selectedCell = {d,h};
+        renderGrid(); renderPreview();
+        openCell(d,h);
+      }
     };
     td.addEventListener("touchstart", startDrag, {passive:false});
     td.addEventListener("touchmove", moveDrag, {passive:false});
@@ -251,7 +268,8 @@ input[type=color]{width:54px;height:38px;border:1px solid var(--grid);border-rad
     longTimer=setTimeout(()=>{
       suppressClick=true; drag=true;
       const d=+td.dataset.d,h=+td.dataset.h;
-      dragValue = data[key(d,h)] || (selectedWord!==null ? words[selectedWord] : {text:"",color:"#ffffff"});
+      if(selectedWord!==null && words[selectedWord]?.action==="clear") dragValue = {text:"", color:"#ffffff"};
+      else dragValue = data[key(d,h)] || (selectedWord!==null ? words[selectedWord] : {text:"",color:"#ffffff"});
       dragValue = {text:dragValue.text||"", color:norm(dragValue.color)};
       applyDrag(td);
       if(navigator.vibrate) navigator.vibrate(25);
@@ -270,10 +288,11 @@ input[type=color]{width:54px;height:38px;border:1px solid var(--grid);border-rad
   function moveDragMouse(e){ if(drag) applyDrag(e.currentTarget); }
   function endDrag(){
     clearTimeout(longTimer);
-    if(drag){drag=false;dragValue=null;save();renderGrid();}
+    if(drag){drag=false;dragValue=null;save();renderGrid();renderPreview();}
   }
   function applyDrag(td){
     const d=+td.dataset.d,h=+td.dataset.h;
+    selectedCell = {d,h};
     if(dragValue.text) data[key(d,h)]={...dragValue};
     else delete data[key(d,h)];
     td.textContent=dragValue.text || "";
@@ -284,6 +303,23 @@ input[type=color]{width:54px;height:38px;border:1px solid var(--grid);border-rad
     if(text) data[key(d,h)]={text, color:norm(color)};
     else delete data[key(d,h)];
     save();
+  }
+
+  function renderPreview(){
+    if(!selectedCell){
+      previewCard.classList.remove("show");
+      previewCard.textContent="";
+      return;
+    }
+    const v=data[key(selectedCell.d, selectedCell.h)];
+    if(!v || !v.text){
+      previewCard.classList.remove("show");
+      previewCard.textContent="";
+      return;
+    }
+    previewCard.textContent = v.text;
+    previewCard.style.background = norm(v.color);
+    previewCard.classList.add("show");
   }
 
   function openCell(d,h){
@@ -309,7 +345,7 @@ input[type=color]{width:54px;height:38px;border:1px solid var(--grid);border-rad
   document.getElementById("saveBtn").onclick=()=>{
     const text=textInput.value.trim();
     const color=norm(colorInput.value);
-    if(editTarget?.type==="cell") setCell(editTarget.d,editTarget.h,text,color);
+    if(editTarget?.type==="cell") { setCell(editTarget.d,editTarget.h,text,color); selectedCell = {d:editTarget.d,h:editTarget.h}; }
     if(editTarget?.type==="word"){
       const oldAction = words[editTarget.i]?.action;
       words[editTarget.i]={text,color};
@@ -319,7 +355,7 @@ input[type=color]{width:54px;height:38px;border:1px solid var(--grid);border-rad
     modal.classList.remove("show"); render();
   };
   document.getElementById("deleteBtn").onclick=()=>{
-    if(editTarget?.type==="cell") setCell(editTarget.d,editTarget.h,"","#ffffff");
+    if(editTarget?.type==="cell") { setCell(editTarget.d,editTarget.h,"","#ffffff"); selectedCell = {d:editTarget.d,h:editTarget.h}; }
     if(editTarget?.type==="word"){words[editTarget.i]={text:"",color:"#ffffff"};saveWords();}
     modal.classList.remove("show"); render();
   };
