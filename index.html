@@ -7,8 +7,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Vista semanal">
 <meta name="mobile-web-app-capable" content="yes">
-<link rel="manifest" href="manifest.json?v=20">
-<link rel="icon" href="icon.svg?v=20" type="image/svg+xml">
+<link rel="manifest" href="manifest.json?v=31">
+<link rel="icon" href="icon.svg?v=31" type="image/svg+xml">
 <title>Vista semanal</title>
 <style>
 :root{
@@ -40,6 +40,7 @@ td{
 .todayHead{outline:2px solid var(--red);outline-offset:-2px;color:var(--red)}
 .currentHour{outline:2px solid var(--red);outline-offset:-2px;color:var(--red)}
 .currentCell{outline:2px solid var(--red);outline-offset:-2px}
+.pastCell{background:#fff!important;color:transparent!important}
 .bottom-panel{border-top:1px solid var(--grid);background:#fff;padding:5px 4px 8px}
 .wordbar{display:grid;grid-template-columns:repeat(4,1fr);gap:3px}
 .chip{
@@ -147,10 +148,21 @@ input[type=color]{width:54px;height:38px;border:1px solid var(--grid);border-rad
 
   let data = firstAvailableData();
   let words = load(WORDS_KEY, DEFAULT_WORDS);
-  if (!Array.isArray(words)) words = DEFAULT_WORDS;
-  while (words.length < 8) words.push(DEFAULT_WORDS[words.length]);
-  words = words.slice(0,8);
-  words[7] = {text:"Borrar", color:"#ffffff", action:"clear"};
+  if (!Array.isArray(words)) words = DEFAULT_WORDS.slice();
+
+  // Rellena huecos antiguos sin tocar categorías personalizadas.
+  const migrated = [];
+  for(let i=0;i<8;i++){
+    const w = words[i];
+    if(i===7){
+      migrated[i] = {text:"Borrar", color:"#ffffff", action:"clear"};
+    }else if(w && w.text){
+      migrated[i] = {text:w.text, color:w.color || DEFAULT_WORDS[i].color};
+    }else{
+      migrated[i] = {...DEFAULT_WORDS[i]};
+    }
+  }
+  words = migrated;
 
   let selectedWord = null;
   let editTarget = null;
@@ -231,6 +243,14 @@ input[type=color]{width:54px;height:38px;border:1px solid var(--grid);border-rad
         td.textContent=v.text || "";
         td.style.background=norm(v.color);
         if(d===t && h===hr) td.classList.add("currentCell");
+
+        // Las horas pasadas del día actual se muestran vacías.
+        // No se borran los datos: solo se ocultan visualmente.
+        if(d===t && h<hr) {
+          td.textContent = "";
+          td.classList.add("pastCell");
+        }
+
         bindCell(td);
         tr.appendChild(td);
       }

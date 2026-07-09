@@ -1,8 +1,7 @@
-# Vista semanal 1.0 estable
+# Vista semanal 1.2
 
-- Mes y año arriba.
-- Fechas circulares correctas.
-- Dos filas de categorías.
-- Borrar por celda.
-- Tarjeta inferior con la actividad de la hora actual.
-- Datos compatibles con versiones anteriores.
+Mejoras:
+- Color de letra configurable para categorías y celdas.
+- La tarjeta inferior respeta fondo y color de letra.
+- Las horas pasadas del día actual se muestran vacías.
+- Borrar sigue siendo modo por celda.
