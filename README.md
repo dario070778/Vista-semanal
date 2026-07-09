@@ -1,9 +1,3 @@
 # Vista semanal
 
-Versión definitiva:
-- Mes y año arriba.
-- Cuadrícula debajo.
-- Palabras rápidas debajo.
-- Colores más vivos.
-- Modo Borrar por celda.
-- Tarjeta inferior que replica la celda seleccionada.
+Tarjeta inferior: muestra en grande la celda del día y hora actuales si tiene contenido.

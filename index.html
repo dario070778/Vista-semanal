@@ -7,8 +7,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Vista semanal">
 <meta name="mobile-web-app-capable" content="yes">
-<link rel="manifest" href="manifest.json?v=12">
-<link rel="icon" href="icon.svg?v=12" type="image/svg+xml">
+<link rel="manifest" href="manifest.json?v=13">
+<link rel="icon" href="icon.svg?v=13" type="image/svg+xml">
 <title>Vista semanal</title>
 <style>
 :root{
@@ -34,7 +34,7 @@ td{height:26px;font-size:12px;line-height:1.05;overflow:hidden;white-space:nowra
 .todayHead{outline:2px solid var(--red);outline-offset:-2px;color:var(--red)}
 .currentHour{outline:2px solid var(--red);outline-offset:-2px;color:var(--red)}
 .currentCell{outline:2px solid var(--red);outline-offset:-2px}
-.selectedCell{box-shadow:inset 0 0 0 2px #111}
+.selectedCell{}
 .bottom-panel{border-top:1px solid var(--grid);background:#fff;padding:5px 4px 8px}
 .wordbar{display:grid;grid-template-columns:repeat(4,1fr);gap:3px}
 .chip{min-height:25px;border:1px solid var(--grid);border-radius:7px;background:var(--chip);display:flex;align-items:center;justify-content:center;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:1px 4px;user-select:none}
@@ -86,7 +86,7 @@ input[type=color]{width:54px;height:38px;border:1px solid var(--grid);border-rad
       <button id="deleteBtn" class="danger">Vaciar</button>
       <button id="cancelBtn">Cerrar</button>
     </div>
-    <div class="hint">Toca una palabra y luego una celda. Mantén pulsada una palabra para editarla. Mantén pulsada una celda y arrastra para copiar varias horas.</div>
+    <div class="hint">Toca una palabra y luego una celda. Mantén pulsada una palabra para editarla. La tarjeta inferior muestra en grande la celda de la hora actual si tiene contenido.</div>
   </div>
 </div>
 
@@ -306,17 +306,16 @@ input[type=color]{width:54px;height:38px;border:1px solid var(--grid);border-rad
   }
 
   function renderPreview(){
-    if(!selectedCell){
-      previewCard.classList.remove("show");
-      previewCard.textContent="";
-      return;
-    }
-    const v=data[key(selectedCell.d, selectedCell.h)];
+    const d = todayIndex();
+    const h = new Date().getHours();
+    const v = data[key(d,h)];
+
     if(!v || !v.text){
       previewCard.classList.remove("show");
       previewCard.textContent="";
       return;
     }
+
     previewCard.textContent = v.text;
     previewCard.style.background = norm(v.color);
     previewCard.classList.add("show");
