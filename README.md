@@ -1,3 +1,8 @@
-# Vista semanal
+# Vista semanal 1.0 estable
 
-Tarjeta inferior: muestra en grande la celda del día y hora actuales si tiene contenido.
+- Mes y año arriba.
+- Fechas circulares correctas.
+- Dos filas de categorías.
+- Borrar por celda.
+- Tarjeta inferior con la actividad de la hora actual.
+- Datos compatibles con versiones anteriores.

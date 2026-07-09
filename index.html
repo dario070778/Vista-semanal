@@ -7,8 +7,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Vista semanal">
 <meta name="mobile-web-app-capable" content="yes">
-<link rel="manifest" href="manifest.json?v=13">
-<link rel="icon" href="icon.svg?v=13" type="image/svg+xml">
+<link rel="manifest" href="manifest.json?v=20">
+<link rel="icon" href="icon.svg?v=20" type="image/svg+xml">
 <title>Vista semanal</title>
 <style>
 :root{
@@ -16,36 +16,61 @@
   --head:#f3f3f7;
   --red:#e2465b;
   --text:#111;
-  --chip:#f7f7f9;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;padding:0;background:#fff;color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;overscroll-behavior:none}
+html,body{
+  margin:0;padding:0;background:#fff;color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
+  overscroll-behavior:none;
+}
 body{padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
 header{background:#fff;padding:5px 4px 3px;border-bottom:1px solid var(--grid)}
-.month-title{height:25px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:650}
+.month-title{height:25px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700}
 .gridwrap{width:100vw;overflow:hidden}
 table{border-collapse:collapse;width:100%;table-layout:fixed}
 th,td{border:1px solid var(--grid);text-align:center;vertical-align:middle;padding:0}
 thead th{height:25px;background:var(--head);font-size:16px;font-weight:650}
 thead th:first-child{width:39px;font-size:13px;font-weight:500;color:#777}
 tbody th{width:39px;background:var(--head);font-size:16px;font-weight:600}
-td{height:26px;font-size:12px;line-height:1.05;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;position:relative}
+td{
+  height:26px;font-size:12px;line-height:1.05;
+  overflow:hidden;white-space:nowrap;text-overflow:ellipsis;position:relative;
+}
 .daynum{font-size:12px;color:#aaa;font-weight:400;margin-left:2px}
 .todayHead{outline:2px solid var(--red);outline-offset:-2px;color:var(--red)}
 .currentHour{outline:2px solid var(--red);outline-offset:-2px;color:var(--red)}
 .currentCell{outline:2px solid var(--red);outline-offset:-2px}
-.selectedCell{}
 .bottom-panel{border-top:1px solid var(--grid);background:#fff;padding:5px 4px 8px}
 .wordbar{display:grid;grid-template-columns:repeat(4,1fr);gap:3px}
-.chip{min-height:25px;border:1px solid var(--grid);border-radius:7px;background:var(--chip);display:flex;align-items:center;justify-content:center;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:1px 4px;user-select:none}
-.chip.active{outline:2px solid var(--red);outline-offset:-2px;font-weight:650}
-.chip.deleteMode{color:#fff!important;background:#e2465b!important;border-color:#e2465b}
-.chip.danger{color:#b80016;background:#fff}
+.chip{
+  min-height:25px;border:1px solid var(--grid);border-radius:7px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  padding:1px 4px;user-select:none;font-weight:500;
+}
+.chip.active{outline:2px solid var(--red);outline-offset:-2px;font-weight:700}
+.chip.deleteMode{color:#fff!important;background:#e2465b!important;border-color:#e2465b!important}
+.previewWrap{padding:8px 4px 0}
+.previewCard{
+  display:none;align-items:center;justify-content:center;
+  margin:0 auto;width:100%;min-height:92px;
+  border:1px solid var(--grid);border-radius:14px;
+  font-size:38px;font-weight:800;
+  box-shadow:0 1px 2px rgba(0,0,0,.08);
+}
+.previewCard.show{display:flex}
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.25);display:none;align-items:flex-end;z-index:30}
 .modal.show{display:flex}
-.sheet{width:100%;background:white;border-radius:16px 16px 0 0;padding:14px 14px calc(14px + env(safe-area-inset-bottom));box-shadow:0 -8px 30px rgba(0,0,0,.18)}
+.sheet{
+  width:100%;background:white;border-radius:16px 16px 0 0;
+  padding:14px 14px calc(14px + env(safe-area-inset-bottom));
+  box-shadow:0 -8px 30px rgba(0,0,0,.18)
+}
 .sheet h2{margin:0 0 9px;font-size:18px}
-input[type=text]{width:100%;font:inherit;font-size:18px;padding:10px;border:1px solid var(--grid);border-radius:8px;margin-bottom:10px}
+input[type=text]{
+  width:100%;font:inherit;font-size:18px;padding:10px;
+  border:1px solid var(--grid);border-radius:8px;margin-bottom:10px
+}
 .colorline{display:flex;gap:10px;align-items:center;margin-bottom:10px}
 input[type=color]{width:54px;height:38px;border:1px solid var(--grid);border-radius:8px;background:white;padding:2px}
 .palette{display:grid;grid-template-columns:repeat(8,1fr);gap:6px;margin:8px 0 12px}
@@ -53,7 +78,6 @@ input[type=color]{width:54px;height:38px;border:1px solid var(--grid);border-rad
 .actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
 .actions button{font:inherit;border:1px solid var(--grid);background:#fafafa;border-radius:7px;font-size:16px;padding:9px;color:#1677d2}
 .actions button.danger{color:#b80016}
-.previewWrap{padding:8px 4px 0}.previewCard{display:none;align-items:center;justify-content:center;margin:0 auto;width:100%;min-height:90px;border:1px solid var(--grid);border-radius:14px;font-size:36px;font-weight:800;box-shadow:0 1px 2px rgba(0,0,0,.08)}.previewCard.show{display:flex}
 .hint{font-size:12px;color:#777;margin-top:8px;line-height:1.25}
 </style>
 </head>
@@ -86,7 +110,7 @@ input[type=color]{width:54px;height:38px;border:1px solid var(--grid);border-rad
       <button id="deleteBtn" class="danger">Vaciar</button>
       <button id="cancelBtn">Cerrar</button>
     </div>
-    <div class="hint">Toca una palabra y luego una celda. Mantén pulsada una palabra para editarla. La tarjeta inferior muestra en grande la celda de la hora actual si tiene contenido.</div>
+    <div class="hint">Toca una categoría y luego una celda. Mantén pulsada una categoría para editarla. Borrar activa el modo borrado por celda.</div>
   </div>
 </div>
 
@@ -95,6 +119,7 @@ input[type=color]{width:54px;height:38px;border:1px solid var(--grid);border-rad
   const DAYS = ["L","M","X","J","V","S","D"];
   const MONTHS = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
 
+  // No cambiar: claves compatibles con versiones anteriores.
   const DATA_KEYS = ["vista-semanal-data-v2","vista-semanal-simple-v4"];
   const KEY = "vista-semanal-data-v2";
   const WORDS_KEY = "vista-semanal-words-v2";
@@ -122,9 +147,12 @@ input[type=color]{width:54px;height:38px;border:1px solid var(--grid);border-rad
 
   let data = firstAvailableData();
   let words = load(WORDS_KEY, DEFAULT_WORDS);
-  if (words.length < 8) words = [...words, ...DEFAULT_WORDS.slice(words.length)];
+  if (!Array.isArray(words)) words = DEFAULT_WORDS;
+  while (words.length < 8) words.push(DEFAULT_WORDS[words.length]);
+  words = words.slice(0,8);
+  words[7] = {text:"Borrar", color:"#ffffff", action:"clear"};
+
   let selectedWord = null;
-  let selectedCell = null;
   let editTarget = null;
   let drag = false, dragValue = null, longTimer = null, suppressClick = false;
 
@@ -141,7 +169,7 @@ input[type=color]{width:54px;height:38px;border:1px solid var(--grid);border-rad
 
   function save(){ localStorage.setItem(KEY, JSON.stringify(data)); }
   function saveWords(){ localStorage.setItem(WORDS_KEY, JSON.stringify(words)); }
-  function key(d,h){ return d+"-"+h; }
+  function cellKey(d,h){ return d+"-"+h; }
   function todayIndex(){ return (new Date().getDay()+6)%7; }
   function norm(c){ return (c && c[0]==="#") ? c : "#ffffff"; }
 
@@ -153,7 +181,11 @@ input[type=color]{width:54px;height:38px;border:1px solid var(--grid);border-rad
   });
 
   function render(){
-    renderMonth(); renderHeader(); renderGrid(); renderWords(); renderPreview();
+    renderMonth();
+    renderHeader();
+    renderGrid();
+    renderWords();
+    renderCurrentPreview();
   }
 
   function renderMonth(){
@@ -168,9 +200,7 @@ input[type=color]{width:54px;height:38px;border:1px solid var(--grid);border-rad
 
     DAYS.forEach((d,i)=>{
       const th=document.createElement("th");
-
-      // Vista circular: días ya pasados pasan a la semana siguiente.
-      // El cálculo usa Date real, por lo que respeta cambios de mes y años bisiestos.
+      // Vista circular: los días pasados pasan a la semana siguiente.
       const offset = (i - t + 7) % 7;
       const date = new Date(now.getFullYear(), now.getMonth(), now.getDate());
       date.setDate(date.getDate() + offset);
@@ -181,16 +211,46 @@ input[type=color]{width:54px;height:38px;border:1px solid var(--grid);border-rad
     });
   }
 
+  function renderGrid(){
+    grid.innerHTML="";
+    const now = new Date();
+    const t = todayIndex();
+    const hr = now.getHours();
+
+    for(let h=0; h<24; h++){
+      const tr=document.createElement("tr");
+      const th=document.createElement("th");
+      th.textContent=h;
+      if(h===hr) th.classList.add("currentHour");
+      tr.appendChild(th);
+
+      for(let d=0; d<7; d++){
+        const td=document.createElement("td");
+        td.dataset.d=d; td.dataset.h=h;
+        const v=data[cellKey(d,h)] || {text:"", color:"#ffffff"};
+        td.textContent=v.text || "";
+        td.style.background=norm(v.color);
+        if(d===t && h===hr) td.classList.add("currentCell");
+        bindCell(td);
+        tr.appendChild(td);
+      }
+      grid.appendChild(tr);
+    }
+  }
+
   function renderWords(){
     wordbar.innerHTML="";
     words.forEach((w,i)=>{
       const div=document.createElement("div");
-      div.className="chip"+(selectedWord===i?" active":"")+(w.action==="clear" && selectedWord===i?" deleteMode":"");
-      div.textContent=w.text || "+";
-      div.style.background = w.color || "#f7f7f9";
+      const isClear = w.action === "clear";
+      div.className = "chip" + (selectedWord===i ? " active" : "") + (isClear && selectedWord===i ? " deleteMode" : "");
+      div.textContent = w.text || "+";
+      div.style.background = isClear ? "#fff" : norm(w.color);
+      div.style.color = isClear ? "#b80016" : "#111";
+
       div.onclick=()=>{
         if(suppressClick){suppressClick=false;return}
-        if(w.action==="clear"){
+        if(isClear){
           selectedWord = selectedWord===i ? null : i;
           renderWords();
           return;
@@ -199,61 +259,41 @@ input[type=color]{width:54px;height:38px;border:1px solid var(--grid);border-rad
         selectedWord = selectedWord===i ? null : i;
         renderWords();
       };
+
       let t;
-      const start=()=>{clearTimeout(t);t=setTimeout(()=>{suppressClick=true;openWord(i)},520)};
+      const start=()=>{clearTimeout(t); if(!isClear) t=setTimeout(()=>{suppressClick=true;openWord(i)},520)};
       const end=()=>clearTimeout(t);
       div.addEventListener("touchstart",start,{passive:true});
       div.addEventListener("touchend",end,{passive:true});
       div.addEventListener("mousedown",start);
       div.addEventListener("mouseup",end);
+
       wordbar.appendChild(div);
     });
-  }
-
-  function renderGrid(){
-    grid.innerHTML="";
-    const now=new Date(), t=todayIndex(), hr=now.getHours();
-    for(let h=0;h<24;h++){
-      const tr=document.createElement("tr");
-      const th=document.createElement("th");
-      th.textContent=h;
-      if(h===hr) th.classList.add("currentHour");
-      tr.appendChild(th);
-      for(let d=0;d<7;d++){
-        const td=document.createElement("td");
-        td.dataset.d=d; td.dataset.h=h;
-        const v=data[key(d,h)] || {text:"",color:"#ffffff"};
-        td.textContent=v.text || "";
-        td.style.background=norm(v.color);
-        if(d===t && h===hr) td.classList.add("currentCell");
-        if(selectedCell && selectedCell.d===d && selectedCell.h===h) td.classList.add("selectedCell");
-        bindCell(td);
-        tr.appendChild(td);
-      }
-      grid.appendChild(tr);
-    }
   }
 
   function bindCell(td){
     td.onclick=()=>{
       if(suppressClick){suppressClick=false;return}
       const d=+td.dataset.d,h=+td.dataset.h;
+
       if(selectedWord!==null && words[selectedWord]?.action==="clear"){
         setCell(d,h,"","#ffffff");
-        selectedCell = {d,h};
-        renderGrid(); renderPreview();
+        renderGrid();
+        renderCurrentPreview();
         return;
       }
+
       if(selectedWord!==null && words[selectedWord]?.text){
         setCell(d,h,words[selectedWord].text,words[selectedWord].color);
-        selectedCell = {d,h};
-        renderGrid(); renderPreview();
-      }else{
-        selectedCell = {d,h};
-        renderGrid(); renderPreview();
-        openCell(d,h);
+        renderGrid();
+        renderCurrentPreview();
+        return;
       }
+
+      openCell(d,h);
     };
+
     td.addEventListener("touchstart", startDrag, {passive:false});
     td.addEventListener("touchmove", moveDrag, {passive:false});
     td.addEventListener("touchend", endDrag, {passive:false});
@@ -268,13 +308,21 @@ input[type=color]{width:54px;height:38px;border:1px solid var(--grid);border-rad
     longTimer=setTimeout(()=>{
       suppressClick=true; drag=true;
       const d=+td.dataset.d,h=+td.dataset.h;
-      if(selectedWord!==null && words[selectedWord]?.action==="clear") dragValue = {text:"", color:"#ffffff"};
-      else dragValue = data[key(d,h)] || (selectedWord!==null ? words[selectedWord] : {text:"",color:"#ffffff"});
-      dragValue = {text:dragValue.text||"", color:norm(dragValue.color)};
+
+      if(selectedWord!==null && words[selectedWord]?.action==="clear"){
+        dragValue = {text:"", color:"#ffffff"};
+      }else if(selectedWord!==null && words[selectedWord]?.text){
+        dragValue = {text:words[selectedWord].text, color:norm(words[selectedWord].color)};
+      }else{
+        const v = data[cellKey(d,h)] || {text:"", color:"#ffffff"};
+        dragValue = {text:v.text||"", color:norm(v.color)};
+      }
+
       applyDrag(td);
       if(navigator.vibrate) navigator.vibrate(25);
     },360);
   }
+
   function cellFromTouch(e){
     const t=e.touches?.[0]; if(!t) return null;
     return document.elementFromPoint(t.clientX,t.clientY)?.closest("td");
@@ -288,31 +336,32 @@ input[type=color]{width:54px;height:38px;border:1px solid var(--grid);border-rad
   function moveDragMouse(e){ if(drag) applyDrag(e.currentTarget); }
   function endDrag(){
     clearTimeout(longTimer);
-    if(drag){drag=false;dragValue=null;save();renderGrid();renderPreview();}
+    if(drag){drag=false;dragValue=null;save();renderGrid();renderCurrentPreview();}
   }
+
   function applyDrag(td){
     const d=+td.dataset.d,h=+td.dataset.h;
-    selectedCell = {d,h};
-    if(dragValue.text) data[key(d,h)]={...dragValue};
-    else delete data[key(d,h)];
+    if(dragValue.text) data[cellKey(d,h)]={...dragValue};
+    else delete data[cellKey(d,h)];
     td.textContent=dragValue.text || "";
     td.style.background=norm(dragValue.color);
   }
 
   function setCell(d,h,text,color){
-    if(text) data[key(d,h)]={text, color:norm(color)};
-    else delete data[key(d,h)];
+    if(text) data[cellKey(d,h)]={text, color:norm(color)};
+    else delete data[cellKey(d,h)];
     save();
   }
 
-  function renderPreview(){
+  function renderCurrentPreview(){
     const d = todayIndex();
     const h = new Date().getHours();
-    const v = data[key(d,h)];
+    const v = data[cellKey(d,h)];
 
     if(!v || !v.text){
       previewCard.classList.remove("show");
       previewCard.textContent="";
+      previewCard.style.background="#fff";
       return;
     }
 
@@ -323,7 +372,7 @@ input[type=color]{width:54px;height:38px;border:1px solid var(--grid);border-rad
 
   function openCell(d,h){
     editTarget={type:"cell",d,h};
-    const v=data[key(d,h)] || {text:"",color:"#ffffff"};
+    const v=data[cellKey(d,h)] || {text:"",color:"#ffffff"};
     modalTitle.textContent = DAYS[d]+" "+h+":00";
     textInput.value=v.text||"";
     colorInput.value=norm(v.color);
@@ -335,7 +384,7 @@ input[type=color]{width:54px;height:38px;border:1px solid var(--grid);border-rad
     editTarget={type:"word",i};
     const w=words[i] || {text:"",color:"#ffffff"};
     modalTitle.textContent="Palabra rápida";
-    textInput.value=w.action==="clear" ? "Borrar" : (w.text||"");
+    textInput.value=w.text||"";
     colorInput.value=norm(w.color);
     modal.classList.add("show");
     setTimeout(()=>textInput.focus(),50);
@@ -344,24 +393,33 @@ input[type=color]{width:54px;height:38px;border:1px solid var(--grid);border-rad
   document.getElementById("saveBtn").onclick=()=>{
     const text=textInput.value.trim();
     const color=norm(colorInput.value);
-    if(editTarget?.type==="cell") { setCell(editTarget.d,editTarget.h,text,color); selectedCell = {d:editTarget.d,h:editTarget.h}; }
+
+    if(editTarget?.type==="cell") setCell(editTarget.d,editTarget.h,text,color);
     if(editTarget?.type==="word"){
-      const oldAction = words[editTarget.i]?.action;
       words[editTarget.i]={text,color};
-      if(oldAction==="clear" && text.toLowerCase()==="borrar") words[editTarget.i].action="clear";
       saveWords();
     }
-    modal.classList.remove("show"); render();
+
+    modal.classList.remove("show");
+    render();
   };
+
   document.getElementById("deleteBtn").onclick=()=>{
-    if(editTarget?.type==="cell") { setCell(editTarget.d,editTarget.h,"","#ffffff"); selectedCell = {d:editTarget.d,h:editTarget.h}; }
-    if(editTarget?.type==="word"){words[editTarget.i]={text:"",color:"#ffffff"};saveWords();}
-    modal.classList.remove("show"); render();
+    if(editTarget?.type==="cell") setCell(editTarget.d,editTarget.h,"","#ffffff");
+    if(editTarget?.type==="word"){
+      words[editTarget.i]={text:"",color:"#ffffff"};
+      saveWords();
+    }
+
+    modal.classList.remove("show");
+    render();
   };
+
   document.getElementById("cancelBtn").onclick=()=>modal.classList.remove("show");
   modal.onclick=e=>{ if(e.target===modal) modal.classList.remove("show") };
 
   save();
+  saveWords();
   render();
   setInterval(render,60000);
 })();
