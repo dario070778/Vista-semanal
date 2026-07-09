@@ -1,7 +1,6 @@
-# Vista semanal 1.2
+# Vista semanal 1.3
 
-Mejoras:
-- Color de letra configurable para categorías y celdas.
-- La tarjeta inferior respeta fondo y color de letra.
-- Las horas pasadas del día actual se muestran vacías.
-- Borrar sigue siendo modo por celda.
+- Deshacer última acción.
+- Celda importante con borde dorado.
+- Tarjeta inferior con borde dorado si la actividad actual es importante.
+- Color de fondo y letra configurable.

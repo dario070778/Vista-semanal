@@ -1,11 +1,1 @@
-{
-  "name": "Vista semanal",
-  "short_name": "Vista semanal",
-  "start_url": "./",
-  "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#0b0b0f",
-  "icons": [
-    {"src": "icon.svg?v=40", "sizes": "any", "type": "image/svg+xml"}
-  ]
-}
+{"name":"Vista semanal","short_name":"Vista semanal","start_url":"./","display":"standalone","background_color":"#ffffff","theme_color":"#0b0b0f","icons":[{"src":"icon.svg?v=60","sizes":"any","type":"image/svg+xml"}]}
