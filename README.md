@@ -1,6 +1,6 @@
-# Vista semanal 3.8
+# Vista semanal 4.0
 
-- La edición manual permite elegir hora de inicio y hora final en intervalos de 15 minutos.
-- El relleno de la casilla respeta tanto el inicio como el final (:00, :15, :30, :45).
-- Los registros manuales pueden abarcar varias horas, igual que los planificados.
-- Mantiene el resto de funciones y diseño de la versión 3.7.
+- Corrige la repetición semanal en varios días seleccionados.
+- “Cada semana” conserva L/M/X/J/V/S/D elegidos y no los reduce al día de la fecha.
+- Al cambiar los días de una serie repetitiva, la edición pasa automáticamente a “Toda la serie”.
+- Mantiene el texto repetido en cada celda ocupada y el resto de funciones de la 3.9.
