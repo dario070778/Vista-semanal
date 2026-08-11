@@ -7,8 +7,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Vista semanal">
 <meta name="mobile-web-app-capable" content="yes">
-<link rel="manifest" href="manifest.json?v=60">
-<link rel="icon" href="icon.svg?v=60" type="image/svg+xml">
+<link rel="manifest" href="manifest.json?v=250">
+<link rel="icon" href="icon.svg?v=250" type="image/svg+xml">
 <title>Vista semanal</title>
 <style>
 :root{--grid:#c8c8ce;--head:#f3f3f7;--red:#e2465b;--gold:#d4af37;--text:#111}
@@ -27,15 +27,18 @@ td{height:26px;font-size:12px;line-height:1.05;overflow:hidden;white-space:nowra
 .daynum{font-size:12px;color:#aaa;font-weight:400;margin-left:2px}
 .todayHead{outline:2px solid var(--red);outline-offset:-2px;color:var(--red)}
 .currentHour{outline:2px solid var(--red);outline-offset:-2px;color:var(--red)}
-.currentCell{outline:2px solid var(--red);outline-offset:-2px}
-.importantCell{box-shadow:inset 0 0 0 3px var(--gold)!important}
+.currentCell{outline:2px solid var(--red);outline-offset:-2px;z-index:2}
 .pastCell{background:#fff!important;color:transparent!important;text-shadow:none!important}
+/* Un único marco dorado continuo para todo el evento, no una caja por hora */
+td.importantRange::after{content:"";position:absolute;inset:-1px;z-index:3;pointer-events:none;border-left:3px solid var(--gold);border-right:3px solid var(--gold)}
+td.importantStart::after{border-top:3px solid var(--gold)}
+td.importantEnd::after{border-bottom:3px solid var(--gold)}
 .bottom-panel{border-top:1px solid var(--grid);background:#fff;padding:5px 4px 8px}
 .wordbar{display:grid;grid-template-columns:repeat(4,1fr);gap:3px}
 .chip,.toolbtn{min-height:25px;border:1px solid var(--grid);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:1px 4px;user-select:none;font-weight:500;background:#fff}
 .chip.active{outline:2px solid var(--red);outline-offset:-2px;font-weight:700}
 .chip.deleteMode{color:#fff!important;background:#e2465b!important;border-color:#e2465b!important}
-.toolrow{display:grid;grid-template-columns:1fr 1fr;gap:3px;margin-top:4px}
+.toolrow{display:grid;grid-template-columns:1fr 1fr 1fr;gap:3px;margin-top:4px}
 .toolbtn:disabled{opacity:.35}
 .toolbtn.importantActive{border-color:var(--gold);box-shadow:inset 0 0 0 2px var(--gold)}
 .previewWrap{padding:8px 4px 0}
@@ -44,18 +47,31 @@ td{height:26px;font-size:12px;line-height:1.05;overflow:hidden;white-space:nowra
 .previewCard.importantPreview{border:3px solid var(--gold)}
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.25);display:none;align-items:flex-end;z-index:30}
 .modal.show{display:flex}
-.sheet{width:100%;background:white;border-radius:16px 16px 0 0;padding:14px 14px calc(14px + env(safe-area-inset-bottom));box-shadow:0 -8px 30px rgba(0,0,0,.18)}
+.sheet{width:100%;max-height:88vh;overflow:auto;background:white;border-radius:16px 16px 0 0;padding:14px 14px calc(14px + env(safe-area-inset-bottom));box-shadow:0 -8px 30px rgba(0,0,0,.18)}
 .sheet h2{margin:0 0 9px;font-size:18px}
-input[type=text]{width:100%;font:inherit;font-size:18px;padding:10px;border:1px solid var(--grid);border-radius:8px;margin-bottom:10px}
-.colorline{display:flex;gap:10px;align-items:center;margin-bottom:10px}
+input[type=text],input[type=date],input[type=number],select{width:100%;font:inherit;font-size:16px;padding:9px;border:1px solid var(--grid);border-radius:8px;background:#fff}
+#textInput{font-size:18px;margin-bottom:10px}
+.colorline{display:flex;gap:8px;align-items:center;margin-bottom:10px}
 input[type=color]{width:54px;height:38px;border:1px solid var(--grid);border-radius:8px;background:white;padding:2px}
 .miniLabel{font-size:13px;color:#777}
 .palette{display:grid;grid-template-columns:repeat(8,1fr);gap:6px;margin:8px 0 12px}
 .sw{height:34px;border:1px solid var(--grid);border-radius:8px;background:white}
 .actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
-.actions button{font:inherit;border:1px solid var(--grid);background:#fafafa;border-radius:7px;font-size:16px;padding:9px;color:#1677d2}
-.actions button.danger{color:#b80016}
+.actions button,.widebtn{font:inherit;border:1px solid var(--grid);background:#fafafa;border-radius:7px;font-size:16px;padding:9px;color:#1677d2}
+.actions button.danger,.widebtn.danger{color:#b80016}
 .hint{font-size:12px;color:#777;margin-top:8px;line-height:1.25}
+.eventGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}
+.field label{display:block;font-size:12px;color:#777;margin:0 0 3px 2px}
+.repeatBox{margin:8px 0;padding:8px;border:1px solid var(--grid);border-radius:9px}
+.weekdays{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:7px}
+.daytoggle{border:1px solid var(--grid);border-radius:6px;background:#fff;padding:7px 0;font:inherit;font-size:13px}
+.daytoggle.on{background:#111;color:#fff;border-color:#111}
+.scopeRow{display:none;grid-template-columns:1fr 1fr 1fr;gap:5px;margin:8px 0}
+.scopeRow.show{display:grid}
+.scopeBtn{border:1px solid var(--grid);border-radius:7px;background:#fff;padding:8px 3px;font:inherit;font-size:13px}
+.scopeBtn.on{outline:2px solid #1677d2;outline-offset:-2px}
+.checkline{display:flex;align-items:center;gap:8px;margin:8px 0;font-size:14px}
+.smallnote{font-size:12px;color:#777;margin-top:3px}
 </style>
 </head>
 <body>
@@ -63,9 +79,10 @@ input[type=color]{width:54px;height:38px;border:1px solid var(--grid);border-rad
 <div class="gridwrap"><table><thead><tr id="dayRow"><th>Notas</th></tr></thead><tbody id="grid"></tbody></table></div>
 <div class="bottom-panel">
   <div class="wordbar" id="wordbar"></div>
-  <div class="toolrow"><button id="undoBtn" class="toolbtn" type="button" disabled>Deshacer</button><button id="importantBtn" class="toolbtn" type="button">Importante</button></div>
+  <div class="toolrow"><button id="undoBtn" class="toolbtn" type="button" disabled>Deshacer</button><button id="importantBtn" class="toolbtn" type="button">Importante</button><button id="planBtn" class="toolbtn" type="button">Planificar</button></div>
   <div class="previewWrap"><div class="previewCard" id="previewCard"></div></div>
 </div>
+
 <div class="modal" id="modal"><div class="sheet">
   <h2 id="modalTitle">Editar</h2>
   <input id="textInput" type="text" autocomplete="off">
@@ -75,73 +92,149 @@ input[type=color]{width:54px;height:38px;border:1px solid var(--grid);border-rad
   </div>
   <div class="palette" id="palette"></div>
   <div class="actions"><button id="saveBtn">Guardar</button><button id="deleteBtn" class="danger">Vaciar</button><button id="cancelBtn">Cerrar</button></div>
-  <div class="hint">Toca una categoría y luego una celda. Borrar activa el modo borrado. Importante añade o quita borde dorado a la celda seleccionada.</div>
+  <div class="hint">Toca una palabra rápida y después una celda. Mantén pulsada una palabra para editarla.</div>
 </div></div>
+
+<div class="modal" id="eventModal"><div class="sheet">
+  <h2 id="eventTitle">Planificar evento</h2>
+  <div class="field"><label>Texto</label><input id="eventText" type="text" autocomplete="off"></div>
+  <div class="eventGrid">
+    <div class="field"><label>Fecha</label><input id="eventDate" type="date"></div>
+    <div class="field"><label>Repetición</label><select id="eventRepeat"><option value="none">No repetir</option><option value="weekdays">Lunes a viernes</option><option value="daily">Cada día</option><option value="weekly">Cada semana</option><option value="custom">Días concretos</option></select></div>
+    <div class="field"><label>Desde</label><select id="eventStart"></select></div>
+    <div class="field"><label>Hasta</label><select id="eventEnd"></select></div>
+  </div>
+  <div class="repeatBox" id="repeatBox" style="display:none">
+    <div class="miniLabel">Días de la semana</div><div class="weekdays" id="weekdayPicker"></div>
+    <div class="eventGrid" style="margin-bottom:0"><div class="field"><label>Final de la repetición (opcional)</label><input id="eventUntil" type="date"></div><div></div></div>
+  </div>
+  <div class="colorline">
+    <input id="eventColor" type="color" value="#4A90E2"><span class="miniLabel">Fondo</span>
+    <input id="eventTextColor" type="color" value="#111111"><span class="miniLabel">Letra</span>
+  </div>
+  <label class="checkline"><input id="eventImportant" type="checkbox"> Destacar todo el evento con marco dorado</label>
+  <div id="scopeRow" class="scopeRow"><button class="scopeBtn on" data-scope="day">Solo este día</button><button class="scopeBtn" data-scope="from">Desde este día</button><button class="scopeBtn" data-scope="series">Toda la serie</button></div>
+  <div class="actions"><button id="eventSave">Guardar</button><button id="eventDelete" class="danger">Eliminar</button><button id="eventCancel">Cerrar</button></div>
+  <div class="hint" id="eventHint">Los eventos futuros aparecerán automáticamente cuando llegue su semana. Los repetitivos pueden modificarse solo para un día, desde una fecha concreta o para toda la serie.</div>
+</div></div>
+
 <script>
 (() => {
 const DAYS=["L","M","X","J","V","S","D"];
 const MONTHS=["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
-const DATA_KEYS=["vista-semanal-data-v2","vista-semanal-simple-v4"];
-const KEY="vista-semanal-data-v2";
-const WORDS_KEY="vista-semanal-words-v2";
-const IMPORTANT_KEY="vista-semanal-important-v1";
+const STATE_KEY="vista-semanal-state-v3";
+const WORDS_KEY="vista-semanal-words"; // clave estable: no cambia entre versiones
+const LEGACY_WORD_KEYS=["vista-semanal-words-v2","vista-semanal-words-v1"];
+const LEGACY_DATA_KEYS=["vista-semanal-data-v2","vista-semanal-simple-v4"];
+const LEGACY_IMPORTANT_KEYS=["vista-semanal-important-v1"];
+const MIGRATION_KEY="vista-semanal-migrated-v3";
 const DEFAULT_WORDS=[
-{text:"Casa",color:"#4A90E2",textColor:"#111111"},
-{text:"Oficina",color:"#FFD54A",textColor:"#111111"},
+{text:"Casa",color:"#13bde8",textColor:"#111111"},
+{text:"Gym",color:"#63D471",textColor:"#111111"},
 {text:"Gym",color:"#63D471",textColor:"#111111"},
 {text:"Cardio",color:"#FF9F43",textColor:"#111111"},
-{text:"Compra",color:"#B57BFF",textColor:"#111111"},
-{text:"Médico",color:"#FF6B6B",textColor:"#111111"},
+{text:"Oficina",color:"#0b5ed7",textColor:"#111111"},
+{text:"Cardio",color:"#FF9F43",textColor:"#111111"},
 {text:"Libre",color:"#D9D9D9",textColor:"#111111"},
 {text:"Borrar",color:"#ffffff",textColor:"#b80016",action:"clear"}
 ];
-const PALETTE=["#ffffff","#FF6B6B","#FF9F43","#FFD54A","#63D471","#4A90E2","#B57BFF","#D9D9D9"];
-function load(k,fb){try{return JSON.parse(localStorage.getItem(k))??fb}catch{return fb}}
-function firstData(){for(const k of DATA_KEYS){const v=load(k,null);if(v&&Object.keys(v).length)return v}return{}}
-let data=firstData();
-let words=load(WORDS_KEY,DEFAULT_WORDS);
-if(!Array.isArray(words))words=DEFAULT_WORDS.slice();
-const migrated=[];
-for(let i=0;i<8;i++){const w=words[i];if(i===7)migrated[i]={text:"Borrar",color:"#ffffff",textColor:"#b80016",action:"clear"};else if(w&&w.text)migrated[i]={text:w.text,color:w.color||DEFAULT_WORDS[i].color,textColor:w.textColor||DEFAULT_WORDS[i].textColor};else migrated[i]={...DEFAULT_WORDS[i]};}
-words=migrated;
-let important=load(IMPORTANT_KEY,{});
+const PALETTE=["#ffffff","#FF6B6B","#FF9F43","#FFD54A","#63D471","#13bde8","#0b5ed7","#B57BFF","#D9D9D9"];
+function load(k,fb){try{const x=localStorage.getItem(k);return x===null?fb:JSON.parse(x)}catch{return fb}}
+function clone(x){return JSON.parse(JSON.stringify(x))}
+function pad(n){return String(n).padStart(2,"0")}
+function isoDate(d){return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`}
+function parseISO(s){const [y,m,d]=s.split("-").map(Number);return new Date(y,m-1,d)}
+function addDays(s,n){const d=parseISO(s);d.setDate(d.getDate()+n);return isoDate(d)}
+function mondayOf(d=new Date()){const x=new Date(d.getFullYear(),d.getMonth(),d.getDate());const idx=(x.getDay()+6)%7;x.setDate(x.getDate()-idx);return x}
+function weekDates(){const m=mondayOf();return Array.from({length:7},(_,i)=>{const d=new Date(m);d.setDate(m.getDate()+i);return isoDate(d)})}
+function dayIndexFromISO(s){return (parseISO(s).getDay()+6)%7}
+function norm(c){return(c&&c[0]==="#")?c:"#ffffff"}
+function uid(){return `e${Date.now().toString(36)}${Math.random().toString(36).slice(2,7)}`}
+
+let state=load(STATE_KEY,{cells:{},events:[]});
+if(!state||typeof state!=="object")state={cells:{},events:[]};
+if(!state.cells)state.cells={};if(!Array.isArray(state.events))state.events=[];
+let words=load(WORDS_KEY,null);
+if(!Array.isArray(words)){for(const k of LEGACY_WORD_KEYS){const w=load(k,null);if(Array.isArray(w)){words=w;break}}}
+if(!Array.isArray(words))words=clone(DEFAULT_WORDS);
+const fixed=[];for(let i=0;i<8;i++){const w=words[i];if(i===7)fixed[i]={text:"Borrar",color:"#ffffff",textColor:"#b80016",action:"clear"};else if(w&&w.text!==undefined)fixed[i]={text:w.text,color:w.color||DEFAULT_WORDS[i].color,textColor:w.textColor||DEFAULT_WORDS[i].textColor};else fixed[i]=clone(DEFAULT_WORDS[i]);}words=fixed;
+
+function saveState(){localStorage.setItem(STATE_KEY,JSON.stringify(state))}
+function saveWords(){localStorage.setItem(WORDS_KEY,JSON.stringify(words))}
+function migrateLegacy(){if(load(MIGRATION_KEY,false))return;const dates=weekDates();let legacy=null;for(const k of LEGACY_DATA_KEYS){const x=load(k,null);if(x&&Object.keys(x).length){legacy=x;break}}let imp={};for(const k of LEGACY_IMPORTANT_KEYS){const x=load(k,null);if(x&&Object.keys(x).length){imp=x;break}}
+if(legacy){for(const [k,v] of Object.entries(legacy)){const m=k.match(/^(\d)-(\d{1,2})$/);if(!m||!v?.text)continue;const d=+m[1],h=+m[2];const date=dates[d];state.cells[`${date}-${pad(h)}`]={text:v.text,color:norm(v.color),textColor:v.textColor||"#111111",important:!!imp[k]};}}
+localStorage.setItem(MIGRATION_KEY,"true");saveState();saveWords()}
+migrateLegacy();
+
 let undoStack=[];
 let selectedWord=null,selectedCell=null,editTarget=null,drag=false,dragValue=null,longTimer=null,suppressClick=false;
-const monthTitle=document.getElementById("monthTitle"),dayRow=document.getElementById("dayRow"),grid=document.getElementById("grid"),wordbar=document.getElementById("wordbar"),modal=document.getElementById("modal"),textInput=document.getElementById("textInput"),colorInput=document.getElementById("colorInput"),textColorInput=document.getElementById("textColorInput"),modalTitle=document.getElementById("modalTitle"),palette=document.getElementById("palette"),previewCard=document.getElementById("previewCard"),undoBtn=document.getElementById("undoBtn"),importantBtn=document.getElementById("importantBtn");
-function save(){localStorage.setItem(KEY,JSON.stringify(data))}
-function saveWords(){localStorage.setItem(WORDS_KEY,JSON.stringify(words))}
-function saveImportant(){localStorage.setItem(IMPORTANT_KEY,JSON.stringify(important))}
-function snap(){undoStack=[{data:JSON.stringify(data),words:JSON.stringify(words),important:JSON.stringify(important)}];undoBtn.disabled=false}
-function undo(){if(!undoStack.length)return;const s=undoStack.pop();data=JSON.parse(s.data);words=JSON.parse(s.words);important=JSON.parse(s.important);save();saveWords();saveImportant();undoBtn.disabled=true;render()}
-function cellKey(d,h){return d+"-"+h}
-function todayIndex(){return(new Date().getDay()+6)%7}
-function norm(c){return(c&&c[0]==="#")?c:"#ffffff"}
+let eventEdit={mode:"new",eventId:null,date:null,scope:"day"};
+const monthTitle=document.getElementById("monthTitle"),dayRow=document.getElementById("dayRow"),grid=document.getElementById("grid"),wordbar=document.getElementById("wordbar"),modal=document.getElementById("modal"),textInput=document.getElementById("textInput"),colorInput=document.getElementById("colorInput"),textColorInput=document.getElementById("textColorInput"),modalTitle=document.getElementById("modalTitle"),palette=document.getElementById("palette"),previewCard=document.getElementById("previewCard"),undoBtn=document.getElementById("undoBtn"),importantBtn=document.getElementById("importantBtn"),planBtn=document.getElementById("planBtn");
+const eventModal=document.getElementById("eventModal"),eventTitle=document.getElementById("eventTitle"),eventText=document.getElementById("eventText"),eventDate=document.getElementById("eventDate"),eventRepeat=document.getElementById("eventRepeat"),eventStart=document.getElementById("eventStart"),eventEnd=document.getElementById("eventEnd"),eventUntil=document.getElementById("eventUntil"),eventColor=document.getElementById("eventColor"),eventTextColor=document.getElementById("eventTextColor"),eventImportant=document.getElementById("eventImportant"),repeatBox=document.getElementById("repeatBox"),weekdayPicker=document.getElementById("weekdayPicker"),scopeRow=document.getElementById("scopeRow");
+
+function snap(){undoStack=[{state:JSON.stringify(state),words:JSON.stringify(words)}];undoBtn.disabled=false}
+function undo(){if(!undoStack.length)return;const s=undoStack.pop();state=JSON.parse(s.state);words=JSON.parse(s.words);saveState();saveWords();undoBtn.disabled=true;render()}
+function cellKey(date,h){return `${date}-${pad(h)}`}
+function isPast(date,h){const now=new Date();const d=parseISO(date);const today=new Date(now.getFullYear(),now.getMonth(),now.getDate());if(d<today)return true;if(d>today)return false;return h<now.getHours()}
+function cleanupPast(){const now=new Date(),today=isoDate(now),hr=now.getHours();let changed=false;for(const k of Object.keys(state.cells)){const m=k.match(/^(\d{4}-\d{2}-\d{2})-(\d{2})$/);if(!m)continue;const date=m[1],h=+m[2];if(date<today||(date===today&&h<hr)){delete state.cells[k];changed=true}}
+state.events=state.events.filter(e=>{if(e.repeat&&e.repeat!=="none")return true;const end=e.endHour??((e.startHour||0)+1);const past=e.date<today||(e.date===today&&end<=hr);if(past)changed=true;return !past});if(changed)saveState()}
+function eventMatches(e,date,h){if(!e||e.disabled)return false;let spec=e;if(e.repeat&&e.repeat!=="none"){
+ if(date<e.startDate)return false;if(e.until&&date>e.until)return false;
+ const ex=e.exceptions?.[date];if(ex?.cancelled)return false;if(ex)spec={...e,...ex};
+ const dow=dayIndexFromISO(date),startDow=dayIndexFromISO(e.startDate);
+ if(e.repeat==="daily"){} else if(e.repeat==="weekdays"&&dow>4)return false; else if(e.repeat==="weekly"&&dow!==startDow)return false; else if(e.repeat==="custom"&&!e.days?.includes(dow))return false;
+ }else{if(e.date!==date)return false}
+ return h>=spec.startHour&&h<spec.endHour;
+}
+function resolved(date,h){const manual=state.cells[cellKey(date,h)];if(manual)return {...manual,source:"cell",sourceId:cellKey(date,h),startHour:h,endHour:h+1};for(let i=state.events.length-1;i>=0;i--){const e=state.events[i];if(eventMatches(e,date,h)){const ex=e.exceptions?.[date];const spec=ex&&!ex.cancelled?{...e,...ex}:e;return {text:spec.text,color:spec.color,textColor:spec.textColor,important:!!spec.important,source:"event",sourceId:e.id,startHour:spec.startHour,endHour:spec.endHour,repeat:e.repeat||"none"}}}return null}
+function sameImportantRange(a,b){return !!a&&!!b&&a.important&&b.important&&a.source==="event"&&b.source==="event"&&a.sourceId===b.sourceId}
+
 PALETTE.forEach(c=>{const b=document.createElement("button");b.className="sw";b.type="button";b.style.background=c;b.onclick=()=>colorInput.value=c;palette.appendChild(b)});
-function render(){renderMonth();renderHeader();renderGrid();renderWords();renderCurrentPreview();renderTools()}
+for(let h=0;h<24;h++){const a=document.createElement("option");a.value=h;a.textContent=`${h}:00`;eventStart.appendChild(a);const b=document.createElement("option");b.value=h+1;b.textContent=`${h+1}:00`;eventEnd.appendChild(b)}
+DAYS.forEach((d,i)=>{const b=document.createElement("button");b.type="button";b.className="daytoggle";b.textContent=d;b.dataset.day=i;b.onclick=()=>b.classList.toggle("on");weekdayPicker.appendChild(b)});
+
+function render(){cleanupPast();renderMonth();renderHeader();renderGrid();renderWords();renderCurrentPreview();renderTools()}
 function renderMonth(){const n=new Date();monthTitle.textContent=MONTHS[n.getMonth()]+" "+n.getFullYear()}
-function renderHeader(){dayRow.innerHTML="<th>Notas</th>";const n=new Date(),t=todayIndex();DAYS.forEach((d,i)=>{const th=document.createElement("th");const off=(i-t+7)%7;const date=new Date(n.getFullYear(),n.getMonth(),n.getDate());date.setDate(date.getDate()+off);th.innerHTML=d+"<span class='daynum'>"+date.getDate()+"</span>";if(i===t)th.classList.add("todayHead");dayRow.appendChild(th)})}
-function renderGrid(){grid.innerHTML="";const n=new Date(),t=todayIndex(),hr=n.getHours();for(let h=0;h<24;h++){const tr=document.createElement("tr");const th=document.createElement("th");th.textContent=h;if(h===hr)th.classList.add("currentHour");tr.appendChild(th);for(let d=0;d<7;d++){const td=document.createElement("td");td.dataset.d=d;td.dataset.h=h;const v=data[cellKey(d,h)]||{text:"",color:"#ffffff",textColor:"#111111"};td.textContent=v.text||"";td.style.background=norm(v.color);td.style.color=v.textColor||"#111111";if(d===t&&h===hr)td.classList.add("currentCell");if(important[cellKey(d,h)])td.classList.add("importantCell");if(d===t&&h<hr){td.textContent="";td.classList.add("pastCell")}bindCell(td);tr.appendChild(td)}grid.appendChild(tr)}}
-function renderWords(){wordbar.innerHTML="";words.forEach((w,i)=>{const isClear=w.action==="clear";const div=document.createElement("div");div.className="chip"+(selectedWord===i?" active":"")+(isClear&&selectedWord===i?" deleteMode":"");div.textContent=w.text||"+";div.style.background=isClear?"#fff":norm(w.color);div.style.color=isClear?"#b80016":(w.textColor||"#111111");div.onclick=()=>{if(suppressClick){suppressClick=false;return}if(isClear){selectedWord=selectedWord===i?null:i;renderWords();return}if(!w.text){openWord(i);return}selectedWord=selectedWord===i?null:i;renderWords()};let timer;const start=()=>{clearTimeout(timer);if(!isClear)timer=setTimeout(()=>{suppressClick=true;openWord(i)},520)};const end=()=>clearTimeout(timer);div.addEventListener("touchstart",start,{passive:true});div.addEventListener("touchend",end,{passive:true});div.addEventListener("mousedown",start);div.addEventListener("mouseup",end);wordbar.appendChild(div)})}
-function bindCell(td){td.onclick=()=>{if(suppressClick){suppressClick=false;return}const d=+td.dataset.d,h=+td.dataset.h;selectedCell={d,h};if(selectedWord!==null&&words[selectedWord]?.action==="clear"){snap();setCell(d,h,"","#ffffff","#111111");delete important[cellKey(d,h)];saveImportant();render();return}if(selectedWord!==null&&words[selectedWord]?.text){snap();setCell(d,h,words[selectedWord].text,words[selectedWord].color,words[selectedWord].textColor);render();return}openCell(d,h)};td.addEventListener("touchstart",startDrag,{passive:false});td.addEventListener("touchmove",moveDrag,{passive:false});td.addEventListener("touchend",endDrag,{passive:false});td.addEventListener("mousedown",startDrag);td.addEventListener("mouseenter",moveDragMouse)}
+function renderHeader(){dayRow.innerHTML="<th>Notas</th>";const dates=weekDates(),today=isoDate(new Date());dates.forEach((s,i)=>{const th=document.createElement("th"),d=parseISO(s);th.innerHTML=DAYS[i]+"<span class='daynum'>"+d.getDate()+"</span>";if(s===today)th.classList.add("todayHead");dayRow.appendChild(th)})}
+function renderGrid(){grid.innerHTML="";const now=new Date(),today=isoDate(now),hr=now.getHours(),dates=weekDates();for(let h=0;h<24;h++){const tr=document.createElement("tr"),th=document.createElement("th");th.textContent=h;if(h===hr)th.classList.add("currentHour");tr.appendChild(th);for(let d=0;d<7;d++){const date=dates[d],td=document.createElement("td");td.dataset.d=d;td.dataset.date=date;td.dataset.h=h;const v=isPast(date,h)?null:resolved(date,h);if(v){td.textContent=v.text||"";td.style.background=norm(v.color);td.style.color=v.textColor||"#111111";if(v.important){td.classList.add("importantRange");const prev=h>0&&!isPast(date,h-1)?resolved(date,h-1):null,next=h<23&&!isPast(date,h+1)?resolved(date,h+1):null;if(!sameImportantRange(prev,v))td.classList.add("importantStart");if(!sameImportantRange(v,next))td.classList.add("importantEnd")}}else{td.textContent="";td.style.background="#fff";td.style.color="#111"}if(date===today&&h===hr)td.classList.add("currentCell");if(isPast(date,h))td.classList.add("pastCell");bindCell(td);tr.appendChild(td)}grid.appendChild(tr)}}
+function renderWords(){wordbar.innerHTML="";words.forEach((w,i)=>{const isClear=w.action==="clear",div=document.createElement("div");div.className="chip"+(selectedWord===i?" active":"")+(isClear&&selectedWord===i?" deleteMode":"");div.textContent=w.text||"+";div.style.background=isClear?"#fff":norm(w.color);div.style.color=isClear?"#b80016":(w.textColor||"#111111");div.onclick=()=>{if(suppressClick){suppressClick=false;return}if(isClear){selectedWord=selectedWord===i?null:i;renderWords();return}if(!w.text){openWord(i);return}selectedWord=selectedWord===i?null:i;renderWords()};let timer;const start=()=>{clearTimeout(timer);if(!isClear)timer=setTimeout(()=>{suppressClick=true;openWord(i)},520)},end=()=>clearTimeout(timer);div.addEventListener("touchstart",start,{passive:true});div.addEventListener("touchend",end,{passive:true});div.addEventListener("mousedown",start);div.addEventListener("mouseup",end);wordbar.appendChild(div)})}
+function bindCell(td){td.onclick=()=>{if(suppressClick){suppressClick=false;return}const date=td.dataset.date,h=+td.dataset.h,d=+td.dataset.d;selectedCell={date,h,d};if(isPast(date,h))return;if(selectedWord!==null&&words[selectedWord]?.action==="clear"){snap();deleteAt(date,h);render();return}if(selectedWord!==null&&words[selectedWord]?.text){snap();setCell(date,h,words[selectedWord].text,words[selectedWord].color,words[selectedWord].textColor);render();return}const v=resolved(date,h);if(v?.source==="event")openEventForExisting(v.sourceId,date);else openCell(date,h,d)};td.addEventListener("touchstart",startDrag,{passive:false});td.addEventListener("touchmove",moveDrag,{passive:false});td.addEventListener("touchend",endDrag,{passive:false});td.addEventListener("mousedown",startDrag);td.addEventListener("mouseenter",moveDragMouse)}
 window.addEventListener("mouseup",endDrag);
-function startDrag(e){const td=e.currentTarget;clearTimeout(longTimer);longTimer=setTimeout(()=>{suppressClick=true;drag=true;snap();const d=+td.dataset.d,h=+td.dataset.h;if(selectedWord!==null&&words[selectedWord]?.action==="clear")dragValue={text:"",color:"#ffffff",textColor:"#111111"};else if(selectedWord!==null&&words[selectedWord]?.text)dragValue={text:words[selectedWord].text,color:norm(words[selectedWord].color),textColor:words[selectedWord].textColor||"#111111"};else{const v=data[cellKey(d,h)]||{text:"",color:"#ffffff",textColor:"#111111"};dragValue={text:v.text||"",color:norm(v.color),textColor:v.textColor||"#111111"}}applyDrag(td);if(navigator.vibrate)navigator.vibrate(25)},360)}
+function startDrag(e){const td=e.currentTarget;if(isPast(td.dataset.date,+td.dataset.h))return;clearTimeout(longTimer);longTimer=setTimeout(()=>{suppressClick=true;drag=true;snap();const date=td.dataset.date,h=+td.dataset.h;if(selectedWord!==null&&words[selectedWord]?.action==="clear")dragValue={clear:true};else if(selectedWord!==null&&words[selectedWord]?.text)dragValue={text:words[selectedWord].text,color:norm(words[selectedWord].color),textColor:words[selectedWord].textColor||"#111111"};else{const v=resolved(date,h);dragValue=v?{text:v.text,color:norm(v.color),textColor:v.textColor||"#111111"}:{clear:true}}applyDrag(td);if(navigator.vibrate)navigator.vibrate(25)},360)}
 function cellFromTouch(e){const t=e.touches?.[0];if(!t)return null;return document.elementFromPoint(t.clientX,t.clientY)?.closest("td")}
 function moveDrag(e){if(!drag)return;e.preventDefault();const td=cellFromTouch(e);if(td)applyDrag(td)}
 function moveDragMouse(e){if(drag)applyDrag(e.currentTarget)}
-function endDrag(){clearTimeout(longTimer);if(drag){drag=false;dragValue=null;save();saveImportant();render()}}
-function applyDrag(td){const d=+td.dataset.d,h=+td.dataset.h;if(dragValue.text)data[cellKey(d,h)]={...dragValue};else{delete data[cellKey(d,h)];delete important[cellKey(d,h)]}td.textContent=dragValue.text||"";td.style.background=norm(dragValue.color);td.style.color=dragValue.textColor||"#111111"}
-function setCell(d,h,text,color,textColor="#111111"){if(text)data[cellKey(d,h)]={text,color:norm(color),textColor:textColor||"#111111"};else{delete data[cellKey(d,h)];delete important[cellKey(d,h)];saveImportant()}save()}
-function renderCurrentPreview(){const d=todayIndex(),h=new Date().getHours();const v=data[cellKey(d,h)];if(!v||!v.text){previewCard.classList.remove("show","importantPreview");previewCard.textContent="";previewCard.style.background="#fff";return}previewCard.textContent=v.text;previewCard.style.background=norm(v.color);previewCard.style.color=v.textColor||"#111111";previewCard.classList.toggle("importantPreview",!!important[cellKey(d,h)]);previewCard.classList.add("show")}
-function renderTools(){if(!selectedCell){importantBtn.classList.remove("importantActive");return}importantBtn.classList.toggle("importantActive",!!important[cellKey(selectedCell.d,selectedCell.h)])}
-function openCell(d,h){selectedCell={d,h};editTarget={type:"cell",d,h};const v=data[cellKey(d,h)]||{text:"",color:"#ffffff",textColor:"#111111"};modalTitle.textContent=DAYS[d]+" "+h+":00";textInput.value=v.text||"";colorInput.value=norm(v.color);textColorInput.value=norm(v.textColor||"#111111");modal.classList.add("show");renderTools();setTimeout(()=>textInput.focus(),50)}
+function endDrag(){clearTimeout(longTimer);if(drag){drag=false;dragValue=null;saveState();render()}}
+function applyDrag(td){const date=td.dataset.date,h=+td.dataset.h;if(isPast(date,h))return;if(dragValue.clear)deleteAt(date,h);else setCell(date,h,dragValue.text,dragValue.color,dragValue.textColor,false);}
+function setCell(date,h,text,color,textColor="#111111",doSave=true){const k=cellKey(date,h);if(text)state.cells[k]={text,color:norm(color),textColor:textColor||"#111111",important:state.cells[k]?.important||false};else delete state.cells[k];if(doSave)saveState()}
+function deleteAt(date,h){const v=resolved(date,h);if(v?.source==="event"){const e=state.events.find(x=>x.id===v.sourceId);if(e?.repeat&&e.repeat!=="none"){e.exceptions=e.exceptions||{};e.exceptions[date]={cancelled:true}}else if(e)state.events=state.events.filter(x=>x.id!==e.id)}else delete state.cells[cellKey(date,h)];saveState()}
+function renderCurrentPreview(){const date=isoDate(new Date()),h=new Date().getHours(),v=resolved(date,h);if(!v){previewCard.classList.remove("show","importantPreview");previewCard.textContent="";previewCard.style.background="#fff";return}previewCard.textContent=v.text;previewCard.style.background=norm(v.color);previewCard.style.color=v.textColor||"#111111";previewCard.classList.toggle("importantPreview",!!v.important);previewCard.classList.add("show")}
+function renderTools(){if(!selectedCell){importantBtn.classList.remove("importantActive");return}const v=resolved(selectedCell.date,selectedCell.h);importantBtn.classList.toggle("importantActive",!!v?.important)}
+function openCell(date,h,d){selectedCell={date,h,d};editTarget={type:"cell",date,h};const v=state.cells[cellKey(date,h)]||{text:"",color:"#ffffff",textColor:"#111111"};modalTitle.textContent=`${DAYS[d]} ${h}:00`;textInput.value=v.text||"";colorInput.value=norm(v.color);textColorInput.value=norm(v.textColor||"#111111");modal.classList.add("show");renderTools();setTimeout(()=>textInput.focus(),50)}
 function openWord(i){editTarget={type:"word",i};const w=words[i]||{text:"",color:"#ffffff",textColor:"#111111"};modalTitle.textContent="Palabra rápida";textInput.value=w.text||"";colorInput.value=norm(w.color);textColorInput.value=norm(w.textColor||"#111111");modal.classList.add("show");setTimeout(()=>textInput.focus(),50)}
-document.getElementById("saveBtn").onclick=()=>{const text=textInput.value.trim(),color=norm(colorInput.value),textColor=norm(textColorInput.value||"#111111");snap();if(editTarget?.type==="cell")setCell(editTarget.d,editTarget.h,text,color,textColor);if(editTarget?.type==="word"){words[editTarget.i]={text,color,textColor};saveWords()}modal.classList.remove("show");render()};
-document.getElementById("deleteBtn").onclick=()=>{snap();if(editTarget?.type==="cell")setCell(editTarget.d,editTarget.h,"","#ffffff","#111111");if(editTarget?.type==="word"){words[editTarget.i]={text:"",color:"#ffffff",textColor:"#111111"};saveWords()}modal.classList.remove("show");render()};
-document.getElementById("cancelBtn").onclick=()=>modal.classList.remove("show");
-modal.onclick=e=>{if(e.target===modal)modal.classList.remove("show")};
+
+document.getElementById("saveBtn").onclick=()=>{const text=textInput.value.trim(),color=norm(colorInput.value),textColor=norm(textColorInput.value||"#111111");snap();if(editTarget?.type==="cell")setCell(editTarget.date,editTarget.h,text,color,textColor);if(editTarget?.type==="word"){words[editTarget.i]={text,color,textColor};saveWords()}modal.classList.remove("show");render()};
+document.getElementById("deleteBtn").onclick=()=>{snap();if(editTarget?.type==="cell")setCell(editTarget.date,editTarget.h,"","#ffffff","#111111");if(editTarget?.type==="word"){words[editTarget.i]={text:"",color:"#ffffff",textColor:"#111111"};saveWords()}modal.classList.remove("show");render()};
+document.getElementById("cancelBtn").onclick=()=>modal.classList.remove("show");modal.onclick=e=>{if(e.target===modal)modal.classList.remove("show")};
 undoBtn.onclick=undo;
-importantBtn.onclick=()=>{if(!selectedCell)return;const k=cellKey(selectedCell.d,selectedCell.h);if(!data[k]||!data[k].text)return;snap();important[k]=!important[k];if(!important[k])delete important[k];saveImportant();render()};
-save();saveWords();saveImportant();render();setInterval(render,60000);
+importantBtn.onclick=()=>{if(!selectedCell)return;const v=resolved(selectedCell.date,selectedCell.h);if(!v)return;snap();if(v.source==="cell"){const k=cellKey(selectedCell.date,selectedCell.h);state.cells[k].important=!state.cells[k].important}else{const e=state.events.find(x=>x.id===v.sourceId);if(e){if(e.repeat&&e.repeat!=="none"){e.exceptions=e.exceptions||{};const base=e.exceptions[selectedCell.date]||{};e.exceptions[selectedCell.date]={...base,important:!v.important}}else e.important=!e.important}}saveState();render()};
+planBtn.onclick=()=>openEventNew();
+
+function setWeekdayPicker(days=[]){weekdayPicker.querySelectorAll(".daytoggle").forEach(b=>b.classList.toggle("on",days.includes(+b.dataset.day)))}
+function getWeekdayPicker(){return [...weekdayPicker.querySelectorAll(".daytoggle.on")].map(b=>+b.dataset.day)}
+function updateRepeatUI(){const r=eventRepeat.value;repeatBox.style.display=r==="none"?"none":"block";if(r==="weekdays")setWeekdayPicker([0,1,2,3,4]);else if(r==="weekly")setWeekdayPicker([dayIndexFromISO(eventDate.value||isoDate(new Date()))]);else if(r==="daily")setWeekdayPicker([0,1,2,3,4,5,6]);}
+eventRepeat.onchange=updateRepeatUI;eventDate.onchange=()=>{if(eventRepeat.value==="weekly")setWeekdayPicker([dayIndexFromISO(eventDate.value)])};
+scopeRow.querySelectorAll(".scopeBtn").forEach(b=>b.onclick=()=>{eventEdit.scope=b.dataset.scope;scopeRow.querySelectorAll(".scopeBtn").forEach(x=>x.classList.toggle("on",x===b))});
+function fillEventForm(e,dateOverride){const repeat=e?.repeat||"none",date=dateOverride||e?.date||e?.startDate||isoDate(new Date());eventText.value=e?.text||"";eventDate.value=date;eventRepeat.value=repeat;eventStart.value=String(e?.startHour??8);eventEnd.value=String(e?.endHour??9);eventUntil.value=e?.until||"";eventColor.value=norm(e?.color||"#13bde8");eventTextColor.value=norm(e?.textColor||"#111111");eventImportant.checked=!!e?.important;setWeekdayPicker(e?.days||[]);updateRepeatUI()}
+function openEventNew(){eventEdit={mode:"new",eventId:null,date:null,scope:"day"};eventTitle.textContent="Planificar evento";scopeRow.classList.remove("show");fillEventForm(null);document.getElementById("eventDelete").style.visibility="hidden";eventModal.classList.add("show")}
+function openEventForExisting(id,date){const e=state.events.find(x=>x.id===id);if(!e)return;eventEdit={mode:"edit",eventId:id,date,scope:(e.repeat&&e.repeat!=="none")?"day":"series"};eventTitle.textContent=(e.repeat&&e.repeat!=="none")?"Editar evento repetitivo":"Editar evento";scopeRow.classList.toggle("show",e.repeat&&e.repeat!=="none");scopeRow.querySelectorAll(".scopeBtn").forEach(b=>b.classList.toggle("on",b.dataset.scope===eventEdit.scope));const ex=e.exceptions?.[date];fillEventForm(ex&&!ex.cancelled?{...e,...ex}:e,date);document.getElementById("eventDelete").style.visibility="visible";eventModal.classList.add("show")}
+function formEvent(){const text=eventText.value.trim(),date=eventDate.value,startHour=+eventStart.value,endHour=+eventEnd.value,repeat=eventRepeat.value;if(!text||!date||endHour<=startHour)return null;let days=getWeekdayPicker();if(repeat==="weekdays")days=[0,1,2,3,4];if(repeat==="daily")days=[0,1,2,3,4,5,6];if(repeat==="weekly")days=[dayIndexFromISO(date)];return {text,date,startDate:date,startHour,endHour,repeat,days,until:eventUntil.value||null,color:norm(eventColor.value),textColor:norm(eventTextColor.value),important:eventImportant.checked}}
+function previousDate(s){return addDays(s,-1)}
+document.getElementById("eventSave").onclick=()=>{const f=formEvent();if(!f){alert("Revisa el texto, la fecha y las horas del evento.");return}snap();if(eventEdit.mode==="new"){state.events.push({id:uid(),...f,exceptions:{}})}else{const e=state.events.find(x=>x.id===eventEdit.eventId);if(!e)return;const repeating=e.repeat&&e.repeat!=="none";if(!repeating||eventEdit.scope==="series"){Object.assign(e,f,{date:f.repeat==="none"?f.date:undefined,startDate:f.repeat==="none"?undefined:f.startDate});if(f.repeat==="none"){delete e.startDate;delete e.until;delete e.days}else delete e.date;e.exceptions=e.exceptions||{}}else if(eventEdit.scope==="day"){e.exceptions=e.exceptions||{};e.exceptions[eventEdit.date]={text:f.text,startHour:f.startHour,endHour:f.endHour,color:f.color,textColor:f.textColor,important:f.important}}else if(eventEdit.scope==="from"){e.until=previousDate(eventEdit.date);state.events.push({id:uid(),...f,startDate:eventEdit.date,date:undefined,exceptions:{}})}}saveState();eventModal.classList.remove("show");render()};
+document.getElementById("eventDelete").onclick=()=>{if(eventEdit.mode!=="edit")return;snap();const e=state.events.find(x=>x.id===eventEdit.eventId);if(!e)return;const repeating=e.repeat&&e.repeat!=="none";if(repeating&&eventEdit.scope==="day"){e.exceptions=e.exceptions||{};e.exceptions[eventEdit.date]={cancelled:true}}else if(repeating&&eventEdit.scope==="from"){e.until=previousDate(eventEdit.date)}else state.events=state.events.filter(x=>x.id!==e.id);saveState();eventModal.classList.remove("show");render()};
+document.getElementById("eventCancel").onclick=()=>eventModal.classList.remove("show");eventModal.onclick=e=>{if(e.target===eventModal)eventModal.classList.remove("show")};
+
+saveWords();saveState();render();setInterval(render,60000);
 })();
 </script>
 </body>
