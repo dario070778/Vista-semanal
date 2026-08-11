@@ -1,5 +1,6 @@
-# Vista semanal 3.7
+# Vista semanal 3.8
 
-- Unifica el relleno parcial de eventos manuales y planificados.
-- Los tramos de 15, 30 y 45 minutos se muestran horizontalmente de izquierda a derecha.
-- Mantiene el resto de funciones y diseño de la versión 3.6.
+- La edición manual permite elegir hora de inicio y hora final en intervalos de 15 minutos.
+- El relleno de la casilla respeta tanto el inicio como el final (:00, :15, :30, :45).
+- Los registros manuales pueden abarcar varias horas, igual que los planificados.
+- Mantiene el resto de funciones y diseño de la versión 3.7.
