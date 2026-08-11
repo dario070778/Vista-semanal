@@ -7,8 +7,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Vista semanal">
 <meta name="mobile-web-app-capable" content="yes">
-<link rel="manifest" href="manifest.json?v=300">
-<link rel="icon" href="icon.svg?v=300" type="image/svg+xml">
+<link rel="manifest" href="manifest.json?v=320">
+<link rel="icon" href="icon.svg?v=320" type="image/svg+xml">
 <title>Vista semanal</title>
 <style>
 :root{--grid:#c8c8ce;--head:#f3f3f7;--red:#e2465b;--gold:#d4af37;--text:#111}
@@ -38,7 +38,7 @@ td.importantEnd::after{border-bottom:3px solid var(--gold)}
 .chip,.toolbtn{min-height:25px;border:1px solid var(--grid);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:1px 4px;user-select:none;font-weight:500;background:#fff}
 .chip.active{outline:2px solid var(--red);outline-offset:-2px;font-weight:700}
 .chip.deleteMode{color:#fff!important;background:#e2465b!important;border-color:#e2465b!important}
-.toolrow{display:grid;grid-template-columns:1fr 1fr 1fr;gap:3px;margin-top:4px}
+.toolrow{display:grid;grid-template-columns:repeat(3,1fr);gap:3px;margin-top:4px}
 .toolbtn:disabled{opacity:.35}
 .toolbtn.importantActive{border-color:var(--gold);box-shadow:inset 0 0 0 2px var(--gold)}
 .previewWrap{padding:8px 4px 0}
@@ -77,6 +77,13 @@ input[type=color]{width:54px;height:38px;border:1px solid var(--grid);border-rad
 .scopeBtn.on{outline:2px solid #1677d2;outline-offset:-2px}
 .checkline{display:flex;align-items:center;gap:8px;margin:8px 0;font-size:14px}
 .smallnote{font-size:12px;color:#777;margin-top:3px}
+
+.eventList{display:flex;flex-direction:column;gap:7px;margin:8px 0 12px}
+.eventItem{border:1px solid var(--grid);border-radius:10px;padding:9px 10px;background:#fff;text-align:left}
+.eventItemTitle{font-size:15px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.eventItemMeta{font-size:12px;color:#666;margin-top:3px}
+.eventDot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:-1px;border:1px solid rgba(0,0,0,.15)}
+.emptyList{padding:18px 6px;text-align:center;color:#777;font-size:14px}
 </style>
 </head>
 <body>
@@ -122,7 +129,15 @@ input[type=color]{width:54px;height:38px;border:1px solid var(--grid);border-rad
   <label class="checkline"><input id="eventImportant" type="checkbox"> Destacar todo el evento con marco dorado</label>
   <div id="scopeRow" class="scopeRow"><button class="scopeBtn on" data-scope="day">Solo este día</button><button class="scopeBtn" data-scope="from">Desde este día</button><button class="scopeBtn" data-scope="series">Toda la serie</button></div>
   <div class="actions"><button id="eventSave">Guardar</button><button id="eventDelete" class="danger">Eliminar</button><button id="eventCancel">Cerrar</button></div>
+  <button id="eventListBtn" class="widebtn" type="button" style="width:100%;margin-top:8px">Eventos planificados</button>
   <div class="hint" id="eventHint">Los eventos futuros aparecerán automáticamente cuando corresponda. Prioridad: edición manual, evento de fecha concreta y después evento repetitivo.</div>
+</div></div>
+
+<div class="modal" id="eventListModal"><div class="sheet">
+  <h2>Eventos planificados</h2>
+  <div class="smallnote">Toca un evento para modificarlo o eliminarlo, aunque su fecha todavía no aparezca en la cuadrícula.</div>
+  <div id="eventList" class="eventList"></div>
+  <button id="eventListClose" class="widebtn" type="button" style="width:100%">Cerrar</button>
 </div></div>
 
 <script>
@@ -153,7 +168,9 @@ function isoDate(d){return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.ge
 function parseISO(s){const [y,m,d]=s.split("-").map(Number);return new Date(y,m-1,d)}
 function addDays(s,n){const d=parseISO(s);d.setDate(d.getDate()+n);return isoDate(d)}
 function mondayOf(d=new Date()){const x=new Date(d.getFullYear(),d.getMonth(),d.getDate());const idx=(x.getDay()+6)%7;x.setDate(x.getDate()-idx);return x}
-function weekDates(){const m=mondayOf();return Array.from({length:7},(_,i)=>{const d=new Date(m);d.setDate(m.getDate()+i);return isoDate(d)})}
+// Las columnas siguen siendo L-M-X-J-V-S-D, pero cada una muestra la próxima fecha de ese día.
+// Ejemplo: si hoy es martes 11, L=17, M=11, X=12, J=13...
+function weekDates(){const n=new Date(),base=new Date(n.getFullYear(),n.getMonth(),n.getDate()),todayIdx=(base.getDay()+6)%7;return Array.from({length:7},(_,i)=>{const d=new Date(base);d.setDate(base.getDate()+((i-todayIdx+7)%7));return isoDate(d)})}
 function dayIndexFromISO(s){return (parseISO(s).getDay()+6)%7}
 function norm(c){return(c&&c[0]==="#")?c:"#ffffff"}
 function uid(){return `e${Date.now().toString(36)}${Math.random().toString(36).slice(2,7)}`}
@@ -177,7 +194,7 @@ let undoStack=[];
 let selectedWord=null,selectedCell=null,editTarget=null,drag=false,dragValue=null,longTimer=null,suppressClick=false;
 let eventEdit={mode:"new",eventId:null,date:null,scope:"day"};
 const monthTitle=document.getElementById("monthTitle"),dayRow=document.getElementById("dayRow"),grid=document.getElementById("grid"),wordbar=document.getElementById("wordbar"),modal=document.getElementById("modal"),textInput=document.getElementById("textInput"),noteInput=document.getElementById("noteInput"),cellNoteField=document.getElementById("cellNoteField"),colorInput=document.getElementById("colorInput"),textColorInput=document.getElementById("textColorInput"),modalTitle=document.getElementById("modalTitle"),palette=document.getElementById("palette"),previewCard=document.getElementById("previewCard"),undoBtn=document.getElementById("undoBtn"),importantBtn=document.getElementById("importantBtn"),planBtn=document.getElementById("planBtn");
-const eventModal=document.getElementById("eventModal"),eventTitle=document.getElementById("eventTitle"),eventText=document.getElementById("eventText"),eventNote=document.getElementById("eventNote"),eventDate=document.getElementById("eventDate"),eventRepeat=document.getElementById("eventRepeat"),eventStart=document.getElementById("eventStart"),eventEnd=document.getElementById("eventEnd"),eventUntil=document.getElementById("eventUntil"),eventColor=document.getElementById("eventColor"),eventTextColor=document.getElementById("eventTextColor"),eventImportant=document.getElementById("eventImportant"),repeatBox=document.getElementById("repeatBox"),weekdayPicker=document.getElementById("weekdayPicker"),scopeRow=document.getElementById("scopeRow");
+const eventModal=document.getElementById("eventModal"),eventTitle=document.getElementById("eventTitle"),eventText=document.getElementById("eventText"),eventNote=document.getElementById("eventNote"),eventDate=document.getElementById("eventDate"),eventRepeat=document.getElementById("eventRepeat"),eventStart=document.getElementById("eventStart"),eventEnd=document.getElementById("eventEnd"),eventUntil=document.getElementById("eventUntil"),eventColor=document.getElementById("eventColor"),eventTextColor=document.getElementById("eventTextColor"),eventImportant=document.getElementById("eventImportant"),repeatBox=document.getElementById("repeatBox"),weekdayPicker=document.getElementById("weekdayPicker"),scopeRow=document.getElementById("scopeRow"),eventListModal=document.getElementById("eventListModal"),eventList=document.getElementById("eventList");
 
 function snap(){undoStack=[{state:JSON.stringify(state),words:JSON.stringify(words)}];undoBtn.disabled=false}
 function undo(){if(!undoStack.length)return;const s=undoStack.pop();state=JSON.parse(s.state);words=JSON.parse(s.words);saveState();saveWords();undoBtn.disabled=true;render()}
@@ -237,6 +254,21 @@ function getWeekdayPicker(){return [...weekdayPicker.querySelectorAll(".daytoggl
 function updateRepeatUI(){const r=eventRepeat.value;repeatBox.style.display=r==="none"?"none":"block";if(r==="weekdays")setWeekdayPicker([0,1,2,3,4]);else if(r==="weekly")setWeekdayPicker([dayIndexFromISO(eventDate.value||isoDate(new Date()))]);else if(r==="daily")setWeekdayPicker([0,1,2,3,4,5,6]);}
 eventRepeat.onchange=updateRepeatUI;eventDate.onchange=()=>{if(eventRepeat.value==="weekly")setWeekdayPicker([dayIndexFromISO(eventDate.value)])};
 scopeRow.querySelectorAll(".scopeBtn").forEach(b=>b.onclick=()=>{eventEdit.scope=b.dataset.scope;scopeRow.querySelectorAll(".scopeBtn").forEach(x=>x.classList.toggle("on",x===b))});
+function nextOccurrence(e,from=isoDate(new Date())){
+ if(!e)return null;
+ if(!e.repeat||e.repeat==="none")return e.date>=from?e.date:null;
+ const start=e.startDate||from,begin=start>from?start:from;
+ for(let i=0;i<370;i++){const date=addDays(begin,i);if(e.until&&date>e.until)break;const h=e.startHour||0;if(eventMatches(e,date,h))return date}
+ return null
+}
+function repeatLabel(e){if(!e.repeat||e.repeat==="none")return "Una vez";if(e.repeat==="weekdays")return "L-V";if(e.repeat==="daily")return "Cada día";if(e.repeat==="weekly")return "Semanal";if(e.repeat==="custom")return "Días concretos";return "Repetitivo"}
+function openEventList(){
+ eventList.innerHTML="";
+ const items=state.events.map(e=>({e,date:nextOccurrence(e)})).filter(x=>x.date).sort((a,b)=>a.date.localeCompare(b.date)||(a.e.startHour||0)-(b.e.startHour||0));
+ if(!items.length){eventList.innerHTML='<div class="emptyList">No hay eventos planificados.</div>'}
+ else items.forEach(({e,date})=>{const b=document.createElement("button");b.type="button";b.className="eventItem";const d=parseISO(date);const dateTxt=`${DAYS[dayIndexFromISO(date)]} ${d.getDate()} ${MONTHS[d.getMonth()]}`;b.innerHTML=`<div class="eventItemTitle"><span class="eventDot" style="background:${norm(e.color)}"></span>${e.text||"(Sin texto)"}</div><div class="eventItemMeta">${dateTxt} · ${e.startHour}:00–${e.endHour}:00 · ${repeatLabel(e)}</div>`;b.onclick=()=>{eventListModal.classList.remove("show");openEventForExisting(e.id,date)};eventList.appendChild(b)})
+ eventModal.classList.remove("show");eventListModal.classList.add("show")
+}
 function fillEventForm(e,dateOverride){const repeat=e?.repeat||"none",date=dateOverride||e?.date||e?.startDate||isoDate(new Date());eventText.value=e?.text||"";eventNote.value=e?.note||"";eventDate.value=date;eventRepeat.value=repeat;eventStart.value=String(e?.startHour??8);eventEnd.value=String(e?.endHour??9);eventUntil.value=e?.until||"";eventColor.value=norm(e?.color||"#13bde8");eventTextColor.value=norm(e?.textColor||"#111111");eventImportant.checked=!!e?.important;setWeekdayPicker(e?.days||[]);updateRepeatUI()}
 function openEventNew(){eventEdit={mode:"new",eventId:null,date:null,scope:"day"};eventTitle.textContent="Planificar evento";scopeRow.classList.remove("show");fillEventForm(null);document.getElementById("eventDelete").style.visibility="hidden";eventModal.classList.add("show")}
 function openEventForExisting(id,date){const e=state.events.find(x=>x.id===id);if(!e)return;eventEdit={mode:"edit",eventId:id,date,scope:(e.repeat&&e.repeat!=="none")?"day":"series"};eventTitle.textContent=(e.repeat&&e.repeat!=="none")?"Editar evento repetitivo":"Editar evento";scopeRow.classList.toggle("show",e.repeat&&e.repeat!=="none");scopeRow.querySelectorAll(".scopeBtn").forEach(b=>b.classList.toggle("on",b.dataset.scope===eventEdit.scope));const ex=e.exceptions?.[date];fillEventForm(ex&&!ex.cancelled?{...e,...ex}:e,date);document.getElementById("eventDelete").style.visibility="visible";eventModal.classList.add("show")}
@@ -245,6 +277,9 @@ function previousDate(s){return addDays(s,-1)}
 document.getElementById("eventSave").onclick=()=>{const f=formEvent();if(!f){alert("Revisa el texto, la fecha y las horas del evento.");return}snap();if(eventEdit.mode==="new"){state.events.push({id:uid(),...f,exceptions:{}})}else{const e=state.events.find(x=>x.id===eventEdit.eventId);if(!e)return;const repeating=e.repeat&&e.repeat!=="none";if(!repeating||eventEdit.scope==="series"){Object.assign(e,f,{date:f.repeat==="none"?f.date:undefined,startDate:f.repeat==="none"?undefined:f.startDate});if(f.repeat==="none"){delete e.startDate;delete e.until;delete e.days}else delete e.date;e.exceptions=e.exceptions||{}}else if(eventEdit.scope==="day"){e.exceptions=e.exceptions||{};e.exceptions[eventEdit.date]={text:f.text,note:f.note,startHour:f.startHour,endHour:f.endHour,color:f.color,textColor:f.textColor,important:f.important}}else if(eventEdit.scope==="from"){e.until=previousDate(eventEdit.date);state.events.push({id:uid(),...f,startDate:eventEdit.date,date:undefined,exceptions:{}})}}saveState();eventModal.classList.remove("show");render()};
 document.getElementById("eventDelete").onclick=()=>{if(eventEdit.mode!=="edit")return;snap();const e=state.events.find(x=>x.id===eventEdit.eventId);if(!e)return;const repeating=e.repeat&&e.repeat!=="none";if(repeating&&eventEdit.scope==="day"){e.exceptions=e.exceptions||{};e.exceptions[eventEdit.date]={cancelled:true}}else if(repeating&&eventEdit.scope==="from"){e.until=previousDate(eventEdit.date)}else state.events=state.events.filter(x=>x.id!==e.id);saveState();eventModal.classList.remove("show");render()};
 document.getElementById("eventCancel").onclick=()=>eventModal.classList.remove("show");eventModal.onclick=e=>{if(e.target===eventModal)eventModal.classList.remove("show")};
+
+document.getElementById("eventListBtn").onclick=openEventList;
+document.getElementById("eventListClose").onclick=()=>eventListModal.classList.remove("show");eventListModal.onclick=e=>{if(e.target===eventListModal)eventListModal.classList.remove("show")};
 
 saveWords();saveState();render();setInterval(render,60000);
 })();

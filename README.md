@@ -1,11 +1,8 @@
-# Vista semanal 3.0
+# Vista semanal 3.2
 
-- Semana rodante: al terminar una franja, esa posición pasa a representar la misma hora de la semana siguiente.
-- Todas las casillas son editables, incluso horas y días ya pasados.
-- Una edición manual hecha en una franja pasada se conserva hasta que termine esa misma franja la semana siguiente.
-- Prioridad: edición manual > evento de fecha concreta > evento repetitivo.
-- Eventos repetitivos modificables por un día, desde una fecha o para toda la serie.
-- Eventos de varias horas como un bloque visual continuo, con un único marco dorado exterior.
-- Notas opcionales por casilla y evento; si existe nota, el recuadro inferior muestra la nota.
-- Palabras rápidas persistentes.
-- Icono sin 24×7.
+Cambios principales:
+- Columnas fijas L-M-X-J-V-S-D con fechas siempre futuras o de hoy: cada columna muestra la próxima ocurrencia de ese día de la semana.
+- Si hoy es martes 11, la cabecera muestra L17, M11, X12, J13, V14, S15, D16.
+- Eventos planificados accesibles desde Planificar > Eventos planificados, incluso si su fecha aún no está visible.
+- Desde esa lista se pueden abrir, modificar o eliminar eventos futuros y series repetitivas.
+- Mantiene la lógica de notas, prioridades manual > fecha concreta > repetitivo, edición de franjas pasadas y bloques continuos.
