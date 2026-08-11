@@ -122,9 +122,8 @@ function renderGrid(){
     td.style.color=v.textColor||"#111111";let showText=true;
     if(v.source==="event"||v.source==="cell"){
      const prev=h>0?visibleResolved(displayDate,h-1):null,next=h<23?visibleResolved(displayDate,h+1):null;const samePrev=sameRange(prev,v),sameNext=sameRange(v,next);
-     // Los eventos planificados/repetitivos muestran el texto en cada celda horaria.
-     // Los registros manuales conservan el comportamiento de bloque continuo.
-     if(samePrev){if(v.source!=="event")showText=false;td.classList.add(sameNext?"eventBlockMid":"eventBlockEnd")}else if(sameNext)td.classList.add("eventBlockStart");
+     // Tanto los eventos planificados como los registros manuales muestran el texto en cada celda horaria ocupada.
+     if(samePrev){td.classList.add(sameNext?"eventBlockMid":"eventBlockEnd")}else if(sameNext)td.classList.add("eventBlockStart");
      if(v.important){td.classList.add("importantRange");if(!(samePrev&&prev?.important))td.classList.add("importantStart");if(!(sameNext&&next?.important))td.classList.add("importantEnd")}
     }
     td.textContent=showText?(v.text||""):"";
