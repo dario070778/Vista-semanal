@@ -7,35 +7,35 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Vista semanal">
 <meta name="mobile-web-app-capable" content="yes">
-<link rel="manifest" href="manifest.json?v=320">
-<link rel="icon" href="icon.svg?v=320" type="image/svg+xml">
+<link rel="manifest" href="manifest.json?v=350">
+<link rel="icon" href="icon.svg?v=350" type="image/svg+xml">
 <title>Vista semanal</title>
 <style>
-:root{--grid:#c8c8ce;--head:#f3f3f7;--red:#e2465b;--gold:#d4af37;--text:#111}
+:root{--grid:#f4f4f6;--ui-border:#b9b9bd;--page:#d1d1d3;--cell:#d9d9dc;--head:#0b0b0d;--red:#e2465b;--gold:#d4af37;--text:#111}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;padding:0;background:#fff;color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;overscroll-behavior:none}
+html,body{margin:0;padding:0;background:var(--page);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;overscroll-behavior:none}
 body{padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
-header{background:#fff;padding:5px 4px 3px;border-bottom:1px solid var(--grid)}
+header{background:var(--page);padding:5px 4px 3px;border-bottom:1px solid var(--grid)}
 .month-title{height:25px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700}
 .gridwrap{width:100vw;overflow:hidden}
 table{border-collapse:collapse;width:100%;table-layout:fixed}
 th,td{border:1px solid var(--grid);text-align:center;vertical-align:middle;padding:0}
-thead th{height:25px;background:var(--head);font-size:16px;font-weight:650}
-thead th:first-child{width:39px;font-size:13px;font-weight:500;color:#777}
-tbody th{width:39px;background:var(--head);font-size:16px;font-weight:600}
-td{height:26px;font-size:12px;line-height:1.05;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;position:relative}
-.daynum{font-size:12px;color:#aaa;font-weight:400;margin-left:2px}
-.todayHead{outline:2px solid var(--red);outline-offset:-2px;color:var(--red)}
-.currentHour{outline:2px solid var(--red);outline-offset:-2px;color:var(--red)}
+thead th{height:25px;background:var(--head);color:#fff;font-size:16px;font-weight:650}
+thead th:first-child{width:39px;font-size:13px;font-weight:500;color:#fff}
+tbody th{width:39px;background:var(--head);color:#fff;font-size:16px;font-weight:600}
+td{height:26px;background:var(--cell);font-size:12px;line-height:1.05;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;position:relative}
+.daynum{font-size:12px;color:#c7c7cc;font-weight:400;margin-left:2px}
+.todayHead{outline:2px solid var(--red);outline-offset:-2px;color:#fff}
+.currentHour{outline:2px solid var(--red);outline-offset:-2px;color:#fff}
 .currentCell{outline:2px solid var(--red);outline-offset:-2px;z-index:2}
-.pastCell{background:#fff!important;color:transparent!important;text-shadow:none!important}
+.pastCell{background:var(--cell)!important;color:transparent!important;text-shadow:none!important}
 /* Un único marco dorado continuo para todo el evento, no una caja por hora */
 td.importantRange::after{content:"";position:absolute;inset:-1px;z-index:3;pointer-events:none;border-left:3px solid var(--gold);border-right:3px solid var(--gold)}
 td.importantStart::after{border-top:3px solid var(--gold)}
 td.importantEnd::after{border-bottom:3px solid var(--gold)}
-.bottom-panel{border-top:1px solid var(--grid);background:#fff;padding:5px 4px 8px}
+.bottom-panel{border-top:1px solid var(--grid);background:var(--page);padding:5px 4px 8px}
 .wordbar{display:grid;grid-template-columns:repeat(4,1fr);gap:3px}
-.chip,.toolbtn{min-height:25px;border:1px solid var(--grid);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:1px 4px;user-select:none;font-weight:500;background:#fff}
+.chip,.toolbtn{min-height:25px;border:1px solid var(--ui-border);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:1px 4px;user-select:none;font-weight:500;background:#fff}
 .chip.active{outline:2px solid var(--red);outline-offset:-2px;font-weight:700}
 .chip.deleteMode{color:#fff!important;background:#e2465b!important;border-color:#e2465b!important}
 .toolrow{display:grid;grid-template-columns:repeat(3,1fr);gap:3px;margin-top:4px}
@@ -49,7 +49,7 @@ td.importantEnd::after{border-bottom:3px solid var(--gold)}
 .modal.show{display:flex}
 .sheet{width:100%;max-height:88vh;overflow:auto;background:white;border-radius:16px 16px 0 0;padding:14px 14px calc(14px + env(safe-area-inset-bottom));box-shadow:0 -8px 30px rgba(0,0,0,.18)}
 .sheet h2{margin:0 0 9px;font-size:18px}
-input[type=text],input[type=date],input[type=number],select,textarea{width:100%;font:inherit;font-size:16px;padding:9px;border:1px solid var(--grid);border-radius:8px;background:#fff}
+input[type=text],input[type=date],input[type=number],select,textarea{width:100%;font:inherit;font-size:16px;padding:9px;border:1px solid var(--ui-border);border-radius:8px;background:#fff}
 #textInput{font-size:18px;margin-bottom:8px}
 textarea{resize:vertical;min-height:72px}
 .noteField{margin-bottom:10px}
@@ -57,29 +57,30 @@ td.eventBlockStart{border-bottom-color:transparent!important}
 td.eventBlockMid{border-top-color:transparent!important;border-bottom-color:transparent!important}
 td.eventBlockEnd{border-top-color:transparent!important}
 .colorline{display:flex;gap:8px;align-items:center;margin-bottom:10px}
-input[type=color]{width:54px;height:38px;border:1px solid var(--grid);border-radius:8px;background:white;padding:2px}
+input[type=color]{width:54px;height:38px;border:1px solid var(--ui-border);border-radius:8px;background:white;padding:2px}
 .miniLabel{font-size:13px;color:#777}
 .palette{display:grid;grid-template-columns:repeat(8,1fr);gap:6px;margin:8px 0 12px}
-.sw{height:34px;border:1px solid var(--grid);border-radius:8px;background:white}
+.sw{height:34px;border:1px solid var(--ui-border);border-radius:8px;background:white}
 .actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
-.actions button,.widebtn{font:inherit;border:1px solid var(--grid);background:#fafafa;border-radius:7px;font-size:16px;padding:9px;color:#1677d2}
+.actions button,.widebtn{font:inherit;border:1px solid var(--ui-border);background:#fafafa;border-radius:7px;font-size:16px;padding:9px;color:#1677d2}
 .actions button.danger,.widebtn.danger{color:#b80016}
 .hint{font-size:12px;color:#777;margin-top:8px;line-height:1.25}
 .eventGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}
 .field label{display:block;font-size:12px;color:#777;margin:0 0 3px 2px}
-.repeatBox{margin:8px 0;padding:8px;border:1px solid var(--grid);border-radius:9px}
+.repeatBox{margin:8px 0;padding:8px;border:1px solid var(--ui-border);border-radius:9px}
 .weekdays{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:7px}
-.daytoggle{border:1px solid var(--grid);border-radius:6px;background:#fff;padding:7px 0;font:inherit;font-size:13px}
+.daytoggle{border:1px solid var(--ui-border);border-radius:6px;background:#fff;padding:7px 0;font:inherit;font-size:13px}
 .daytoggle.on{background:#111;color:#fff;border-color:#111}
 .scopeRow{display:none;grid-template-columns:1fr 1fr 1fr;gap:5px;margin:8px 0}
 .scopeRow.show{display:grid}
-.scopeBtn{border:1px solid var(--grid);border-radius:7px;background:#fff;padding:8px 3px;font:inherit;font-size:13px}
+.scopeBtn{border:1px solid var(--ui-border);border-radius:7px;background:#fff;padding:8px 3px;font:inherit;font-size:13px}
 .scopeBtn.on{outline:2px solid #1677d2;outline-offset:-2px}
 .checkline{display:flex;align-items:center;gap:8px;margin:8px 0;font-size:14px}
 .smallnote{font-size:12px;color:#777;margin-top:3px}
+.partialEvent{background-repeat:no-repeat!important}
 
 .eventList{display:flex;flex-direction:column;gap:7px;margin:8px 0 12px}
-.eventItem{border:1px solid var(--grid);border-radius:10px;padding:9px 10px;background:#fff;text-align:left}
+.eventItem{border:1px solid var(--ui-border);border-radius:10px;padding:9px 10px;background:#fff;text-align:left}
 .eventItemTitle{font-size:15px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .eventItemMeta{font-size:12px;color:#666;margin-top:3px}
 .eventDot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:-1px;border:1px solid rgba(0,0,0,.15)}
@@ -172,6 +173,11 @@ function mondayOf(d=new Date()){const x=new Date(d.getFullYear(),d.getMonth(),d.
 // Ejemplo: si hoy es martes 11, L=17, M=11, X=12, J=13...
 function weekDates(){const n=new Date(),base=new Date(n.getFullYear(),n.getMonth(),n.getDate()),todayIdx=(base.getDay()+6)%7;return Array.from({length:7},(_,i)=>{const d=new Date(base);d.setDate(base.getDate()+((i-todayIdx+7)%7));return isoDate(d)})}
 function dayIndexFromISO(s){return (parseISO(s).getDay()+6)%7}
+function formatTime(min){min=Math.max(0,Math.min(1440,+min||0));const h=Math.floor(min/60),m=min%60;return `${h}:${pad(m)}`}
+function eventStartMin(e){return Number.isFinite(+e?.startMin)?+e.startMin:(+e?.startHour||0)*60}
+function eventEndMin(e){return Number.isFinite(+e?.endMin)?+e.endMin:(+e?.endHour||((+e?.startHour||0)+1))*60}
+function eventStartHour(e){return Math.floor(eventStartMin(e)/60)}
+function eventEndHourExclusive(e){return Math.ceil(eventEndMin(e)/60)}
 function norm(c){return(c&&c[0]==="#")?c:"#ffffff"}
 function uid(){return `e${Date.now().toString(36)}${Math.random().toString(36).slice(2,7)}`}
 
@@ -201,31 +207,62 @@ function undo(){if(!undoStack.length)return;const s=undoStack.pop();state=JSON.p
 function cellKey(date,h){return `${date}-${pad(h)}`}
 function slotEnd(date,h){const d=parseISO(date);d.setHours(h+1,0,0,0);return d}
 function effectiveDate(displayDate,h){return slotEnd(displayDate,h)<=new Date()?addDays(displayDate,7):displayDate}
-function visibleResolved(displayDate,h){return resolved(effectiveDate(displayDate,h),h)}
+// Para una franja ya terminada, la celda queda vacía salvo que el usuario la haya editado manualmente para la próxima semana.
+// Los eventos planificados/repetitivos futuros NO se muestran antes de que su fecha llegue a la cabecera.
+function visibleResolved(displayDate,h){
+ const now=new Date();
+ if(slotEnd(displayDate,h)<=now){
+   const nextDate=addDays(displayDate,7),manual=state.cells[cellKey(nextDate,h)];
+   return manual?{...manual,source:"cell",sourceId:cellKey(nextDate,h),startHour:h,endHour:h+1,date:nextDate}:null;
+ }
+ return resolved(displayDate,h)
+}
 function cleanupPast(){const now=new Date();let changed=false;for(const k of Object.keys(state.cells)){const m=k.match(/^(\d{4}-\d{2}-\d{2})-(\d{2})$/);if(!m)continue;const date=m[1],h=+m[2];if(slotEnd(date,h)<=now){delete state.cells[k];changed=true}}
-state.events=state.events.filter(e=>{if(e.repeat&&e.repeat!=="none")return true;const end=e.endHour??((e.startHour||0)+1);const d=parseISO(e.date);d.setHours(end,0,0,0);if(d<=now){changed=true;return false}return true});if(changed)saveState()}
+state.events=state.events.filter(e=>{if(e.repeat&&e.repeat!=="none")return true;const end=eventEndMin(e),d=parseISO(e.date);d.setHours(Math.floor(end/60),end%60,0,0);if(d<=now){changed=true;return false}return true});if(changed)saveState()}
 function eventMatches(e,date,h){if(!e||e.disabled)return false;let spec=e;if(e.repeat&&e.repeat!=="none"){
  if(date<e.startDate)return false;if(e.until&&date>e.until)return false;
  const ex=e.exceptions?.[date];if(ex?.cancelled)return false;if(ex)spec={...e,...ex};
  const dow=dayIndexFromISO(date),startDow=dayIndexFromISO(e.startDate);
  if(e.repeat==="daily"){} else if(e.repeat==="weekdays"&&dow>4)return false; else if(e.repeat==="weekly"&&dow!==startDow)return false; else if(e.repeat==="custom"&&!e.days?.includes(dow))return false;
  }else{if(e.date!==date)return false}
- return h>=spec.startHour&&h<spec.endHour;
+ const sm=eventStartMin(spec),em=eventEndMin(spec),slotS=h*60,slotE=(h+1)*60;return em>slotS&&sm<slotE;
 }
 function resolved(date,h){const manual=state.cells[cellKey(date,h)];if(manual)return {...manual,source:"cell",sourceId:cellKey(date,h),startHour:h,endHour:h+1,date};
-for(let i=state.events.length-1;i>=0;i--){const e=state.events[i];if(e.repeat&&e.repeat!=="none")continue;if(eventMatches(e,date,h))return {text:e.text,note:e.note||"",color:e.color,textColor:e.textColor,important:!!e.important,source:"event",sourceId:e.id,startHour:e.startHour,endHour:e.endHour,repeat:"none",date}}
-for(let i=state.events.length-1;i>=0;i--){const e=state.events[i];if(!e.repeat||e.repeat==="none")continue;if(eventMatches(e,date,h)){const ex=e.exceptions?.[date];const spec=ex&&!ex.cancelled?{...e,...ex}:e;return {text:spec.text,note:spec.note||"",color:spec.color,textColor:spec.textColor,important:!!spec.important,source:"event",sourceId:e.id,startHour:spec.startHour,endHour:spec.endHour,repeat:e.repeat,date}}}return null}
-function sameEventRange(a,b){return !!a&&!!b&&a.source==="event"&&b.source==="event"&&a.sourceId===b.sourceId&&a.date===b.date&&a.startHour===b.startHour&&a.endHour===b.endHour}
+for(let i=state.events.length-1;i>=0;i--){const e=state.events[i];if(e.repeat&&e.repeat!=="none")continue;if(eventMatches(e,date,h))return {text:e.text,note:e.note||"",color:e.color,textColor:e.textColor,important:!!e.important,source:"event",sourceId:e.id,startMin:eventStartMin(e),endMin:eventEndMin(e),startHour:eventStartHour(e),endHour:eventEndHourExclusive(e),repeat:"none",date}}
+for(let i=state.events.length-1;i>=0;i--){const e=state.events[i];if(!e.repeat||e.repeat==="none")continue;if(eventMatches(e,date,h)){const ex=e.exceptions?.[date];const spec=ex&&!ex.cancelled?{...e,...ex}:e;return {text:spec.text,note:spec.note||"",color:spec.color,textColor:spec.textColor,important:!!spec.important,source:"event",sourceId:e.id,startMin:eventStartMin(spec),endMin:eventEndMin(spec),startHour:eventStartHour(spec),endHour:eventEndHourExclusive(spec),repeat:e.repeat,date}}}return null}
+function sameEventRange(a,b){return !!a&&!!b&&a.source==="event"&&b.source==="event"&&a.sourceId===b.sourceId&&a.date===b.date&&a.startMin===b.startMin&&a.endMin===b.endMin}
+function eventFillPercent(v,h){if(!v||v.source!=="event")return 100;const sm=v.startMin??v.startHour*60,em=v.endMin??v.endHour*60,startH=Math.floor(sm/60),endH=Math.ceil(em/60)-1,sr=sm%60,er=em%60;if(startH===endH){if(sr>0&&er===0)return sr/60*100;if(sr===0&&er>0)return er/60*100;if(sr>0&&er>0)return Math.max(25,(em-sm)/60*100);return 100}if(h===startH&&sr>0)return sr/60*100;if(h===endH&&er>0)return er/60*100;return 100}
+function applyEventBackground(td,v,h){const c=norm(v.color),pct=eventFillPercent(v,h);if(pct>=99.9){td.style.background=c;return}td.classList.add("partialEvent");td.style.background=`linear-gradient(to bottom, ${c} 0 ${pct}%, var(--cell) ${pct}% 100%)`}
 function sameImportantRange(a,b){return sameEventRange(a,b)&&a.important&&b.important}
 
 PALETTE.forEach(c=>{const b=document.createElement("button");b.className="sw";b.type="button";b.style.background=c;b.onclick=()=>colorInput.value=c;palette.appendChild(b)});
-for(let h=0;h<24;h++){const a=document.createElement("option");a.value=h;a.textContent=`${h}:00`;eventStart.appendChild(a);const b=document.createElement("option");b.value=h+1;b.textContent=`${h+1}:00`;eventEnd.appendChild(b)}
+for(let m=0;m<1440;m+=15){const a=document.createElement("option");a.value=m;a.textContent=formatTime(m);eventStart.appendChild(a)}for(let m=15;m<=1440;m+=15){const b=document.createElement("option");b.value=m;b.textContent=formatTime(m);eventEnd.appendChild(b)}
 DAYS.forEach((d,i)=>{const b=document.createElement("button");b.type="button";b.className="daytoggle";b.textContent=d;b.dataset.day=i;b.onclick=()=>b.classList.toggle("on");weekdayPicker.appendChild(b)});
 
 function render(){cleanupPast();renderMonth();renderHeader();renderGrid();renderWords();renderCurrentPreview();renderTools()}
 function renderMonth(){const n=new Date();monthTitle.textContent=MONTHS[n.getMonth()]+" "+n.getFullYear()}
 function renderHeader(){dayRow.innerHTML="<th>Notas</th>";const dates=weekDates(),today=isoDate(new Date());dates.forEach((s,i)=>{const th=document.createElement("th"),d=parseISO(s);th.innerHTML=DAYS[i]+"<span class='daynum'>"+d.getDate()+"</span>";if(s===today)th.classList.add("todayHead");dayRow.appendChild(th)})}
-function renderGrid(){grid.innerHTML="";const now=new Date(),today=isoDate(now),hr=now.getHours(),dates=weekDates();for(let h=0;h<24;h++){const tr=document.createElement("tr"),th=document.createElement("th");th.textContent=h;if(h===hr)th.classList.add("currentHour");tr.appendChild(th);for(let d=0;d<7;d++){const displayDate=dates[d],td=document.createElement("td");td.dataset.d=d;td.dataset.date=displayDate;td.dataset.h=h;const v=visibleResolved(displayDate,h);if(v){td.style.background=norm(v.color);td.style.color=v.textColor||"#111111";let showText=true;if(v.source==="event"){const prev=h>0?visibleResolved(displayDate,h-1):null,next=h<23?visibleResolved(displayDate,h+1):null;const samePrev=sameEventRange(prev,v),sameNext=sameEventRange(v,next);if(samePrev){showText=false;td.classList.add(sameNext?"eventBlockMid":"eventBlockEnd")}else if(sameNext)td.classList.add("eventBlockStart");if(v.important){td.classList.add("importantRange");if(!sameImportantRange(prev,v))td.classList.add("importantStart");if(!sameImportantRange(v,next))td.classList.add("importantEnd")}}td.textContent=showText?(v.text||""):""}else{td.textContent="";td.style.background="#fff";td.style.color="#111"}if(displayDate===today&&h===hr)td.classList.add("currentCell");bindCell(td);tr.appendChild(td)}grid.appendChild(tr)}}
+function renderGrid(){
+ grid.innerHTML="";const now=new Date(),today=isoDate(now),hr=now.getHours(),dates=weekDates();
+ for(let h=0;h<24;h++){
+  const tr=document.createElement("tr"),th=document.createElement("th");th.textContent=h;if(h===hr)th.classList.add("currentHour");tr.appendChild(th);
+  for(let d=0;d<7;d++){
+   const displayDate=dates[d],td=document.createElement("td");td.dataset.d=d;td.dataset.date=displayDate;td.dataset.h=h;const v=visibleResolved(displayDate,h);
+   if(v){
+    if(v.source==="event")applyEventBackground(td,v,h);else td.style.background=norm(v.color);
+    td.style.color=v.textColor||"#111111";let showText=true;
+    if(v.source==="event"){
+     const prev=h>0?visibleResolved(displayDate,h-1):null,next=h<23?visibleResolved(displayDate,h+1):null;const samePrev=sameEventRange(prev,v),sameNext=sameEventRange(v,next);
+     if(samePrev){showText=false;td.classList.add(sameNext?"eventBlockMid":"eventBlockEnd")}else if(sameNext)td.classList.add("eventBlockStart");
+     if(v.important){td.classList.add("importantRange");if(!sameImportantRange(prev,v))td.classList.add("importantStart");if(!sameImportantRange(v,next))td.classList.add("importantEnd")}
+    }
+    td.textContent=showText?(v.text||""):"";
+   }else{td.textContent="";td.style.background="var(--cell)";td.style.color="#111"}
+   if(displayDate===today&&h===hr)td.classList.add("currentCell");bindCell(td);tr.appendChild(td)
+  }
+  grid.appendChild(tr)
+ }
+}
 function renderWords(){wordbar.innerHTML="";words.forEach((w,i)=>{const isClear=w.action==="clear",div=document.createElement("div");div.className="chip"+(selectedWord===i?" active":"")+(isClear&&selectedWord===i?" deleteMode":"");div.textContent=w.text||"+";div.style.background=isClear?"#fff":norm(w.color);div.style.color=isClear?"#b80016":(w.textColor||"#111111");div.onclick=()=>{if(suppressClick){suppressClick=false;return}if(isClear){selectedWord=selectedWord===i?null:i;renderWords();return}if(!w.text){openWord(i);return}selectedWord=selectedWord===i?null:i;renderWords()};let timer;const start=()=>{clearTimeout(timer);if(!isClear)timer=setTimeout(()=>{suppressClick=true;openWord(i)},520)},end=()=>clearTimeout(timer);div.addEventListener("touchstart",start,{passive:true});div.addEventListener("touchend",end,{passive:true});div.addEventListener("mousedown",start);div.addEventListener("mouseup",end);wordbar.appendChild(div)})}
 function bindCell(td){td.onclick=()=>{if(suppressClick){suppressClick=false;return}const displayDate=td.dataset.date,h=+td.dataset.h,d=+td.dataset.d,date=effectiveDate(displayDate,h);selectedCell={displayDate,date,h,d};if(selectedWord!==null&&words[selectedWord]?.action==="clear"){snap();deleteAt(date,h);render();return}if(selectedWord!==null&&words[selectedWord]?.text){snap();setCell(date,h,words[selectedWord].text,words[selectedWord].color,words[selectedWord].textColor,"",false);render();return}const v=visibleResolved(displayDate,h);if(v?.source==="event")openEventForExisting(v.sourceId,v.date);else openCell(displayDate,date,h,d)};td.addEventListener("touchstart",startDrag,{passive:false});td.addEventListener("touchmove",moveDrag,{passive:false});td.addEventListener("touchend",endDrag,{passive:false});td.addEventListener("mousedown",startDrag);td.addEventListener("mouseenter",moveDragMouse)}
 window.addEventListener("mouseup",endDrag);
@@ -237,7 +274,8 @@ function endDrag(){clearTimeout(longTimer);if(drag){drag=false;dragValue=null;sa
 function applyDrag(td){const displayDate=td.dataset.date,h=+td.dataset.h,date=effectiveDate(displayDate,h);if(dragValue.clear)deleteAt(date,h);else setCell(date,h,dragValue.text,dragValue.color,dragValue.textColor,dragValue.note||"",false,false);}
 function setCell(date,h,text,color,textColor="#111111",note="",important=false,doSave=true){const k=cellKey(date,h),old=state.cells[k];if(text)state.cells[k]={text,note:note||"",color:norm(color),textColor:textColor||"#111111",important:important||!!old?.important};else delete state.cells[k];if(doSave)saveState()}
 function deleteAt(date,h){const v=resolved(date,h);if(v?.source==="event"){const e=state.events.find(x=>x.id===v.sourceId);if(e?.repeat&&e.repeat!=="none"){e.exceptions=e.exceptions||{};e.exceptions[date]={cancelled:true}}else if(e)state.events=state.events.filter(x=>x.id!==e.id)}else delete state.cells[cellKey(date,h)];saveState()}
-function renderCurrentPreview(){const date=isoDate(new Date()),h=new Date().getHours(),v=resolved(date,h);if(!v){previewCard.classList.remove("show","importantPreview");previewCard.textContent="";previewCard.style.background="#fff";return}previewCard.textContent=(v.note&&v.note.trim())?v.note:v.text;previewCard.style.background=norm(v.color);previewCard.style.color=v.textColor||"#111111";previewCard.classList.toggle("importantPreview",!!v.important);previewCard.classList.add("show")}
+function renderCurrentPreview(){const n=new Date(),date=isoDate(n),h=n.getHours(),minute=h*60+n.getMinutes(),v=resolved(date,h);if(v?.source==="event"&&(minute<(v.startMin??0)||minute>=(v.endMin??1440)))return hidePreview();if(!v)return hidePreview();previewCard.textContent=(v.note&&v.note.trim())?v.note:v.text;previewCard.style.background=norm(v.color);previewCard.style.color=v.textColor||"#111111";previewCard.classList.toggle("importantPreview",!!v.important);previewCard.classList.add("show")}
+function hidePreview(){previewCard.classList.remove("show","importantPreview");previewCard.textContent="";previewCard.style.background="var(--page)"}
 function renderTools(){if(!selectedCell){importantBtn.classList.remove("importantActive");return}const v=visibleResolved(selectedCell.displayDate||selectedCell.date,selectedCell.h);importantBtn.classList.toggle("importantActive",!!v?.important)}
 function openCell(displayDate,date,h,d){selectedCell={displayDate,date,h,d};editTarget={type:"cell",displayDate,date,h,d};const v=state.cells[cellKey(date,h)]||visibleResolved(displayDate,h)||{text:"",note:"",color:"#ffffff",textColor:"#111111"};modalTitle.textContent=`${DAYS[d]} ${h}:00`;textInput.value=v.text||"";noteInput.value=v.note||"";cellNoteField.style.display="block";colorInput.value=norm(v.color);textColorInput.value=norm(v.textColor||"#111111");modal.classList.add("show");renderTools();setTimeout(()=>textInput.focus(),50)}
 function openWord(i){editTarget={type:"word",i};const w=words[i]||{text:"",color:"#ffffff",textColor:"#111111"};modalTitle.textContent="Palabra rápida";textInput.value=w.text||"";noteInput.value="";cellNoteField.style.display="none";colorInput.value=norm(w.color);textColorInput.value=norm(w.textColor||"#111111");modal.classList.add("show");setTimeout(()=>textInput.focus(),50)}
@@ -258,23 +296,23 @@ function nextOccurrence(e,from=isoDate(new Date())){
  if(!e)return null;
  if(!e.repeat||e.repeat==="none")return e.date>=from?e.date:null;
  const start=e.startDate||from,begin=start>from?start:from;
- for(let i=0;i<370;i++){const date=addDays(begin,i);if(e.until&&date>e.until)break;const h=e.startHour||0;if(eventMatches(e,date,h))return date}
+ for(let i=0;i<370;i++){const date=addDays(begin,i);if(e.until&&date>e.until)break;const h=eventStartHour(e);if(eventMatches(e,date,h))return date}
  return null
 }
 function repeatLabel(e){if(!e.repeat||e.repeat==="none")return "Una vez";if(e.repeat==="weekdays")return "L-V";if(e.repeat==="daily")return "Cada día";if(e.repeat==="weekly")return "Semanal";if(e.repeat==="custom")return "Días concretos";return "Repetitivo"}
 function openEventList(){
  eventList.innerHTML="";
- const items=state.events.map(e=>({e,date:nextOccurrence(e)})).filter(x=>x.date).sort((a,b)=>a.date.localeCompare(b.date)||(a.e.startHour||0)-(b.e.startHour||0));
+ const items=state.events.map(e=>({e,date:nextOccurrence(e)})).filter(x=>x.date).sort((a,b)=>a.date.localeCompare(b.date)||eventStartMin(a.e)-eventStartMin(b.e));
  if(!items.length){eventList.innerHTML='<div class="emptyList">No hay eventos planificados.</div>'}
- else items.forEach(({e,date})=>{const b=document.createElement("button");b.type="button";b.className="eventItem";const d=parseISO(date);const dateTxt=`${DAYS[dayIndexFromISO(date)]} ${d.getDate()} ${MONTHS[d.getMonth()]}`;b.innerHTML=`<div class="eventItemTitle"><span class="eventDot" style="background:${norm(e.color)}"></span>${e.text||"(Sin texto)"}</div><div class="eventItemMeta">${dateTxt} · ${e.startHour}:00–${e.endHour}:00 · ${repeatLabel(e)}</div>`;b.onclick=()=>{eventListModal.classList.remove("show");openEventForExisting(e.id,date)};eventList.appendChild(b)})
+ else items.forEach(({e,date})=>{const b=document.createElement("button");b.type="button";b.className="eventItem";const d=parseISO(date);const dateTxt=`${DAYS[dayIndexFromISO(date)]} ${d.getDate()} ${MONTHS[d.getMonth()]}`;b.innerHTML=`<div class="eventItemTitle"><span class="eventDot" style="background:${norm(e.color)}"></span>${e.text||"(Sin texto)"}</div><div class="eventItemMeta">${dateTxt} · ${formatTime(eventStartMin(e))}–${formatTime(eventEndMin(e))} · ${repeatLabel(e)}</div>`;b.onclick=()=>{eventListModal.classList.remove("show");openEventForExisting(e.id,date)};eventList.appendChild(b)})
  eventModal.classList.remove("show");eventListModal.classList.add("show")
 }
-function fillEventForm(e,dateOverride){const repeat=e?.repeat||"none",date=dateOverride||e?.date||e?.startDate||isoDate(new Date());eventText.value=e?.text||"";eventNote.value=e?.note||"";eventDate.value=date;eventRepeat.value=repeat;eventStart.value=String(e?.startHour??8);eventEnd.value=String(e?.endHour??9);eventUntil.value=e?.until||"";eventColor.value=norm(e?.color||"#13bde8");eventTextColor.value=norm(e?.textColor||"#111111");eventImportant.checked=!!e?.important;setWeekdayPicker(e?.days||[]);updateRepeatUI()}
+function fillEventForm(e,dateOverride){const repeat=e?.repeat||"none",date=dateOverride||e?.date||e?.startDate||isoDate(new Date());eventText.value=e?.text||"";eventNote.value=e?.note||"";eventDate.value=date;eventRepeat.value=repeat;eventStart.value=String(e?eventStartMin(e):480);eventEnd.value=String(e?eventEndMin(e):540);eventUntil.value=e?.until||"";eventColor.value=norm(e?.color||"#13bde8");eventTextColor.value=norm(e?.textColor||"#111111");eventImportant.checked=!!e?.important;setWeekdayPicker(e?.days||[]);updateRepeatUI()}
 function openEventNew(){eventEdit={mode:"new",eventId:null,date:null,scope:"day"};eventTitle.textContent="Planificar evento";scopeRow.classList.remove("show");fillEventForm(null);document.getElementById("eventDelete").style.visibility="hidden";eventModal.classList.add("show")}
 function openEventForExisting(id,date){const e=state.events.find(x=>x.id===id);if(!e)return;eventEdit={mode:"edit",eventId:id,date,scope:(e.repeat&&e.repeat!=="none")?"day":"series"};eventTitle.textContent=(e.repeat&&e.repeat!=="none")?"Editar evento repetitivo":"Editar evento";scopeRow.classList.toggle("show",e.repeat&&e.repeat!=="none");scopeRow.querySelectorAll(".scopeBtn").forEach(b=>b.classList.toggle("on",b.dataset.scope===eventEdit.scope));const ex=e.exceptions?.[date];fillEventForm(ex&&!ex.cancelled?{...e,...ex}:e,date);document.getElementById("eventDelete").style.visibility="visible";eventModal.classList.add("show")}
-function formEvent(){const text=eventText.value.trim(),note=eventNote.value.trim(),date=eventDate.value,startHour=+eventStart.value,endHour=+eventEnd.value,repeat=eventRepeat.value;if(!text||!date||endHour<=startHour)return null;let days=getWeekdayPicker();if(repeat==="weekdays")days=[0,1,2,3,4];if(repeat==="daily")days=[0,1,2,3,4,5,6];if(repeat==="weekly")days=[dayIndexFromISO(date)];return {text,note,date,startDate:date,startHour,endHour,repeat,days,until:eventUntil.value||null,color:norm(eventColor.value),textColor:norm(eventTextColor.value),important:eventImportant.checked}}
+function formEvent(){const text=eventText.value.trim(),note=eventNote.value.trim(),date=eventDate.value,startMin=+eventStart.value,endMin=+eventEnd.value,repeat=eventRepeat.value;if(!text||!date||endMin<=startMin)return null;let days=getWeekdayPicker();if(repeat==="weekdays")days=[0,1,2,3,4];if(repeat==="daily")days=[0,1,2,3,4,5,6];if(repeat==="weekly")days=[dayIndexFromISO(date)];return {text,note,date,startDate:date,startMin,endMin,startHour:Math.floor(startMin/60),endHour:Math.ceil(endMin/60),repeat,days,until:eventUntil.value||null,color:norm(eventColor.value),textColor:norm(eventTextColor.value),important:eventImportant.checked}}
 function previousDate(s){return addDays(s,-1)}
-document.getElementById("eventSave").onclick=()=>{const f=formEvent();if(!f){alert("Revisa el texto, la fecha y las horas del evento.");return}snap();if(eventEdit.mode==="new"){state.events.push({id:uid(),...f,exceptions:{}})}else{const e=state.events.find(x=>x.id===eventEdit.eventId);if(!e)return;const repeating=e.repeat&&e.repeat!=="none";if(!repeating||eventEdit.scope==="series"){Object.assign(e,f,{date:f.repeat==="none"?f.date:undefined,startDate:f.repeat==="none"?undefined:f.startDate});if(f.repeat==="none"){delete e.startDate;delete e.until;delete e.days}else delete e.date;e.exceptions=e.exceptions||{}}else if(eventEdit.scope==="day"){e.exceptions=e.exceptions||{};e.exceptions[eventEdit.date]={text:f.text,note:f.note,startHour:f.startHour,endHour:f.endHour,color:f.color,textColor:f.textColor,important:f.important}}else if(eventEdit.scope==="from"){e.until=previousDate(eventEdit.date);state.events.push({id:uid(),...f,startDate:eventEdit.date,date:undefined,exceptions:{}})}}saveState();eventModal.classList.remove("show");render()};
+document.getElementById("eventSave").onclick=()=>{const f=formEvent();if(!f){alert("Revisa el texto, la fecha y las horas del evento.");return}snap();if(eventEdit.mode==="new"){state.events.push({id:uid(),...f,exceptions:{}})}else{const e=state.events.find(x=>x.id===eventEdit.eventId);if(!e)return;const repeating=e.repeat&&e.repeat!=="none";if(!repeating||eventEdit.scope==="series"){Object.assign(e,f,{date:f.repeat==="none"?f.date:undefined,startDate:f.repeat==="none"?undefined:f.startDate});if(f.repeat==="none"){delete e.startDate;delete e.until;delete e.days}else delete e.date;e.exceptions=e.exceptions||{}}else if(eventEdit.scope==="day"){e.exceptions=e.exceptions||{};e.exceptions[eventEdit.date]={text:f.text,note:f.note,startMin:f.startMin,endMin:f.endMin,startHour:f.startHour,endHour:f.endHour,color:f.color,textColor:f.textColor,important:f.important}}else if(eventEdit.scope==="from"){e.until=previousDate(eventEdit.date);state.events.push({id:uid(),...f,startDate:eventEdit.date,date:undefined,exceptions:{}})}}saveState();eventModal.classList.remove("show");render()};
 document.getElementById("eventDelete").onclick=()=>{if(eventEdit.mode!=="edit")return;snap();const e=state.events.find(x=>x.id===eventEdit.eventId);if(!e)return;const repeating=e.repeat&&e.repeat!=="none";if(repeating&&eventEdit.scope==="day"){e.exceptions=e.exceptions||{};e.exceptions[eventEdit.date]={cancelled:true}}else if(repeating&&eventEdit.scope==="from"){e.until=previousDate(eventEdit.date)}else state.events=state.events.filter(x=>x.id!==e.id);saveState();eventModal.classList.remove("show");render()};
 document.getElementById("eventCancel").onclick=()=>eventModal.classList.remove("show");eventModal.onclick=e=>{if(e.target===eventModal)eventModal.classList.remove("show")};
 

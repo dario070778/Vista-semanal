@@ -1,8 +1,9 @@
-# Vista semanal 3.2
+# Vista semanal 3.5
 
 Cambios principales:
-- Columnas fijas L-M-X-J-V-S-D con fechas siempre futuras o de hoy: cada columna muestra la próxima ocurrencia de ese día de la semana.
-- Si hoy es martes 11, la cabecera muestra L17, M11, X12, J13, V14, S15, D16.
-- Eventos planificados accesibles desde Planificar > Eventos planificados, incluso si su fecha aún no está visible.
-- Desde esa lista se pueden abrir, modificar o eliminar eventos futuros y series repetitivas.
-- Mantiene la lógica de notas, prioridades manual > fecha concreta > repetitivo, edición de franjas pasadas y bloques continuos.
+- Nuevo diseño aprobado: fondo general y cuadrícula en gris más marcado.
+- Cabeceras de días negras con texto blanco.
+- Columna de horas negra con texto blanco.
+- Las casillas vacías quedan grises para que los eventos con fondo blanco destaquen claramente.
+- Mantiene todas las funciones de la 3.4: eventos futuros, recurrencias, notas, prioridades, intervalos de 15 minutos, relleno parcial y marco dorado continuo.
+- Mantiene el icono sin 24x7.
