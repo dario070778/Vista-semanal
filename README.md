@@ -23,3 +23,8 @@
 - Al cambiar la fecha de inicio de un evento recurrente, la edición pasa automáticamente a "Toda la serie".
 - Si cambia la estructura de la recurrencia (fecha, días, final u horario), se eliminan excepciones antiguas que podían ocultar lunes o martes futuros.
 - Se mantienen Supabase, la persistencia de eventos y el consumo visual continuo.
+
+## Versión 4.6
+- Los eventos recurrentes se evalúan por la fecha real de cada columna fija L-M-X-J-V-S-D.
+- Corrige la proyección en la semana especial donde, por ejemplo, L17 y M18 aparecen visualmente antes que X12 y J13.
+- Se mantienen Supabase, la edición confirmada en nube y el consumo visual continuo.

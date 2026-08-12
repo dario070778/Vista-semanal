@@ -7,8 +7,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Vista semanal">
 <meta name="mobile-web-app-capable" content="yes">
-<link rel="manifest" href="manifest.json?v=450">
-<link rel="icon" href="icon.svg?v=450" type="image/svg+xml">
+<link rel="manifest" href="manifest.json?v=460">
+<link rel="icon" href="icon.svg?v=460" type="image/svg+xml">
 <title>Vista semanal</title>
 <style>
 :root{--grid:#f4f4f6;--ui-border:#b9b9bd;--page:#d1d1d3;--cell:#d9d9dc;--head:#0b0b0d;--red:#e2465b;--gold:#d4af37;--text:#111}
@@ -349,9 +349,29 @@ function eventMatches(e,date,h){if(!e||e.disabled)return false;let spec=e;if(e.r
  }else{if(e.date!==date)return false}
  const sm=eventStartMin(spec),em=eventEndMin(spec),slotS=h*60,slotE=(h+1)*60;return em>slotS&&sm<slotE;
 }
-function resolved(date,h){const manual=state.cells[cellKey(date,h)];if(manual){const sm=Number.isFinite(+manual.startMin)?+manual.startMin:h*60,em=Number.isFinite(+manual.endMin)?+manual.endMin:(h+1)*60;return {...manual,startMin:sm,endMin:em,source:"cell",sourceId:manual.manualId||cellKey(date,h),startHour:Math.floor(sm/60),endHour:Math.ceil(em/60),date};}
-for(let i=state.events.length-1;i>=0;i--){const e=state.events[i];if(e.repeat&&e.repeat!=="none")continue;if(eventMatches(e,date,h))return {text:e.text,note:e.note||"",color:e.color,textColor:e.textColor,important:!!e.important,source:"event",sourceId:e.id,startMin:eventStartMin(e),endMin:eventEndMin(e),startHour:eventStartHour(e),endHour:eventEndHourExclusive(e),repeat:"none",date}}
-for(let i=state.events.length-1;i>=0;i--){const e=state.events[i];if(!e.repeat||e.repeat==="none")continue;if(eventMatches(e,date,h)){const ex=e.exceptions?.[date];const spec=ex&&!ex.cancelled?{...e,...ex}:e;return {text:spec.text,note:spec.note||"",color:spec.color,textColor:spec.textColor,important:!!spec.important,source:"event",sourceId:e.id,startMin:eventStartMin(spec),endMin:eventEndMin(spec),startHour:eventStartHour(spec),endHour:eventEndHourExclusive(spec),repeat:e.repeat,date}}}return null}
+function resolved(date,h){
+ const manual=state.cells[cellKey(date,h)];
+ if(manual){
+  const sm=Number.isFinite(+manual.startMin)?+manual.startMin:h*60,em=Number.isFinite(+manual.endMin)?+manual.endMin:(h+1)*60;
+  return {...manual,startMin:sm,endMin:em,source:"cell",sourceId:manual.manualId||cellKey(date,h),startHour:Math.floor(sm/60),endHour:Math.ceil(em/60),date};
+ }
+ // Eventos de fecha concreta: evaluar exclusivamente contra la fecha real de esta columna.
+ for(let i=state.events.length-1;i>=0;i--){
+  const e=state.events[i];
+  if(e.repeat&&e.repeat!=="none")continue;
+  if(eventMatches(e,date,h))return {text:e.text,note:e.note||"",color:e.color,textColor:e.textColor,important:!!e.important,source:"event",sourceId:e.id,startMin:eventStartMin(e),endMin:eventEndMin(e),startHour:eventStartHour(e),endHour:eventEndHourExclusive(e),repeat:"none",date};
+ }
+ // Recurrentes: cada columna se resuelve por su fecha ISO real (p.ej. L17, M18, X12...).
+ for(let i=state.events.length-1;i>=0;i--){
+  const e=state.events[i];
+  if(!e.repeat||e.repeat==="none")continue;
+  if(!eventMatches(e,date,h))continue;
+  const ex=e.exceptions?.[date];
+  const spec=ex&&!ex.cancelled?{...e,...ex}:e;
+  return {text:spec.text,note:spec.note||"",color:spec.color,textColor:spec.textColor,important:!!spec.important,source:"event",sourceId:e.id,startMin:eventStartMin(spec),endMin:eventEndMin(spec),startHour:eventStartHour(spec),endHour:eventEndHourExclusive(spec),repeat:e.repeat,date};
+ }
+ return null
+}
 function sameEventRange(a,b){return !!a&&!!b&&a.source==="event"&&b.source==="event"&&a.sourceId===b.sourceId&&a.date===b.date&&a.startMin===b.startMin&&a.endMin===b.endMin}
 function sameManualRange(a,b){return !!a&&!!b&&a.source==="cell"&&b.source==="cell"&&a.sourceId===b.sourceId&&a.date===b.date&&a.startMin===b.startMin&&a.endMin===b.endMin}
 function sameRange(a,b){return sameEventRange(a,b)||sameManualRange(a,b)}
@@ -378,7 +398,11 @@ function applyManualBackground(td,v,h){
  td.classList.add("partialEvent");td.style.backgroundColor="var(--cell)";td.style.backgroundImage=`linear-gradient(to right, var(--cell) 0%, var(--cell) ${from}%, ${c} ${from}%, ${c} ${to}%, var(--cell) ${to}%, var(--cell) 100%)`;
 }
 function renderGrid(){
- grid.innerHTML="";const now=new Date(),today=isoDate(now),hr=now.getHours(),dates=weekDates();
+ grid.innerHTML="";
+ const now=new Date(),today=isoDate(now),hr=now.getHours();
+ // Estas son las fechas reales de cada columna fija L-M-X-J-V-S-D.
+ // Ej. miércoles 12 => [L17,M18,X12,J13,V14,S15,D16].
+ const dates=weekDates();
  for(let h=0;h<24;h++){
   const tr=document.createElement("tr"),th=document.createElement("th");th.textContent=h;if(h===hr)th.classList.add("currentHour");tr.appendChild(th);
   for(let d=0;d<7;d++){
