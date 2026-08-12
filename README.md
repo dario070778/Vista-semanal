@@ -18,3 +18,8 @@
 - Las ediciones y eliminaciones de eventos planificados se confirman inmediatamente en Supabase antes de cerrar el editor.
 - Se evita que una lectura remota anterior revierta un cambio recién guardado.
 - Se mantienen el consumo visual continuo y las correcciones de recurrencia de la 4.3.
+
+## Versión 4.5
+- Al cambiar la fecha de inicio de un evento recurrente, la edición pasa automáticamente a "Toda la serie".
+- Si cambia la estructura de la recurrencia (fecha, días, final u horario), se eliminan excepciones antiguas que podían ocultar lunes o martes futuros.
+- Se mantienen Supabase, la persistencia de eventos y el consumo visual continuo.

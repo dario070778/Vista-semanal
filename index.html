@@ -7,8 +7,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Vista semanal">
 <meta name="mobile-web-app-capable" content="yes">
-<link rel="manifest" href="manifest.json?v=440">
-<link rel="icon" href="icon.svg?v=440" type="image/svg+xml">
+<link rel="manifest" href="manifest.json?v=450">
+<link rel="icon" href="icon.svg?v=450" type="image/svg+xml">
 <title>Vista semanal</title>
 <style>
 :root{--grid:#f4f4f6;--ui-border:#b9b9bd;--page:#d1d1d3;--cell:#d9d9dc;--head:#0b0b0d;--red:#e2465b;--gold:#d4af37;--text:#111}
@@ -429,7 +429,7 @@ function setWeekdayPicker(days=[]){weekdayPicker.querySelectorAll(".daytoggle").
 function getWeekdayPicker(){return [...weekdayPicker.querySelectorAll(".daytoggle.on")].map(b=>+b.dataset.day)}
 function setEventScope(scope){eventEdit.scope=scope;scopeRow.querySelectorAll(".scopeBtn").forEach(x=>x.classList.toggle("on",x.dataset.scope===scope))}
 function updateRepeatUI(resetDays=false){const r=eventRepeat.value;repeatBox.style.display=r==="none"?"none":"block";if(!resetDays)return;if(r==="weekdays")setWeekdayPicker([0,1,2,3,4]);else if(r==="weekly"){const current=getWeekdayPicker();if(!current.length)setWeekdayPicker([dayIndexFromISO(eventDate.value||isoDate(new Date()))])}else if(r==="daily")setWeekdayPicker([0,1,2,3,4,5,6]);else if(r==="custom")setWeekdayPicker([])}
-eventRepeat.onchange=()=>{updateRepeatUI(true);if(eventEdit.mode==="edit")setEventScope("series")};eventDate.onchange=()=>{};
+eventRepeat.onchange=()=>{updateRepeatUI(true);if(eventEdit.mode==="edit")setEventScope("series")};eventDate.onchange=()=>{if(eventEdit.mode==="edit"){const ev=state.events.find(x=>x.id===eventEdit.eventId);if(ev?.repeat&&ev.repeat!=="none")setEventScope("series")}};
 scopeRow.querySelectorAll(".scopeBtn").forEach(b=>b.onclick=()=>setEventScope(b.dataset.scope));
 function nextOccurrence(e,from=isoDate(new Date())){
  if(!e)return null;
@@ -451,7 +451,27 @@ function openEventNew(){eventEdit={mode:"new",eventId:null,date:null,scope:"day"
 function openEventForExisting(id,date){const e=state.events.find(x=>x.id===id);if(!e)return;eventEdit={mode:"edit",eventId:id,date,scope:(e.repeat&&e.repeat!=="none")?"day":"series"};eventTitle.textContent=(e.repeat&&e.repeat!=="none")?"Editar evento repetitivo":"Editar evento";scopeRow.classList.toggle("show",e.repeat&&e.repeat!=="none");scopeRow.querySelectorAll(".scopeBtn").forEach(b=>b.classList.toggle("on",b.dataset.scope===eventEdit.scope));const ex=e.exceptions?.[date];fillEventForm(ex&&!ex.cancelled?{...e,...ex}:e,date);document.getElementById("eventDelete").style.visibility="visible";eventModal.classList.add("show")}
 function formEvent(){const text=eventText.value.trim(),note=eventNote.value.trim(),date=eventDate.value,startMin=+eventStart.value,endMin=+eventEnd.value,repeat=eventRepeat.value;if(!text||!date||endMin<=startMin)return null;let days=getWeekdayPicker();if(repeat==="weekdays")days=[0,1,2,3,4];if(repeat==="daily")days=[0,1,2,3,4,5,6];if(repeat==="weekly"&&!days.length)days=[dayIndexFromISO(date)];if(repeat==="custom"&&!days.length)days=[dayIndexFromISO(date)];return {text,note,date,startDate:date,startMin,endMin,startHour:Math.floor(startMin/60),endHour:Math.ceil(endMin/60),repeat,days,until:eventUntil.value||null,color:norm(eventColor.value),textColor:norm(eventTextColor.value),important:eventImportant.checked}}
 function previousDate(s){return addDays(s,-1)}
-document.getElementById("eventSave").onclick=async()=>{const f=formEvent();if(!f){alert("Revisa el texto, la fecha y las horas del evento.");return}snap();if(eventEdit.mode==="new"){state.events.push({id:uid(),...f,exceptions:{}})}else{const e=state.events.find(x=>x.id===eventEdit.eventId);if(!e)return;const repeating=e.repeat&&e.repeat!=="none";if(!repeating||eventEdit.scope==="series"){Object.assign(e,f,{date:f.repeat==="none"?f.date:undefined,startDate:f.repeat==="none"?undefined:f.startDate});if(f.repeat==="none"){delete e.startDate;delete e.until;delete e.days}else delete e.date;e.exceptions=e.exceptions||{}}else if(eventEdit.scope==="day"){e.exceptions=e.exceptions||{};e.exceptions[eventEdit.date]={text:f.text,note:f.note,startMin:f.startMin,endMin:f.endMin,startHour:f.startHour,endHour:f.endHour,color:f.color,textColor:f.textColor,important:f.important}}else if(eventEdit.scope==="from"){e.until=previousDate(eventEdit.date);state.events.push({id:uid(),...f,startDate:eventEdit.date,date:undefined,exceptions:{}})}}localStorage.setItem(STATE_KEY,JSON.stringify(state));markLocalUpdated();render();const ok=await saveCloudNow();if(!ok){alert("El cambio se ha guardado en este dispositivo, pero no se ha podido confirmar en la nube. No cierres la página y vuelve a intentarlo.");return}eventModal.classList.remove("show");render()};
+document.getElementById("eventSave").onclick=async()=>{const f=formEvent();if(!f){alert("Revisa el texto, la fecha y las horas del evento.");return}snap();if(eventEdit.mode==="new"){state.events.push({id:uid(),...f,exceptions:{}})}else{const e=state.events.find(x=>x.id===eventEdit.eventId);if(!e)return;const repeating=e.repeat&&e.repeat!=="none";if(!repeating||eventEdit.scope==="series"){
+ const oldSchedule=JSON.stringify({
+  repeat:e.repeat||"none",
+  startDate:e.startDate||e.date||null,
+  days:Array.isArray(e.days)?[...e.days].sort():[],
+  until:e.until||null,
+  startMin:eventStartMin(e),
+  endMin:eventEndMin(e)
+ });
+ const newSchedule=JSON.stringify({
+  repeat:f.repeat||"none",
+  startDate:f.startDate||f.date||null,
+  days:Array.isArray(f.days)?[...f.days].sort():[],
+  until:f.until||null,
+  startMin:f.startMin,
+  endMin:f.endMin
+ });
+ Object.assign(e,f,{date:f.repeat==="none"?f.date:undefined,startDate:f.repeat==="none"?undefined:f.startDate});
+ if(f.repeat==="none"){delete e.startDate;delete e.until;delete e.days}else delete e.date;
+ if(oldSchedule!==newSchedule)e.exceptions={};else e.exceptions=e.exceptions||{};
+}else if(eventEdit.scope==="day"){e.exceptions=e.exceptions||{};e.exceptions[eventEdit.date]={text:f.text,note:f.note,startMin:f.startMin,endMin:f.endMin,startHour:f.startHour,endHour:f.endHour,color:f.color,textColor:f.textColor,important:f.important}}else if(eventEdit.scope==="from"){e.until=previousDate(eventEdit.date);state.events.push({id:uid(),...f,startDate:eventEdit.date,date:undefined,exceptions:{}})}}localStorage.setItem(STATE_KEY,JSON.stringify(state));markLocalUpdated();render();const ok=await saveCloudNow();if(!ok){alert("El cambio se ha guardado en este dispositivo, pero no se ha podido confirmar en la nube. No cierres la página y vuelve a intentarlo.");return}eventModal.classList.remove("show");render()};
 document.getElementById("eventDelete").onclick=async()=>{if(eventEdit.mode!=="edit")return;snap();const e=state.events.find(x=>x.id===eventEdit.eventId);if(!e)return;const repeating=e.repeat&&e.repeat!=="none";if(repeating&&eventEdit.scope==="day"){e.exceptions=e.exceptions||{};e.exceptions[eventEdit.date]={cancelled:true}}else if(repeating&&eventEdit.scope==="from"){e.until=previousDate(eventEdit.date)}else state.events=state.events.filter(x=>x.id!==e.id);localStorage.setItem(STATE_KEY,JSON.stringify(state));markLocalUpdated();render();const ok=await saveCloudNow();if(!ok){alert("La eliminación se ha aplicado en este dispositivo, pero no se ha podido confirmar en la nube.");return}eventModal.classList.remove("show");render()};
 document.getElementById("eventCancel").onclick=()=>eventModal.classList.remove("show");eventModal.onclick=e=>{if(e.target===eventModal)eventModal.classList.remove("show")};
 
