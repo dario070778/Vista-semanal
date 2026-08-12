@@ -13,3 +13,8 @@
 - Las ocurrencias pasadas simplemente dejan de mostrarse.
 - La sincronización con Supabase evita que una copia antigua sobrescriba una edición más reciente.
 - Se mantiene el consumo visual en cuartos de hora de la versión 4.2.
+
+## Versión 4.4
+- Las ediciones y eliminaciones de eventos planificados se confirman inmediatamente en Supabase antes de cerrar el editor.
+- Se evita que una lectura remota anterior revierta un cambio recién guardado.
+- Se mantienen el consumo visual continuo y las correcciones de recurrencia de la 4.3.
