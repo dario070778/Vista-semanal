@@ -71,7 +71,21 @@ function visibleResolved(displayDate,h){
    const nextDate=addDays(displayDate,7),manual=state.cells[cellKey(nextDate,h)];
    if(!manual)return null;const sm=Number.isFinite(+manual.startMin)?+manual.startMin:h*60,em=Number.isFinite(+manual.endMin)?+manual.endMin:(h+1)*60;return {...manual,startMin:sm,endMin:em,source:"cell",sourceId:manual.manualId||cellKey(nextDate,h),startHour:Math.floor(sm/60),endHour:Math.ceil(em/60),date:nextDate};
  }
- return resolved(displayDate,h)
+ const v=resolved(displayDate,h);
+ if(!v)return null;
+ // En la hora actual, ocultar en tiempo real la parte del evento que ya ha transcurrido.
+ // Ej.: un evento 14:00–14:30 desaparece por completo a partir de las 14:30.
+ const today=isoDate(now);
+ if(displayDate===today&&h===now.getHours()){
+   const nowMin=now.getHours()*60+now.getMinutes();
+   const originalStart=Number.isFinite(+v.startMin)?+v.startMin:h*60;
+   const originalEnd=Number.isFinite(+v.endMin)?+v.endMin:(h+1)*60;
+   const visibleStart=Math.max(originalStart,nowMin);
+   const visibleEnd=Math.min(originalEnd,(h+1)*60);
+   if(visibleStart>=visibleEnd)return null;
+   return {...v,visibleStartMin:visibleStart,visibleEndMin:visibleEnd};
+ }
+ return v
 }
 function cleanupPast(){const now=new Date();let changed=false;for(const k of Object.keys(state.cells)){const m=k.match(/^(\d{4}-\d{2}-\d{2})-(\d{2})$/);if(!m)continue;const date=m[1],h=+m[2];if(slotEnd(date,h)<=now){delete state.cells[k];changed=true}}
 state.events=state.events.filter(e=>{if(e.repeat&&e.repeat!=="none")return true;const end=eventEndMin(e),d=parseISO(e.date);d.setHours(Math.floor(end/60),end%60,0,0);if(d<=now){changed=true;return false}return true});if(changed)saveState()}
@@ -91,7 +105,7 @@ function sameManualRange(a,b){return !!a&&!!b&&a.source==="cell"&&b.source==="ce
 function sameRange(a,b){return sameEventRange(a,b)||sameManualRange(a,b)}
 function eventFillPercent(v,h){if(!v||v.source!=="event")return 100;const sm=v.startMin??v.startHour*60,em=v.endMin??v.endHour*60,startH=Math.floor(sm/60),endH=Math.ceil(em/60)-1,sr=sm%60,er=em%60;if(startH===endH){if(sr>0&&er===0)return sr/60*100;if(sr===0&&er>0)return er/60*100;if(sr>0&&er>0)return Math.max(25,(em-sm)/60*100);return 100}if(h===startH&&sr>0)return sr/60*100;if(h===endH&&er>0)return er/60*100;return 100}
 function applyEventBackground(td,v,h){
- const c=norm(v.color),hourStart=h*60,hourEnd=hourStart+60,start=Math.max(hourStart,v.startMin??hourStart),end=Math.min(hourEnd,v.endMin??hourEnd);
+ const c=norm(v.color),hourStart=h*60,hourEnd=hourStart+60,start=Math.max(hourStart,v.visibleStartMin??v.startMin??hourStart),end=Math.min(hourEnd,v.visibleEndMin??v.endMin??hourEnd);
  const from=Math.max(0,Math.min(100,(start-hourStart)/60*100)),to=Math.max(from,Math.min(100,(end-hourStart)/60*100));
  if(from<=0&&to>=100){td.style.background=c;td.style.backgroundImage="none";return}
  td.classList.add("partialEvent");td.style.backgroundColor="var(--cell)";td.style.backgroundImage=`linear-gradient(to right, var(--cell) 0%, var(--cell) ${from}%, ${c} ${from}%, ${c} ${to}%, var(--cell) ${to}%, var(--cell) 100%)`;
@@ -106,7 +120,7 @@ function render(){cleanupPast();renderMonth();renderHeader();renderGrid();render
 function renderMonth(){const n=new Date();monthTitle.textContent=MONTHS[n.getMonth()]+" "+n.getFullYear()}
 function renderHeader(){dayRow.innerHTML="<th>Notas</th>";const dates=weekDates(),today=isoDate(new Date());dates.forEach((s,i)=>{const th=document.createElement("th"),d=parseISO(s);th.innerHTML=DAYS[i]+"<span class='daynum'>"+d.getDate()+"</span>";if(s===today)th.classList.add("todayHead");dayRow.appendChild(th)})}
 function applyManualBackground(td,v,h){
- const c=norm(v.color),hourStart=h*60,hourEnd=hourStart+60,start=Math.max(hourStart,v.startMin??hourStart),end=Math.min(hourEnd,v.endMin??hourEnd);
+ const c=norm(v.color),hourStart=h*60,hourEnd=hourStart+60,start=Math.max(hourStart,v.visibleStartMin??v.startMin??hourStart),end=Math.min(hourEnd,v.visibleEndMin??v.endMin??hourEnd);
  const from=Math.max(0,Math.min(100,(start-hourStart)/60*100)),to=Math.max(from,Math.min(100,(end-hourStart)/60*100));
  if(from<=0&&to>=100){td.style.background=c;td.style.backgroundImage="none";return}
  td.classList.add("partialEvent");td.style.backgroundColor="var(--cell)";td.style.backgroundImage=`linear-gradient(to right, var(--cell) 0%, var(--cell) ${from}%, ${c} ${from}%, ${c} ${to}%, var(--cell) ${to}%, var(--cell) 100%)`;
