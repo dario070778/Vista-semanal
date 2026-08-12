@@ -7,8 +7,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Vista semanal">
 <meta name="mobile-web-app-capable" content="yes">
-<link rel="manifest" href="manifest.json?v=410">
-<link rel="icon" href="icon.svg?v=410" type="image/svg+xml">
+<link rel="manifest" href="manifest.json?v=411">
+<link rel="icon" href="icon.svg?v=411" type="image/svg+xml">
 <title>Vista semanal</title>
 <style>
 :root{--grid:#f4f4f6;--ui-border:#b9b9bd;--page:#d1d1d3;--cell:#d9d9dc;--head:#0b0b0d;--red:#e2465b;--gold:#d4af37;--text:#111}
@@ -185,6 +185,63 @@ function eventEndHourExclusive(e){return Math.ceil(eventEndMin(e)/60)}
 function norm(c){return(c&&c[0]==="#")?c:"#ffffff"}
 function uid(){return `e${Date.now().toString(36)}${Math.random().toString(36).slice(2,7)}`}
 
+const SUPABASE_URL="https://tdundqjsixqrddszumly.supabase.co";
+const SUPABASE_KEY="sb_publishable_KTvtNJcl64iOH4Hee-3L-Q__vSiCgrP";
+const CLOUD_ID="principal";
+let cloudReady=false,cloudSaveTimer=null,cloudApplying=false;
+
+async function cloudRequest(method,body){
+ const r=await fetch(`${SUPABASE_URL}/rest/v1/vista_semanal?id=eq.${encodeURIComponent(CLOUD_ID)}`,{
+  method,
+  headers:{
+   "apikey":SUPABASE_KEY,
+   "Authorization":`Bearer ${SUPABASE_KEY}`,
+   "Content-Type":"application/json",
+   "Prefer":"return=minimal"
+  },
+  body:body===undefined?undefined:JSON.stringify(body)
+ });
+ if(!r.ok)throw new Error(`Supabase ${r.status}: ${await r.text()}`);
+ return r;
+}
+function cloudPayload(){return {state,words,updatedAt:Date.now()}}
+async function loadCloud(){
+ try{
+  const r=await fetch(`${SUPABASE_URL}/rest/v1/vista_semanal?id=eq.${encodeURIComponent(CLOUD_ID)}&select=datos`,{
+   headers:{"apikey":SUPABASE_KEY,"Authorization":`Bearer ${SUPABASE_KEY}`}
+  });
+  if(!r.ok)throw new Error(`Supabase ${r.status}`);
+  const rows=await r.json();
+  if(rows.length&&rows[0].datos){
+   const remote=rows[0].datos;
+   cloudApplying=true;
+   if(remote.state&&typeof remote.state==="object")state=remote.state;
+   if(Array.isArray(remote.words))words=remote.words;
+   localStorage.setItem(STATE_KEY,JSON.stringify(state));
+   localStorage.setItem(WORDS_KEY,JSON.stringify(words));
+   cloudApplying=false;
+  }else{
+   await cloudRequest("POST",{id:CLOUD_ID,datos:cloudPayload()});
+  }
+  cloudReady=true;
+ }catch(e){console.error("No se pudo cargar Supabase",e);cloudReady=false}
+}
+function queueCloudSave(){
+ if(cloudApplying)return;
+ clearTimeout(cloudSaveTimer);
+ cloudSaveTimer=setTimeout(async()=>{
+  try{
+   if(!cloudReady){await loadCloud(); if(!cloudReady)return}
+   const r=await fetch(`${SUPABASE_URL}/rest/v1/vista_semanal?id=eq.${encodeURIComponent(CLOUD_ID)}`,{
+    method:"PATCH",
+    headers:{"apikey":SUPABASE_KEY,"Authorization":`Bearer ${SUPABASE_KEY}`,"Content-Type":"application/json","Prefer":"return=minimal"},
+    body:JSON.stringify({datos:cloudPayload()})
+   });
+   if(!r.ok)throw new Error(`Supabase ${r.status}`);
+  }catch(e){console.error("No se pudo guardar en Supabase",e)}
+ },250);
+}
+
 let state=load(STATE_KEY,{cells:{},events:[]});
 if(!state||typeof state!=="object")state={cells:{},events:[]};
 if(!state.cells)state.cells={};if(!Array.isArray(state.events))state.events=[];
@@ -193,8 +250,8 @@ if(!Array.isArray(words)){for(const k of LEGACY_WORD_KEYS){const w=load(k,null);
 if(!Array.isArray(words))words=clone(DEFAULT_WORDS);
 const fixed=[];for(let i=0;i<8;i++){const w=words[i];if(i===7)fixed[i]={text:"Borrar",color:"#ffffff",textColor:"#b80016",action:"clear"};else if(w&&w.text!==undefined)fixed[i]={text:w.text,color:w.color||DEFAULT_WORDS[i].color,textColor:w.textColor||DEFAULT_WORDS[i].textColor};else fixed[i]=clone(DEFAULT_WORDS[i]);}words=fixed;
 
-function saveState(){localStorage.setItem(STATE_KEY,JSON.stringify(state))}
-function saveWords(){localStorage.setItem(WORDS_KEY,JSON.stringify(words))}
+function saveState(){localStorage.setItem(STATE_KEY,JSON.stringify(state));queueCloudSave()}
+function saveWords(){localStorage.setItem(WORDS_KEY,JSON.stringify(words));queueCloudSave()}
 function migrateLegacy(){if(load(MIGRATION_KEY,false))return;const dates=weekDates();let legacy=null;for(const k of LEGACY_DATA_KEYS){const x=load(k,null);if(x&&Object.keys(x).length){legacy=x;break}}let imp={};for(const k of LEGACY_IMPORTANT_KEYS){const x=load(k,null);if(x&&Object.keys(x).length){imp=x;break}}
 if(legacy){for(const [k,v] of Object.entries(legacy)){const m=k.match(/^(\d)-(\d{1,2})$/);if(!m||!v?.text)continue;const d=+m[1],h=+m[2];const date=dates[d];state.cells[`${date}-${pad(h)}`]={text:v.text,color:norm(v.color),textColor:v.textColor||"#111111",important:!!imp[k]};}}
 localStorage.setItem(MIGRATION_KEY,"true");saveState();saveWords()}
@@ -340,7 +397,7 @@ document.getElementById("eventCancel").onclick=()=>eventModal.classList.remove("
 document.getElementById("eventListBtn").onclick=openEventList;
 document.getElementById("eventListClose").onclick=()=>eventListModal.classList.remove("show");eventListModal.onclick=e=>{if(e.target===eventListModal)eventListModal.classList.remove("show")};
 
-saveWords();saveState();render();setInterval(render,60000);
+(async()=>{await loadCloud();saveWords();saveState();render();setInterval(render,60000);setInterval(async()=>{await loadCloud();render()},30000)})();
 })();
 </script>
 </body>
