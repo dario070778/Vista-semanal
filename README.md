@@ -7,3 +7,9 @@
 ## Versión 4.2
 - La parte ya transcurrida de un evento en la hora actual se oculta en tiempo real; al llegar a su hora de fin desaparece completamente.
 - Se mantiene la sincronización con Supabase.
+
+## Versión 4.3
+- Los eventos planificados no se eliminan automáticamente al terminar una ocurrencia.
+- Las ocurrencias pasadas simplemente dejan de mostrarse.
+- La sincronización con Supabase evita que una copia antigua sobrescriba una edición más reciente.
+- Se mantiene el consumo visual en cuartos de hora de la versión 4.2.

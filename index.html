@@ -188,7 +188,9 @@ function uid(){return `e${Date.now().toString(36)}${Math.random().toString(36).s
 const SUPABASE_URL="https://tdundqjsixqrddszumly.supabase.co";
 const SUPABASE_KEY="sb_publishable_KTvtNJcl64iOH4Hee-3L-Q__vSiCgrP";
 const CLOUD_ID="principal";
+const CLOUD_TS_KEY="vista-semanal-cloud-updated-at";
 let cloudReady=false,cloudSaveTimer=null,cloudApplying=false;
+let localUpdatedAt=Number(localStorage.getItem(CLOUD_TS_KEY)||0);
 
 async function cloudRequest(method,body){
  const r=await fetch(`${SUPABASE_URL}/rest/v1/vista_semanal?id=eq.${encodeURIComponent(CLOUD_ID)}`,{
@@ -204,7 +206,15 @@ async function cloudRequest(method,body){
  if(!r.ok)throw new Error(`Supabase ${r.status}: ${await r.text()}`);
  return r;
 }
-function cloudPayload(){return {state,words,updatedAt:Date.now()}}
+function markLocalUpdated(){
+ if(cloudApplying)return;
+ localUpdatedAt=Date.now();
+ localStorage.setItem(CLOUD_TS_KEY,String(localUpdatedAt));
+}
+function cloudPayload(){
+ if(!localUpdatedAt){localUpdatedAt=Date.now();localStorage.setItem(CLOUD_TS_KEY,String(localUpdatedAt))}
+ return {state,words,updatedAt:localUpdatedAt}
+}
 async function loadCloud(){
  try{
   const r=await fetch(`${SUPABASE_URL}/rest/v1/vista_semanal?id=eq.${encodeURIComponent(CLOUD_ID)}&select=datos`,{
@@ -214,13 +224,21 @@ async function loadCloud(){
   const rows=await r.json();
   if(rows.length&&rows[0].datos){
    const remote=rows[0].datos;
-   cloudApplying=true;
-   if(remote.state&&typeof remote.state==="object")state=remote.state;
-   if(Array.isArray(remote.words))words=remote.words;
-   localStorage.setItem(STATE_KEY,JSON.stringify(state));
-   localStorage.setItem(WORDS_KEY,JSON.stringify(words));
-   cloudApplying=false;
+   const remoteUpdatedAt=Number(remote.updatedAt||0);
+   if(remoteUpdatedAt>localUpdatedAt){
+    cloudApplying=true;
+    if(remote.state&&typeof remote.state==="object")state=remote.state;
+    if(Array.isArray(remote.words))words=remote.words;
+    localUpdatedAt=remoteUpdatedAt;
+    localStorage.setItem(CLOUD_TS_KEY,String(localUpdatedAt));
+    localStorage.setItem(STATE_KEY,JSON.stringify(state));
+    localStorage.setItem(WORDS_KEY,JSON.stringify(words));
+    cloudApplying=false;
+   }else if(localUpdatedAt>remoteUpdatedAt){
+    await cloudRequest("PATCH",{datos:cloudPayload()});
+   }
   }else{
+   if(!localUpdatedAt)markLocalUpdated();
    await cloudRequest("POST",{id:CLOUD_ID,datos:cloudPayload()});
   }
   cloudReady=true;
@@ -250,8 +268,8 @@ if(!Array.isArray(words)){for(const k of LEGACY_WORD_KEYS){const w=load(k,null);
 if(!Array.isArray(words))words=clone(DEFAULT_WORDS);
 const fixed=[];for(let i=0;i<8;i++){const w=words[i];if(i===7)fixed[i]={text:"Borrar",color:"#ffffff",textColor:"#b80016",action:"clear"};else if(w&&w.text!==undefined)fixed[i]={text:w.text,color:w.color||DEFAULT_WORDS[i].color,textColor:w.textColor||DEFAULT_WORDS[i].textColor};else fixed[i]=clone(DEFAULT_WORDS[i]);}words=fixed;
 
-function saveState(){localStorage.setItem(STATE_KEY,JSON.stringify(state));queueCloudSave()}
-function saveWords(){localStorage.setItem(WORDS_KEY,JSON.stringify(words));queueCloudSave()}
+function saveState(){localStorage.setItem(STATE_KEY,JSON.stringify(state));markLocalUpdated();queueCloudSave()}
+function saveWords(){localStorage.setItem(WORDS_KEY,JSON.stringify(words));markLocalUpdated();queueCloudSave()}
 function migrateLegacy(){if(load(MIGRATION_KEY,false))return;const dates=weekDates();let legacy=null;for(const k of LEGACY_DATA_KEYS){const x=load(k,null);if(x&&Object.keys(x).length){legacy=x;break}}let imp={};for(const k of LEGACY_IMPORTANT_KEYS){const x=load(k,null);if(x&&Object.keys(x).length){imp=x;break}}
 if(legacy){for(const [k,v] of Object.entries(legacy)){const m=k.match(/^(\d)-(\d{1,2})$/);if(!m||!v?.text)continue;const d=+m[1],h=+m[2];const date=dates[d];state.cells[`${date}-${pad(h)}`]={text:v.text,color:norm(v.color),textColor:v.textColor||"#111111",important:!!imp[k]};}}
 localStorage.setItem(MIGRATION_KEY,"true");saveState();saveWords()}
@@ -292,8 +310,16 @@ function visibleResolved(displayDate,h){
  }
  return v
 }
-function cleanupPast(){const now=new Date();let changed=false;for(const k of Object.keys(state.cells)){const m=k.match(/^(\d{4}-\d{2}-\d{2})-(\d{2})$/);if(!m)continue;const date=m[1],h=+m[2];if(slotEnd(date,h)<=now){delete state.cells[k];changed=true}}
-state.events=state.events.filter(e=>{if(e.repeat&&e.repeat!=="none")return true;const end=eventEndMin(e),d=parseISO(e.date);d.setHours(Math.floor(end/60),end%60,0,0);if(d<=now){changed=true;return false}return true});if(changed)saveState()}
+function cleanupPast(){const now=new Date();let changed=false;
+for(const k of Object.keys(state.cells)){
+ const m=k.match(/^(\d{4}-\d{2}-\d{2})-(\d{2})$/);if(!m)continue;
+ const date=m[1],h=+m[2];
+ if(slotEnd(date,h)<=now){delete state.cells[k];changed=true}
+}
+// Nunca se eliminan automáticamente eventos planificados.
+// Las ocurrencias terminadas simplemente dejan de mostrarse.
+if(changed)saveState()
+}
 function eventMatches(e,date,h){if(!e||e.disabled)return false;let spec=e;if(e.repeat&&e.repeat!=="none"){
  if(date<e.startDate)return false;if(e.until&&date>e.until)return false;
  const ex=e.exceptions?.[date];if(ex?.cancelled)return false;if(ex)spec={...e,...ex};
@@ -411,7 +437,14 @@ document.getElementById("eventCancel").onclick=()=>eventModal.classList.remove("
 document.getElementById("eventListBtn").onclick=openEventList;
 document.getElementById("eventListClose").onclick=()=>eventListModal.classList.remove("show");eventListModal.onclick=e=>{if(e.target===eventListModal)eventListModal.classList.remove("show")};
 
-(async()=>{await loadCloud();saveWords();saveState();render();setInterval(render,60000);setInterval(async()=>{await loadCloud();render()},30000)})();
+(async()=>{
+ await loadCloud();
+ localStorage.setItem(WORDS_KEY,JSON.stringify(words));
+ localStorage.setItem(STATE_KEY,JSON.stringify(state));
+ render();
+ setInterval(render,60000);
+ setInterval(async()=>{await loadCloud();render()},30000)
+})();
 })();
 </script>
 </body>
