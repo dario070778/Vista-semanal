@@ -87,16 +87,8 @@ function visibleResolved(displayDate,h){
  }
  return v
 }
-function cleanupPast(){const now=new Date();let changed=false;
-for(const k of Object.keys(state.cells)){
- const m=k.match(/^(\d{4}-\d{2}-\d{2})-(\d{2})$/);if(!m)continue;
- const date=m[1],h=+m[2];
- if(slotEnd(date,h)<=now){delete state.cells[k];changed=true}
-}
-// Nunca se eliminan automáticamente eventos planificados.
-// Las ocurrencias terminadas simplemente dejan de mostrarse.
-if(changed)saveState()
-}
+function cleanupPast(){const now=new Date();let changed=false;for(const k of Object.keys(state.cells)){const m=k.match(/^(\d{4}-\d{2}-\d{2})-(\d{2})$/);if(!m)continue;const date=m[1],h=+m[2];if(slotEnd(date,h)<=now){delete state.cells[k];changed=true}}
+state.events=state.events.filter(e=>{if(e.repeat&&e.repeat!=="none")return true;const end=eventEndMin(e),d=parseISO(e.date);d.setHours(Math.floor(end/60),end%60,0,0);if(d<=now){changed=true;return false}return true});if(changed)saveState()}
 function eventMatches(e,date,h){if(!e||e.disabled)return false;let spec=e;if(e.repeat&&e.repeat!=="none"){
  if(date<e.startDate)return false;if(e.until&&date>e.until)return false;
  const ex=e.exceptions?.[date];if(ex?.cancelled)return false;if(ex)spec={...e,...ex};
