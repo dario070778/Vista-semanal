@@ -7,8 +7,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Vista semanal">
 <meta name="mobile-web-app-capable" content="yes">
-<link rel="manifest" href="manifest.json?v=450">
-<link rel="icon" href="icon.svg?v=450" type="image/svg+xml">
+<link rel="manifest" href="manifest.json?v=460">
+<link rel="icon" href="icon.svg?v=460" type="image/svg+xml">
 <title>Vista semanal</title>
 <style>
 :root{--grid:#f4f4f6;--ui-border:#b9b9bd;--page:#d1d1d3;--cell:#d9d9dc;--head:#0b0b0d;--red:#e2465b;--gold:#d4af37;--text:#111}
@@ -248,20 +248,22 @@ async function syncCloud(){
   if(!r.ok)throw new Error(`Supabase ${r.status}`);
   const rows=await r.json(),remote=rows.length?rows[0].datos:null;
   const remoteAt=+remote?.updatedAt||0,localAt=localUpdated();
+  const has=x=>!!x&&(Object.keys(x.cells||{}).length>0||(x.events||[]).length>0);
+  const fresh=localStorage.getItem("vista-semanal-synced")!=="1"&&!has(state)&&has(remote?.state);
   if(!rows.length){
    const p=await fetch(CLOUD_BASE,{method:"POST",headers:await hdr(true),body:JSON.stringify({id:CLOUD_ID,datos:cloudPayload()})});
    if(!p.ok)throw new Error(`Supabase ${p.status}`);
    localStorage.setItem(DIRTY_KEY,"0");
-  }else if(!remote||!remote.state||isDirty()||localAt>remoteAt){
+  }else if(!fresh&&(!remote||!remote.state||isDirty()||localAt>remoteAt)){
    await cloudPut();
-  }else if(remoteAt>localAt){
+  }else if(fresh||remoteAt>localAt){
    cloudApplying=true;
    if(typeof remote.state==="object"){state=remote.state;if(!state.cells)state.cells={};if(!Array.isArray(state.events))state.events=[]}
    if(Array.isArray(remote.words))words=remote.words;
-   localStorage.setItem(STATE_KEY,JSON.stringify(state));localStorage.setItem(WORDS_KEY,JSON.stringify(words));localStorage.setItem(UPD_KEY,String(remoteAt));
+   localStorage.setItem(STATE_KEY,JSON.stringify(state));localStorage.setItem(WORDS_KEY,JSON.stringify(words));localStorage.setItem(UPD_KEY,String(remoteAt));localStorage.setItem(DIRTY_KEY,"0");
    cloudApplying=false;
   }
-  cloudReady=true;setSync(isDirty()?"pending":"ok");
+  localStorage.setItem("vista-semanal-synced","1");cloudReady=true;setSync(isDirty()?"pending":"ok");
  }catch(e){console.error("Sincronización Supabase",e);setSync("offline")}
  finally{cloudBusy=false}
 }
@@ -284,7 +286,7 @@ function saveState(){localStorage.setItem(STATE_KEY,JSON.stringify(state));markD
 function saveWords(){localStorage.setItem(WORDS_KEY,JSON.stringify(words));markDirty()}
 function migrateLegacy(){if(load(MIGRATION_KEY,false))return;const dates=weekDates();let legacy=null;for(const k of LEGACY_DATA_KEYS){const x=load(k,null);if(x&&Object.keys(x).length){legacy=x;break}}let imp={};for(const k of LEGACY_IMPORTANT_KEYS){const x=load(k,null);if(x&&Object.keys(x).length){imp=x;break}}
 if(legacy){for(const [k,v] of Object.entries(legacy)){const m=k.match(/^(\d)-(\d{1,2})$/);if(!m||!v?.text)continue;const d=+m[1],h=+m[2];const date=dates[d];state.cells[`${date}-${pad(h)}`]={text:v.text,color:norm(v.color),textColor:v.textColor||"#111111",important:!!imp[k]};}}
-localStorage.setItem(MIGRATION_KEY,"true");saveState();saveWords()}
+localStorage.setItem(MIGRATION_KEY,"true");localStorage.setItem(STATE_KEY,JSON.stringify(state));localStorage.setItem(WORDS_KEY,JSON.stringify(words))}
 migrateLegacy();
 
 let undoStack=[];
