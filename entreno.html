@@ -51,28 +51,51 @@ h2{font-size:15px;font-weight:700;color:var(--mut);margin:20px 2px 8px}
 .big.warn{color:var(--bad)}
 #toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 24px);transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:99px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:30}
 #toast.on{opacity:1}
+.card{display:block;border:2px solid var(--c);border-left-width:8px;padding:8px 10px 10px 12px;background:color-mix(in srgb,var(--c) 9%,var(--card))}
+.card.fin{background:color-mix(in srgb,var(--c) 24%,var(--card))}
+.h{display:flex;align-items:center;gap:8px;min-width:0}
+.h b{flex:1;min-width:0;font-size:18px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.g{flex:none;font-size:12px;font-weight:700;color:var(--c);background:color-mix(in srgb,var(--c) 16%,transparent);padding:3px 9px;border-radius:99px}
+.b{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:6px}
+.m{display:flex;gap:6px;flex-wrap:wrap}
+.m em{font-style:normal;font-weight:800;font-size:20px;background:color-mix(in srgb,var(--c) 14%,var(--card));border-radius:10px;padding:3px 9px;font-variant-numeric:tabular-nums}
+.m small{font-size:12px;font-weight:600;color:var(--mut)}
+.set{border-color:var(--c);color:var(--c)}
+.set.on{background:var(--c);border-color:var(--c);color:#fff}
+.row{border-left:8px solid var(--c)}
+.row .ci{display:grid;gap:4px;justify-items:start}
+.row .ci b{max-width:100%}
+.row .m em{font-size:15px;padding:2px 8px}
+.dots i{border-color:var(--c)}.dots i.on{background:var(--c)}
+.sheet select{font:inherit;font-size:17px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:11px 12px;width:100%}
 </style></head>
 <body>
 <div class="top"><div id="tabs"></div><div id="now"></div></div>
 <main id="list"></main>
 <div id="sh"></div><div id="toast"></div>
 <script>
-const K="entreno-v1",$=s=>document.querySelector(s);
+const K="entreno-v2",$=s=>document.querySelector(s);
 let S,ED=null;
 const uid=()=>Math.random().toString(36).slice(2,9);
 const esc=t=>String(t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-const mk=(n,kg,rp,st)=>({id:uid(),name:n,kg,reps:rp,sets:st,done:Array(st).fill(false),pin:false});
+const GR={"Bíceps":"#E8590C","Tríceps":"#C2255C","Hombro":"#7048E8","Antebrazo":"#1C7ED6","Pierna":"#2F9E44","Lumbar":"#0C8599","Abdominal":"#E67700","Pecho":"#E03131","Espalda":"#4263EB","Otro":"#6B7480"};
+const col=e=>GR[e.g]||GR.Otro;
+const mk=(g,n,kg,rp,st)=>({id:uid(),g,name:n,kg,reps:rp,sets:st,done:Array(st).fill(false),pin:false});
 const full=e=>e.done.every(Boolean);
 function load(){try{S=JSON.parse(localStorage.getItem(K))}catch(e){}
  if(!S||!S.routines||!S.routines.length){S={cur:null,routines:[{id:uid(),name:"Full body",ex:[
-  mk("Bíceps curl",10,12,2),mk("Bíceps martillo",10,12,2),mk("Tríceps superior",10,12,2),mk("Tríceps press francés",10,12,2),
-  mk("Hombro elevación delantera",10,10,2),mk("Hombro elevación lateral",10,10,2),mk("Antebrazo delantero",10,12,3)]}]};
-  S.cur=S.routines[0].id}}
+  mk("Bíceps","Curl",10,12,2),mk("Bíceps","Martillo",10,12,2),mk("Tríceps","Superior",10,12,2),mk("Tríceps","Press francés",10,12,2),
+  mk("Hombro","Elevación delantera",10,10,2),mk("Hombro","Elevación lateral",10,10,2),
+  mk("Antebrazo","Delantero",10,12,3),mk("Antebrazo","Posterior",10,12,3),mk("Antebrazo","Giro",10,12,3),
+  mk("Pierna","Sentadillas",0,15,3),mk("Pierna","Gemelos",0,15,3),mk("Pierna","Sentadilla pared",0,0,2),
+  mk("Lumbar","Nadador",0,16,3),mk("Lumbar","Perro",0,16,3),mk("Lumbar","Boom",0,12,3),
+  mk("Abdominal","Crunch",0,12,3),mk("Abdominal","Tijeras",0,16,3),mk("Abdominal","Bicicleta",0,16,3),
+  mk("Pecho","Flexiones",0,0,2)]}]};S.cur=S.routines[0].id}}
 function save(){try{localStorage.setItem(K,JSON.stringify(S))}catch(e){}}
 const R=()=>S.routines.find(r=>r.id===S.cur)||S.routines[0];
-const info=e=>[e.kg?e.kg+" kg":"",e.reps?e.reps+" rep":""].filter(Boolean).join(" · ")||"Sin datos";
-const card=e=>`<div class="card${full(e)?" fin":""}"><button class="x" data-a="unpin" data-id="${e.id}" aria-label="Quitar de en marcha">✕</button><div class="ci"><b>${esc(e.name)}</b><span>${info(e)}</span></div><div class="sets">${e.done.map((d,i)=>`<button class="set${d?" on":""}" data-a="set" data-id="${e.id}" data-i="${i}" aria-label="Serie ${i+1}">${i+1}</button>`).join("")}</div></div>`;
-const row=e=>`<div class="row${full(e)?" fin":""}" data-a="${full(e)?"redo":"pin"}" data-id="${e.id}"><div class="ci"><b>${esc(e.name)}</b><span>${info(e)}</span></div><div class="dots">${e.done.map(d=>`<i class="${d?"on":""}"></i>`).join("")}</div><button class="ed" data-a="edit" data-id="${e.id}" aria-label="Editar">✎</button></div>`;
+const chips=(e,ws)=>`<span class="m">${e.kg?`<em>${e.kg}<small> kg</small></em>`:""}${e.reps?`<em>${e.reps}<small> rep</small></em>`:""}${ws||(!e.kg&&!e.reps)?`<em>${e.sets}<small> series</small></em>`:""}</span>`;
+const card=e=>`<div class="card${full(e)?" fin":""}" style="--c:${col(e)}"><div class="h"><span class="g">${esc(e.g||"Otro")}</span><b>${esc(e.name)}</b><button class="x" data-a="unpin" data-id="${e.id}" aria-label="Quitar de en marcha">✕</button></div><div class="b">${chips(e,0)}<div class="sets">${e.done.map((d,i)=>`<button class="set${d?" on":""}" data-a="set" data-id="${e.id}" data-i="${i}" aria-label="Serie ${i+1}">${i+1}</button>`).join("")}</div></div></div>`;
+const row=e=>`<div class="row${full(e)?" fin":""}" style="--c:${col(e)}" data-a="${full(e)?"redo":"pin"}" data-id="${e.id}"><div class="ci"><span class="g">${esc(e.g||"Otro")}</span><b>${esc(e.name)}</b>${chips(e,1)}</div><div class="dots">${e.done.map(d=>`<i class="${d?"on":""}"></i>`).join("")}</div><button class="ed" data-a="edit" data-id="${e.id}" aria-label="Editar">✎</button></div>`;
 function render(){const r=R();S.cur=r.id;
  $("#tabs").innerHTML=S.routines.map(x=>`<button class="tab${x.id===r.id?" on":""}" data-a="tab" data-id="${x.id}">${esc(x.name)}</button>`).join("")+`<button class="tab plus" data-a="addr" aria-label="Nueva rutina">+</button><button class="tab plus" data-a="menu" aria-label="Opciones">⋯</button>`;
  const pin=r.ex.filter(e=>e.pin),pen=r.ex.filter(e=>!e.pin&&!full(e)),dn=r.ex.filter(e=>!e.pin&&full(e));
@@ -81,7 +104,7 @@ function render(){const r=R();S.cur=r.id;
 function openSh(h){$("#sh").innerHTML=`<div class="sheet">${h}</div>`;$("#sh").classList.add("on")}
 function closeSh(){$("#sh").classList.remove("on");ED=null}
 let tt;function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("on");clearTimeout(tt);tt=setTimeout(()=>t.classList.remove("on"),1800)}
-function sheetEx(e){ED=e;openSh(`<h3>${e?"Editar ejercicio":"Nuevo ejercicio"}</h3><label>Nombre<input id="f-n" value="${e?esc(e.name):""}" autocomplete="off"></label><div class="g3"><label>Peso (kg)<input id="f-k" type="number" inputmode="decimal" step="0.5" value="${e?e.kg:""}"></label><label>Repeticiones<input id="f-r" type="number" inputmode="numeric" value="${e?e.reps:""}"></label><label>Series<input id="f-s" type="number" inputmode="numeric" min="1" max="10" value="${e?e.sets:3}"></label></div><button class="big pri" data-a="savex">Guardar</button>${e?`<button class="big warn" data-a="delx">Eliminar ejercicio</button>`:""}<button class="big" data-a="close">Cancelar</button>`)}
+function sheetEx(e){ED=e;openSh(`<h3>${e?"Editar ejercicio":"Nuevo ejercicio"}</h3><label>Grupo<select id="f-g">${Object.keys(GR).map(k=>`<option${(e?e.g:"Otro")===k?" selected":""}>${k}</option>`).join("")}</select></label><label>Nombre<input id="f-n" value="${e?esc(e.name):""}" autocomplete="off"></label><div class="g3"><label>Peso (kg)<input id="f-k" type="number" inputmode="decimal" step="0.5" value="${e?e.kg:""}"></label><label>Repeticiones<input id="f-r" type="number" inputmode="numeric" value="${e?e.reps:""}"></label><label>Series<input id="f-s" type="number" inputmode="numeric" min="1" max="10" value="${e?e.sets:3}"></label></div><button class="big pri" data-a="savex">Guardar</button>${e?`<button class="big warn" data-a="delx">Eliminar ejercicio</button>`:""}<button class="big" data-a="close">Cancelar</button>`)}
 document.addEventListener("click",ev=>{
  const t=ev.target.closest("[data-a]");if(!t)return;
  if(ev.target.id==="sh"){closeSh();return}
@@ -100,8 +123,8 @@ document.addEventListener("click",ev=>{
  else if(a==="edit"&&e){sheetEx(e);return}
  else if(a==="new"){sheetEx(null);return}
  else if(a==="savex"){const n=$("#f-n").value.trim();if(!n){toast("Pon un nombre");return}
-  const kg=+$("#f-k").value||0,rp=+$("#f-r").value||0,st=Math.max(1,Math.min(10,Math.round(+$("#f-s").value)||1));
-  if(ED){ED.name=n;ED.kg=kg;ED.reps=rp;if(st!==ED.sets){ED.done=Array.from({length:st},(_,i)=>!!ED.done[i]);ED.sets=st}}else r.ex.push(mk(n,kg,rp,st));closeSh()}
+  const g=$("#f-g").value,kg=+$("#f-k").value||0,rp=+$("#f-r").value||0,st=Math.max(1,Math.min(10,Math.round(+$("#f-s").value)||1));
+  if(ED){ED.g=g;ED.name=n;ED.kg=kg;ED.reps=rp;if(st!==ED.sets){ED.done=Array.from({length:st},(_,i)=>!!ED.done[i]);ED.sets=st}}else r.ex.push(mk(g,n,kg,rp,st));closeSh()}
  else if(a==="delx"&&ED){const x=ED;closeSh();if(!confirm("¿Eliminar «"+x.name+"»?"))return;r.ex=r.ex.filter(y=>y!==x)}
  save();render()});
 load();render();
