@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Entreno">
+<meta name="theme-color" content="#EEF1F4">
+<link rel="apple-touch-icon" href="icono-entreno.png">
+<title>Entreno</title>
+<style>
+:root{--bg:#EEF1F4;--card:#fff;--ink:#14181F;--mut:#6B7480;--line:#DDE2E8;--acc:#2D5BFF;--ok:#1F9D6B;--bad:#D6453D}
+@media(prefers-color-scheme:dark){:root{--bg:#0F1318;--card:#1A2028;--ink:#EEF1F4;--mut:#8A94A1;--line:#2A323C;--acc:#6E8BFF;--ok:#3CC892;--bad:#FF6B63}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.3 -apple-system,system-ui,sans-serif;padding:env(safe-area-inset-top) 0 calc(env(safe-area-inset-bottom) + 48px)}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+.top{position:sticky;top:0;z-index:5;background:var(--bg);padding:10px 14px 8px;border-bottom:1px solid var(--line)}
+#tabs{display:flex;gap:8px;overflow-x:auto;padding-bottom:8px;scrollbar-width:none}
+#tabs::-webkit-scrollbar{display:none}
+.tab{flex:none;padding:8px 14px;border-radius:99px;background:var(--card);font-weight:600;color:var(--mut)}
+.tab.on{background:var(--ink);color:var(--bg)}
+.tab.plus{padding:8px 13px}
+#now{display:grid;gap:8px}
+.card{display:flex;align-items:center;gap:10px;background:var(--card);border-radius:16px;padding:10px 10px 10px 12px;border:2px solid var(--acc)}
+.card.fin{border-color:var(--ok)}
+.ci{flex:1;min-width:0}
+.ci b{display:block;font-size:17px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ci span{color:var(--mut);font-size:14px}
+.sets{display:flex;gap:8px}
+.set{width:48px;height:48px;border-radius:50%;border:2px solid var(--line);font-size:18px;font-weight:700;color:var(--mut);font-variant-numeric:tabular-nums}
+.set.on{background:var(--ok);border-color:var(--ok);color:#fff}
+.x{width:28px;height:28px;color:var(--mut);font-size:18px}
+.hint{margin:6px 2px;color:var(--mut);font-size:14px}
+main{padding:0 14px}
+h2{font-size:15px;font-weight:700;color:var(--mut);margin:20px 2px 8px}
+.row{display:flex;align-items:center;gap:10px;background:var(--card);border-radius:14px;padding:12px;margin-bottom:8px}
+.row.fin{opacity:.55}
+.dots{display:flex;gap:5px}
+.dots i{width:12px;height:12px;border-radius:50%;border:2px solid var(--line)}
+.dots i.on{background:var(--ok);border-color:var(--ok)}
+.ed{width:36px;height:36px;color:var(--mut);font-size:17px}
+.add{width:100%;margin-top:14px;padding:14px;border-radius:14px;border:2px dashed var(--line);color:var(--mut);font-weight:600}
+#sh{position:fixed;inset:0;z-index:20;display:none;background:rgba(0,0,0,.45);align-items:flex-end}
+#sh.on{display:flex}
+.sheet{width:100%;background:var(--card);border-radius:22px 22px 0 0;padding:18px 16px calc(env(safe-area-inset-bottom) + 16px);display:grid;gap:10px}
+.sheet h3{margin:0 0 2px;font-size:20px}
+.sheet label{display:grid;gap:4px;font-size:13px;color:var(--mut)}
+.sheet input{font:inherit;font-size:17px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:11px 12px;width:100%}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.big{padding:14px;border-radius:14px;background:var(--bg);font-weight:600}
+.big.pri{background:var(--acc);color:#fff}
+.big.warn{color:var(--bad)}
+#toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 24px);transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:99px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:30}
+#toast.on{opacity:1}
+</style></head>
+<body>
+<div class="top"><div id="tabs"></div><div id="now"></div></div>
+<main id="list"></main>
+<div id="sh"></div><div id="toast"></div>
+<script>
+const K="entreno-v1",$=s=>document.querySelector(s);
+let S,ED=null;
+const uid=()=>Math.random().toString(36).slice(2,9);
+const esc=t=>String(t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const mk=(n,kg,rp,st)=>({id:uid(),name:n,kg,reps:rp,sets:st,done:Array(st).fill(false),pin:false});
+const full=e=>e.done.every(Boolean);
+function load(){try{S=JSON.parse(localStorage.getItem(K))}catch(e){}
+ if(!S||!S.routines||!S.routines.length){S={cur:null,routines:[{id:uid(),name:"Full body",ex:[
+  mk("Bíceps curl",10,12,2),mk("Bíceps martillo",10,12,2),mk("Tríceps superior",10,12,2),mk("Tríceps press francés",10,12,2),
+  mk("Hombro elevación delantera",10,10,2),mk("Hombro elevación lateral",10,10,2),mk("Antebrazo delantero",10,12,3)]}]};
+  S.cur=S.routines[0].id}}
+function save(){try{localStorage.setItem(K,JSON.stringify(S))}catch(e){}}
+const R=()=>S.routines.find(r=>r.id===S.cur)||S.routines[0];
+const info=e=>[e.kg?e.kg+" kg":"",e.reps?e.reps+" rep":""].filter(Boolean).join(" · ")||"Sin datos";
+const card=e=>`<div class="card${full(e)?" fin":""}"><button class="x" data-a="unpin" data-id="${e.id}" aria-label="Quitar de en marcha">✕</button><div class="ci"><b>${esc(e.name)}</b><span>${info(e)}</span></div><div class="sets">${e.done.map((d,i)=>`<button class="set${d?" on":""}" data-a="set" data-id="${e.id}" data-i="${i}" aria-label="Serie ${i+1}">${i+1}</button>`).join("")}</div></div>`;
+const row=e=>`<div class="row${full(e)?" fin":""}" data-a="${full(e)?"redo":"pin"}" data-id="${e.id}"><div class="ci"><b>${esc(e.name)}</b><span>${info(e)}</span></div><div class="dots">${e.done.map(d=>`<i class="${d?"on":""}"></i>`).join("")}</div><button class="ed" data-a="edit" data-id="${e.id}" aria-label="Editar">✎</button></div>`;
+function render(){const r=R();S.cur=r.id;
+ $("#tabs").innerHTML=S.routines.map(x=>`<button class="tab${x.id===r.id?" on":""}" data-a="tab" data-id="${x.id}">${esc(x.name)}</button>`).join("")+`<button class="tab plus" data-a="addr" aria-label="Nueva rutina">+</button><button class="tab plus" data-a="menu" aria-label="Opciones">⋯</button>`;
+ const pin=r.ex.filter(e=>e.pin),pen=r.ex.filter(e=>!e.pin&&!full(e)),dn=r.ex.filter(e=>!e.pin&&full(e));
+ $("#now").innerHTML=pin.length?pin.map(card).join(""):`<p class="hint">${r.ex.length?"Toca un ejercicio de la lista para ponerlo en marcha (hasta 3 a la vez).":"Rutina vacía. Añade tu primer ejercicio."}</p>`;
+ $("#list").innerHTML=(pen.length?`<h2>Pendientes</h2>`+pen.map(row).join(""):"")+(dn.length?`<h2>Hechos · toca para repetir</h2>`+dn.map(row).join(""):"")+`<button class="add" data-a="new">Añadir ejercicio</button>`}
+function openSh(h){$("#sh").innerHTML=`<div class="sheet">${h}</div>`;$("#sh").classList.add("on")}
+function closeSh(){$("#sh").classList.remove("on");ED=null}
+let tt;function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("on");clearTimeout(tt);tt=setTimeout(()=>t.classList.remove("on"),1800)}
+function sheetEx(e){ED=e;openSh(`<h3>${e?"Editar ejercicio":"Nuevo ejercicio"}</h3><label>Nombre<input id="f-n" value="${e?esc(e.name):""}" autocomplete="off"></label><div class="g3"><label>Peso (kg)<input id="f-k" type="number" inputmode="decimal" step="0.5" value="${e?e.kg:""}"></label><label>Repeticiones<input id="f-r" type="number" inputmode="numeric" value="${e?e.reps:""}"></label><label>Series<input id="f-s" type="number" inputmode="numeric" min="1" max="10" value="${e?e.sets:3}"></label></div><button class="big pri" data-a="savex">Guardar</button>${e?`<button class="big warn" data-a="delx">Eliminar ejercicio</button>`:""}<button class="big" data-a="close">Cancelar</button>`)}
+document.addEventListener("click",ev=>{
+ const t=ev.target.closest("[data-a]");if(!t)return;
+ if(ev.target.id==="sh"){closeSh();return}
+ const a=t.dataset.a,r=R(),e=r.ex.find(x=>x.id===t.dataset.id);
+ if(a==="tab")S.cur=t.dataset.id;
+ else if(a==="addr"){const n=prompt("Nombre de la rutina");if(!n||!n.trim())return;const x={id:uid(),name:n.trim(),ex:[]};S.routines.push(x);S.cur=x.id}
+ else if(a==="menu"){openSh(`<h3>${esc(r.name)}</h3><button class="big" data-a="reset">Reiniciar series</button><button class="big" data-a="ren">Renombrar rutina</button><button class="big warn" data-a="delr">Eliminar rutina</button><button class="big" data-a="close">Cerrar</button>`);return}
+ else if(a==="close"){closeSh();return}
+ else if(a==="reset"){r.ex.forEach(x=>{x.done=x.done.map(()=>false);x.pin=false});closeSh()}
+ else if(a==="ren"){const n=prompt("Nuevo nombre",r.name);closeSh();if(n&&n.trim())r.name=n.trim()}
+ else if(a==="delr"){closeSh();if(!confirm("¿Eliminar la rutina «"+r.name+"»?"))return;S.routines=S.routines.filter(x=>x!==r);if(!S.routines.length)S.routines.push({id:uid(),name:"Rutina",ex:[]});S.cur=S.routines[0].id}
+ else if(a==="set"&&e){const i=+t.dataset.i;e.done[i]=!e.done[i];if(full(e))setTimeout(()=>{if(full(e)){e.pin=false;save();render()}},700)}
+ else if(a==="pin"&&e){if(r.ex.filter(x=>x.pin).length>=3){toast("Ya tienes 3 en marcha");return}e.pin=true}
+ else if(a==="unpin"&&e)e.pin=false;
+ else if(a==="redo"&&e)e.done=e.done.map(()=>false);
+ else if(a==="edit"&&e){sheetEx(e);return}
+ else if(a==="new"){sheetEx(null);return}
+ else if(a==="savex"){const n=$("#f-n").value.trim();if(!n){toast("Pon un nombre");return}
+  const kg=+$("#f-k").value||0,rp=+$("#f-r").value||0,st=Math.max(1,Math.min(10,Math.round(+$("#f-s").value)||1));
+  if(ED){ED.name=n;ED.kg=kg;ED.reps=rp;if(st!==ED.sets){ED.done=Array.from({length:st},(_,i)=>!!ED.done[i]);ED.sets=st}}else r.ex.push(mk(n,kg,rp,st));closeSh()}
+ else if(a==="delx"&&ED){const x=ED;closeSh();if(!confirm("¿Eliminar «"+x.name+"»?"))return;r.ex=r.ex.filter(y=>y!==x)}
+ save();render()});
+load();render();
+</script></body></html>
