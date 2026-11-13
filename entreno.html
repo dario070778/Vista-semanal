@@ -99,7 +99,7 @@ function load(){try{S=JSON.parse(localStorage.getItem(K))}catch(e){}
  if(!S||!S.routines||!S.routines.length)S=defS()}
 function save(){try{localStorage.setItem(K,JSON.stringify(S));localStorage.setItem(UPD,String(Date.now()));localStorage.setItem(DRT,"1")}catch(e){}queueCloud()}
 const R=()=>S.routines.find(r=>r.id===S.cur)||S.routines[0];
-const chips=(e,ws)=>`<span class="m">${e.kg?`<em>${e.kg}<small> kg</small></em>`:""}${e.reps?`<em>${e.reps}<small> rep</small></em>`:""}${ws||(!e.kg&&!e.reps)?`<em>${e.sets}<small> series</small></em>`:""}</span>`;
+const chips=(e,ws)=>`<span class="m">${e.kg?`<em>${e.kg}<small> kg</small></em>`:""}${e.reps?`<em>${e.reps}<small> rep</small></em>`:""}${e.time?`<em>${e.time}<small> s</small></em>`:""}${ws||(!e.kg&&!e.reps&&!e.time)?`<em>${e.sets}<small> series</small></em>`:""}</span>`;
 const card=e=>`<div class="card${full(e)?" fin":""}" style="--c:${col(e)}"><div class="h"><span class="g">${esc(e.g||"Otro")}</span><b>${esc(e.name)}</b><button class="x" data-a="unpin" data-id="${e.id}" aria-label="Quitar de en marcha">✕</button></div><div class="b">${chips(e,0)}<div class="sets">${e.done.map((d,i)=>`<button class="set${d?" on":""}" data-a="set" data-id="${e.id}" data-i="${i}" aria-label="Serie ${i+1}">${i+1}</button>`).join("")}</div></div></div>`;
 const row=e=>`<div class="row${full(e)?" fin":""}" style="--c:${col(e)}" data-a="${full(e)?"redo":"pin"}" data-id="${e.id}"><div class="ci"><span class="g">${esc(e.g||"Otro")}</span><b>${esc(e.name)}</b>${chips(e,1)}</div><div class="dots">${e.done.map(d=>`<i class="${d?"on":""}"></i>`).join("")}</div><button class="ed" data-a="edit" data-id="${e.id}" aria-label="Editar">✎</button></div>`;
 function render(){const r=R();S.cur=r.id;
@@ -110,7 +110,7 @@ function render(){const r=R();S.cur=r.id;
 function openSh(h){$("#sh").innerHTML=`<div class="sheet">${h}</div>`;$("#sh").classList.add("on")}
 function closeSh(){$("#sh").classList.remove("on");ED=null}
 let tt;function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("on");clearTimeout(tt);tt=setTimeout(()=>t.classList.remove("on"),1800)}
-function sheetEx(e){ED=e;openSh(`<h3>${e?"Editar ejercicio":"Nuevo ejercicio"}</h3><label>Grupo<select id="f-g">${Object.keys(GR).map(k=>`<option${(e?e.g:"Otro")===k?" selected":""}>${k}</option>`).join("")}</select></label><label>Nombre<input id="f-n" value="${e?esc(e.name):""}" autocomplete="off"></label><div class="g3"><label>Peso (kg)<input id="f-k" type="number" inputmode="decimal" step="0.5" value="${e?e.kg:""}"></label><label>Repeticiones<input id="f-r" type="number" inputmode="numeric" value="${e?e.reps:""}"></label><label>Series<input id="f-s" type="number" inputmode="numeric" min="1" max="10" value="${e?e.sets:3}"></label></div><button class="big pri" data-a="savex">Guardar</button>${e?`<button class="big warn" data-a="delx">Eliminar ejercicio</button>`:""}<button class="big" data-a="close">Cancelar</button>`)}
+function sheetEx(e){ED=e;openSh(`<h3>${e?"Editar ejercicio":"Nuevo ejercicio"}</h3><label>Grupo<select id="f-g">${Object.keys(GR).map(k=>`<option${(e?e.g:"Otro")===k?" selected":""}>${k}</option>`).join("")}</select></label><label>Nombre<input id="f-n" value="${e?esc(e.name):""}" autocomplete="off"></label><div class="g3"><label>Peso (kg)<input id="f-k" type="number" inputmode="decimal" step="0.5" value="${e?e.kg:""}"></label><label>Repeticiones<input id="f-r" type="number" inputmode="numeric" value="${e?e.reps:""}"></label><label>Series<input id="f-s" type="number" inputmode="numeric" min="1" max="10" value="${e?e.sets:3}"></label></div><label>Tiempo (segundos, opcional)<input id="f-t" type="number" inputmode="numeric" value="${e&&e.time?e.time:""}"></label><button class="big pri" data-a="savex">Guardar</button>${e?`<button class="big warn" data-a="delx">Eliminar ejercicio</button>`:""}<button class="big" data-a="close">Cancelar</button>`)}
 document.addEventListener("click",ev=>{
  const t=ev.target.closest("[data-a]");if(!t)return;
  if(ev.target.id==="sh"){closeSh();return}
@@ -131,8 +131,8 @@ document.addEventListener("click",ev=>{
  else if(a==="edit"&&e){sheetEx(e);return}
  else if(a==="new"){sheetEx(null);return}
  else if(a==="savex"){const n=$("#f-n").value.trim();if(!n){toast("Pon un nombre");return}
-  const g=$("#f-g").value,kg=+$("#f-k").value||0,rp=+$("#f-r").value||0,st=Math.max(1,Math.min(10,Math.round(+$("#f-s").value)||1));
-  if(ED){ED.g=g;ED.name=n;ED.kg=kg;ED.reps=rp;if(st!==ED.sets){ED.done=Array.from({length:st},(_,i)=>!!ED.done[i]);ED.sets=st}}else r.ex.push(mk(g,n,kg,rp,st));closeSh()}
+  const g=$("#f-g").value,kg=+$("#f-k").value||0,rp=+$("#f-r").value||0,st=Math.max(1,Math.min(10,Math.round(+$("#f-s").value)||1)),tm=+$("#f-t").value||0;
+  if(ED){ED.g=g;ED.name=n;ED.kg=kg;ED.reps=rp;ED.time=tm;if(st!==ED.sets){ED.done=Array.from({length:st},(_,i)=>!!ED.done[i]);ED.sets=st}}else r.ex.push(Object.assign(mk(g,n,kg,rp,st),{time:tm}));closeSh()}
  else if(a==="delx"&&ED){const x=ED;closeSh();if(!confirm("¿Eliminar «"+x.name+"»?"))return;r.ex=r.ex.filter(y=>y!==x)}
  save();render()});
 const SB="https://tdundqjsixqrddszumly.supabase.co",SBK="sb_publishable_KTvtNJcl64iOH4Hee-3L-Q__vSiCgrP",ROW="entreno";

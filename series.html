@@ -38,6 +38,7 @@ h2{font-size:15px;font-weight:700;color:var(--amb);margin:24px 2px 8px}
 .seg{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:12px}
 .seg button{padding:10px 4px;border-radius:12px;background:var(--bg);font-weight:600;font-size:15px}
 .seg button.on{background:var(--acc);color:#fff}
+.dfl{display:flex;align-items:center;gap:10px;margin-top:10px;color:var(--mut);font-size:14px}.dfl span{flex:1}.dfl button{width:36px;height:36px;border-radius:50%;background:var(--bg);font-size:20px;font-weight:700}.dfl b{min-width:26px;text-align:center;color:var(--ink);font-size:17px}
 .ctl{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
 .ctl button{padding:9px 14px;border-radius:12px;background:var(--bg);font-weight:600;font-size:15px}
 .ctl .w{color:var(--bad)}
@@ -73,7 +74,7 @@ function auto(s){if(s.state==="v"&&tot(s)>0&&!next(s)){s.state="e";toast("Al dí
 function back(s){if(s.state==="e"&&next(s)){s.state="v";toast("Vuelve a Viendo")}}
 function body(s){const id=`data-id="${s.id}"`;
  return s.seasons.map((x,i)=>`<div class="ssn"><button class="sl" data-a="ssn" ${id} data-i="${i}">T${i+1}</button><div class="eps">${x.w.map((d,j)=>`<button class="ep${d?" on":""}" data-a="ep" ${id} data-i="${i}" data-j="${j}">${j+1}</button>`).join("")}<button class="ep add" data-a="addep" ${id} data-i="${i}" aria-label="Añadir capítulo">+</button></div></div>`).join("")+
- `<button class="add" data-a="addssn" ${id}>+ Temporada</button><div class="seg">${[["v","Viendo"],["e","Esperando"],["t","Terminada"]].map(([k,l])=>`<button class="${s.state===k?"on":""}" data-a="st" ${id} data-k="${k}">${l}</button>`).join("")}</div><div class="ctl">${s.state==="v"?`<button data-a="up" ${id}>▲ Subir</button><button data-a="dn" ${id}>▼ Bajar</button>`:""}<button data-a="ren" ${id}>Renombrar</button><button class="w" data-a="del" ${id}>Eliminar</button></div>`}
+ `<div class="hint" style="margin:8px 2px 0">Toca T1, T2… para cambiar los capítulos de esa temporada.</div><div class="dfl"><span>Capítulos por temporada nueva</span><button data-a="defm" ${id}>−</button><b>${s.def||8}</b><button data-a="defp" ${id}>+</button></div><button class="add" data-a="addssn" ${id}>+ Temporada</button><div class="seg">${[["v","Viendo"],["e","Esperando"],["t","Terminada"]].map(([k,l])=>`<button class="${s.state===k?"on":""}" data-a="st" ${id} data-k="${k}">${l}</button>`).join("")}</div><div class="ctl">${s.state==="v"?`<button data-a="up" ${id}>▲ Subir</button><button data-a="dn" ${id}>▼ Bajar</button>`:""}<button data-a="ren" ${id}>Renombrar</button><button class="w" data-a="del" ${id}>Eliminar</button></div>`}
 function card(s){const v=s.state==="v";
  return `<div class="si${v?"":" wait"}" data-id="${s.id}"><div class="sh2">${v?`<span class="hd" data-drag="${s.id}">≡</span>`:""}<div class="t" data-a="tog" data-id="${s.id}"><b>${esc(s.name)}</b><small>${label(s)}</small></div>${v?`<button class="inc" data-a="inc" data-id="${s.id}" aria-label="Marcar siguiente capítulo">+1</button>`:""}</div>${X===s.id?body(s):""}</div>`}
 function render(){const v=S.series.filter(s=>s.state==="v"),e=S.series.filter(s=>s.state==="e"),t=S.series.filter(s=>s.state==="t");
@@ -100,17 +101,19 @@ document.addEventListener("click",ev=>{
  else if(a==="inc"&&s){const n=next(s);if(!n){toast("No quedan capítulos por marcar");return}s.seasons[n[0]].w[n[1]]=true;auto(s)}
  else if(a==="ep"&&s){const w=s.seasons[i].w;w[j]=!w[j];if(w[j])auto(s);else back(s)}
  else if(a==="addep"&&s){s.seasons[i].w.push(false);back(s)}
- else if(a==="addssn"&&s){SE={id:s.id,i:-1};openSh(`<h3>Nueva temporada</h3>${nIn("Capítulos",10)}<button class="big p" data-a="savessn">Añadir</button><button class="big" data-a="close">Cancelar</button>`);return}
+ else if(a==="addssn"&&s){SE={id:s.id,i:-1};openSh(`<h3>Nueva temporada</h3>${nIn("Capítulos",s.def||8)}<button class="big p" data-a="savessn">Añadir</button><button class="big" data-a="close">Cancelar</button>`);return}
  else if(a==="ssn"&&s){SE={id:s.id,i};openSh(`<h3>${esc(s.name)} · T${i+1}</h3>${nIn("Capítulos",s.seasons[i].w.length)}<button class="big p" data-a="savessn">Guardar</button><button class="big w" data-a="delssn">Eliminar temporada</button><button class="big" data-a="close">Cancelar</button>`);return}
  else if(a==="savessn"&&s){const c=Math.max(1,Math.min(99,Math.round(+$("#f-c").value)||1));if(SE.i>=0){const w=s.seasons[SE.i].w;while(w.length<c)w.push(false);w.length=c;if(!auto(s))back(s)}else{s.seasons.push({w:Array(c).fill(false)});back(s)}closeSh()}
  else if(a==="delssn"&&s){closeSh();if(!confirm("¿Eliminar la temporada "+(SE.i+1)+"?"))return;s.seasons.splice(SE.i,1)}
  else if(a==="st"&&s){s.state=t.dataset.k;if(s.state==="t")X=null;closeSh()}
+ else if(a==="defm"&&s){s.def=Math.max(1,(s.def||8)-1)}
+ else if(a==="defp"&&s){s.def=Math.min(99,(s.def||8)+1)}
  else if(a==="up"&&s){move(s.id,-1)}
  else if(a==="dn"&&s){move(s.id,1)}
  else if(a==="ren"&&s){const n=prompt("Nombre de la serie",s.name);if(!n||!n.trim())return;s.name=n.trim()}
  else if(a==="del"&&s){closeSh();if(!confirm("¿Eliminar «"+s.name+"»?"))return;S.series=S.series.filter(y=>y!==s);if(X===s.id)X=null}
- else if(a==="addser"){openSh(`<h3>Nueva serie</h3><label>Nombre<input id="f-n" autocomplete="off" placeholder="Ej. Breaking Bad"></label>${nIn("Capítulos de la temporada 1",10)}<button class="big p" data-a="saveser">Añadir</button><button class="big" data-a="close">Cancelar</button>`);return}
- else if(a==="saveser"){const n=$("#f-n").value.trim();if(!n){toast("Pon un nombre");return}const c=Math.max(1,Math.min(99,Math.round(+$("#f-c").value)||1));const o={id:uid(),name:n,state:"v",seasons:[{w:Array(c).fill(false)}]};S.series.push(o);X=o.id;closeSh()}
+ else if(a==="addser"){openSh(`<h3>Nueva serie</h3><label>Nombre<input id="f-n" autocomplete="off" placeholder="Ej. Breaking Bad"></label>${nIn("Capítulos de la temporada 1",8)}<button class="big p" data-a="saveser">Añadir</button><button class="big" data-a="close">Cancelar</button>`);return}
+ else if(a==="saveser"){const n=$("#f-n").value.trim();if(!n){toast("Pon un nombre");return}const c=Math.max(1,Math.min(99,Math.round(+$("#f-c").value)||1));const o={id:uid(),name:n,state:"v",def:c,seasons:[{w:Array(c).fill(false)}]};S.series.push(o);X=o.id;closeSh()}
  else if(a==="done"){const l=S.series.filter(y=>y.state==="t");openSh(`<h3>Terminadas</h3>`+l.map(y=>`<div class="hl"><b>${esc(y.name)}</b><div class="ctl"><button data-a="st" data-id="${y.id}" data-k="v">Volver a Viendo</button><button class="w" data-a="del" data-id="${y.id}">Eliminar</button></div></div>`).join("")+`<button class="big" data-a="close">Cerrar</button>`);return}
  else if(a==="close"){closeSh();return}
  else if(a==="menu"){const lg=!!gs();openSh(`<h3>Datos</h3><p class="hint">${lg?"Tus datos se guardan en la nube. Punto verde arriba a la derecha = sincronizado.":"Sin iniciar sesión, tus datos solo están en este iPhone."}</p>${lg?`<button class="big p" data-a="syncnow">Sincronizar ahora</button>`:`<button class="big p" data-a="login">Iniciar sesión</button>`}<button class="big" data-a="exp">Copiar datos (copia manual)</button><button class="big" data-a="imp">Restaurar desde una copia</button><button class="big" data-a="close">Cerrar</button>`);return}
