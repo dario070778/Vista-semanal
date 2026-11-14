@@ -42,6 +42,8 @@ h2{font-size:15px;font-weight:700;color:var(--amb);margin:24px 2px 8px}
 .ctl{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
 .ctl button{padding:9px 14px;border-radius:12px;background:var(--bg);font-weight:600;font-size:15px}
 .ctl .w{color:var(--bad)}
+.wh{display:inline-block;margin-left:6px;padding:1px 8px;border-radius:99px;background:color-mix(in srgb,var(--acc) 14%,var(--card));color:var(--acc);font-size:12px;font-weight:700;vertical-align:1px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}.chips button{padding:9px 14px;border-radius:99px;background:var(--bg);font-weight:600;font-size:15px}.chips button.on{background:var(--acc);color:#fff}
 .lnk{display:block;margin:26px auto 0;color:var(--mut);font-weight:600;padding:8px 14px}
 .hint{color:var(--mut);font-size:14px;margin:14px 2px}
 #sh{position:fixed;inset:0;z-index:20;display:none;background:rgba(0,0,0,.45);align-items:flex-end}
@@ -63,6 +65,7 @@ h2{font-size:15px;font-weight:700;color:var(--amb);margin:24px 2px 8px}
 <script>
 const K="series-v1",$=s=>document.querySelector(s);
 let S,X=null,SE=null,DR=null;
+const PL=["Netflix","HBO Max","Disney+","Prime Video","Apple TV+","Movistar+","SkyShowtime","Filmin","RTVE Play","Atresplayer"];
 const uid=()=>Math.random().toString(36).slice(2,9);
 const esc=t=>String(t==null?"":t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 function load(){try{S=JSON.parse(localStorage.getItem(K))}catch(e){}if(!S||!Array.isArray(S.series))S={series:[]}}
@@ -74,9 +77,9 @@ function auto(s){if(s.state==="v"&&tot(s)>0&&!next(s)){s.state="e";toast("Al dí
 function back(s){if(s.state==="e"&&next(s)){s.state="v";toast("Vuelve a Viendo")}}
 function body(s){const id=`data-id="${s.id}"`;
  return s.seasons.map((x,i)=>`<div class="ssn"><button class="sl" data-a="ssn" ${id} data-i="${i}">T${i+1}</button><div class="eps">${x.w.map((d,j)=>`<button class="ep${d?" on":""}" data-a="ep" ${id} data-i="${i}" data-j="${j}">${j+1}</button>`).join("")}<button class="ep add" data-a="addep" ${id} data-i="${i}" aria-label="Añadir capítulo">+</button></div></div>`).join("")+
- `<div class="hint" style="margin:8px 2px 0">Toca T1, T2… para cambiar los capítulos de esa temporada.</div><div class="dfl"><span>Capítulos por temporada nueva</span><button data-a="defm" ${id}>−</button><b>${s.def||8}</b><button data-a="defp" ${id}>+</button></div><button class="add" data-a="addssn" ${id}>+ Temporada</button><div class="seg">${[["v","Viendo"],["e","Esperando"],["t","Terminada"]].map(([k,l])=>`<button class="${s.state===k?"on":""}" data-a="st" ${id} data-k="${k}">${l}</button>`).join("")}</div><div class="ctl">${s.state==="v"?`<button data-a="up" ${id}>▲ Subir</button><button data-a="dn" ${id}>▼ Bajar</button>`:""}<button data-a="ren" ${id}>Renombrar</button><button class="w" data-a="del" ${id}>Eliminar</button></div>`}
+ `<div class="hint" style="margin:8px 2px 0">Toca T1, T2… para cambiar los capítulos de esa temporada.</div><div class="dfl"><span>Capítulos por temporada nueva</span><button data-a="defm" ${id}>−</button><b>${s.def||8}</b><button data-a="defp" ${id}>+</button></div><button class="add" data-a="addssn" ${id}>+ Temporada</button><div class="seg">${[["v","Viendo"],["e","Esperando"],["t","Terminada"]].map(([k,l])=>`<button class="${s.state===k?"on":""}" data-a="st" ${id} data-k="${k}">${l}</button>`).join("")}</div><div class="ctl">${s.state==="v"?`<button data-a="up" ${id}>▲ Subir</button><button data-a="dn" ${id}>▼ Bajar</button>`:""}<button data-a="where" ${id}>📺 ${s.where?esc(s.where):"Dónde ver"}</button><button data-a="ren" ${id}>Renombrar</button><button class="w" data-a="del" ${id}>Eliminar</button></div>`}
 function card(s){const v=s.state==="v";
- return `<div class="si${v?"":" wait"}" data-id="${s.id}"><div class="sh2">${v?`<span class="hd" data-drag="${s.id}">≡</span>`:""}<div class="t" data-a="tog" data-id="${s.id}"><b>${esc(s.name)}</b><small>${label(s)}</small></div>${v?`<button class="inc" data-a="inc" data-id="${s.id}" aria-label="Marcar siguiente capítulo">+1</button>`:""}</div>${X===s.id?body(s):""}</div>`}
+ return `<div class="si${v?"":" wait"}" data-id="${s.id}"><div class="sh2">${v?`<span class="hd" data-drag="${s.id}">≡</span>`:""}<div class="t" data-a="tog" data-id="${s.id}"><b>${esc(s.name)}</b><small>${label(s)}${s.where?`<span class="wh">${esc(s.where)}</span>`:""}</small></div>${v?`<button class="inc" data-a="inc" data-id="${s.id}" aria-label="Marcar siguiente capítulo">+1</button>`:""}</div>${X===s.id?body(s):""}</div>`}
 function render(){const v=S.series.filter(s=>s.state==="v"),e=S.series.filter(s=>s.state==="e"),t=S.series.filter(s=>s.state==="t");
  $("#app").innerHTML=`<div class="bar"><h1>Series</h1><button class="back" data-a="menu">Datos</button></div><main><div id="vl">${v.map(card).join("")}</div>${!v.length?`<p class="hint">${S.series.length?"No tienes series en Viendo.":"Añade las series que estás viendo."}</p>`:""}<button class="add" data-a="addser">+ Añadir serie</button>`+
  (e.length?`<h2>Esperando</h2>`+e.map(card).join(""):"")+(t.length?`<button class="lnk" data-a="done">Terminadas (${t.length})</button>`:"")+`</main>`}
@@ -110,10 +113,14 @@ document.addEventListener("click",ev=>{
  else if(a==="defp"&&s){s.def=Math.min(99,(s.def||8)+1)}
  else if(a==="up"&&s){move(s.id,-1)}
  else if(a==="dn"&&s){move(s.id,1)}
+ else if(a==="where"&&s){SE={id:s.id,i:-1};openSh(`<h3>Dónde ver · ${esc(s.name)}</h3><div class="chips">${PL.map(p=>`<button class="${s.where===p?"on":""}" data-a="wsel" data-k="${esc(p)}">${esc(p)}</button>`).join("")}</div><label>Otra plataforma<input id="f-w" autocomplete="off" placeholder="Ej. Crunchyroll" value="${esc(PL.includes(s.where)?"":s.where||"")}"></label><button class="big p" data-a="wsave">Guardar</button>${s.where?`<button class="big w" data-a="wclr">Quitar</button>`:""}<button class="big" data-a="close">Cancelar</button>`);return}
+ else if(a==="wsel"&&s){s.where=t.dataset.k;closeSh()}
+ else if(a==="wsave"&&s){s.where=$("#f-w").value.trim();closeSh()}
+ else if(a==="wclr"&&s){delete s.where;closeSh()}
  else if(a==="ren"&&s){const n=prompt("Nombre de la serie",s.name);if(!n||!n.trim())return;s.name=n.trim()}
  else if(a==="del"&&s){closeSh();if(!confirm("¿Eliminar «"+s.name+"»?"))return;S.series=S.series.filter(y=>y!==s);if(X===s.id)X=null}
- else if(a==="addser"){openSh(`<h3>Nueva serie</h3><label>Nombre<input id="f-n" autocomplete="off" placeholder="Ej. Breaking Bad"></label>${nIn("Capítulos de la temporada 1",8)}<button class="big p" data-a="saveser">Añadir</button><button class="big" data-a="close">Cancelar</button>`);return}
- else if(a==="saveser"){const n=$("#f-n").value.trim();if(!n){toast("Pon un nombre");return}const c=Math.max(1,Math.min(99,Math.round(+$("#f-c").value)||1));const o={id:uid(),name:n,state:"v",def:c,seasons:[{w:Array(c).fill(false)}]};S.series.push(o);X=o.id;closeSh()}
+ else if(a==="addser"){openSh(`<h3>Nueva serie</h3><label>Nombre<input id="f-n" autocomplete="off" placeholder="Ej. Breaking Bad"></label><label>Dónde ver (opcional)<input id="f-w" list="pl" autocomplete="off" placeholder="Ej. Netflix"><datalist id="pl">${PL.map(p=>`<option value="${esc(p)}">`).join("")}</datalist></label>${nIn("Capítulos de la temporada 1",8)}<button class="big p" data-a="saveser">Añadir</button><button class="big" data-a="close">Cancelar</button>`);return}
+ else if(a==="saveser"){const n=$("#f-n").value.trim();if(!n){toast("Pon un nombre");return}const c=Math.max(1,Math.min(99,Math.round(+$("#f-c").value)||1));const o={id:uid(),name:n,state:"v",def:c,seasons:[{w:Array(c).fill(false)}]};const w=$("#f-w").value.trim();if(w)o.where=w;S.series.push(o);X=o.id;closeSh()}
  else if(a==="done"){const l=S.series.filter(y=>y.state==="t");openSh(`<h3>Terminadas</h3>`+l.map(y=>`<div class="hl"><b>${esc(y.name)}</b><div class="ctl"><button data-a="st" data-id="${y.id}" data-k="v">Volver a Viendo</button><button class="w" data-a="del" data-id="${y.id}">Eliminar</button></div></div>`).join("")+`<button class="big" data-a="close">Cerrar</button>`);return}
  else if(a==="close"){closeSh();return}
  else if(a==="menu"){const lg=!!gs();openSh(`<h3>Datos</h3><p class="hint">${lg?"Tus datos se guardan en la nube. Punto verde arriba a la derecha = sincronizado.":"Sin iniciar sesión, tus datos solo están en este iPhone."}</p>${lg?`<button class="big p" data-a="syncnow">Sincronizar ahora</button>`:`<button class="big p" data-a="login">Iniciar sesión</button>`}<button class="big" data-a="exp">Copiar datos (copia manual)</button><button class="big" data-a="imp">Restaurar desde una copia</button><button class="big" data-a="close">Cerrar</button>`);return}
