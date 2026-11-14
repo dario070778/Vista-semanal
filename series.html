@@ -68,7 +68,7 @@ h2{font-size:15px;font-weight:700;color:var(--amb);margin:24px 2px 8px}
 <div id="app"></div><div id="sh"></div><div id="toast"></div>
 <script>
 const K="series-v1",$=s=>document.querySelector(s);
-let S,X=null,SE=null,DR=null;
+let S,X=null,XS=null,SE=null,DR=null;
 const PL=["Netflix","HBO Max","Disney+","Prime Video","Plex","Apple TV+","Movistar+","SkyShowtime","Filmin","RTVE Play","Atresplayer"];
 const uid=()=>Math.random().toString(36).slice(2,9);
 const esc=t=>String(t==null?"":t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -79,33 +79,34 @@ function next(s){for(let i=0;i<s.seasons.length;i++){const j=s.seasons[i].w.inde
 const label=s=>{const t=tot(s);if(!t)return"Sin capítulos";const n=next(s);return n?`Próximo T${n[0]+1} E${n[1]+1} · ${seen(s)}/${t}`:`Al día · ${seen(s)}/${t}`};
 function body(s){const id=`data-id="${s.id}"`;
  return s.seasons.map((x,i)=>`<div class="ssn"><button class="sl" data-a="ssn" ${id} data-i="${i}">T${i+1}</button><div class="eps">${x.w.map((d,j)=>`<button class="ep${d?" on":""}" data-a="ep" ${id} data-i="${i}" data-j="${j}">${j+1}</button>`).join("")}<button class="ep add" data-a="addep" ${id} data-i="${i}" aria-label="Añadir capítulo">+</button><button class="ep add" data-a="delep" ${id} data-i="${i}" aria-label="Quitar capítulo">−</button></div></div>`).join("")+
- `<div class="hint" style="margin:8px 2px 0">Toca T1, T2… para cambiar los capítulos de esa temporada.</div><div class="dfl"><span>Capítulos por temporada nueva</span><button data-a="defm" ${id}>−</button><b>${s.def||8}</b><button data-a="defp" ${id}>+</button></div><button class="add" data-a="addssn" ${id}>+ Temporada</button><div class="seg">${[["v","Viendo"],["x","Próxima"],["p","Parada"],["e","Esperando"],["t","Terminada"]].map(([k,l])=>`<button class="${s.state===k?"on":""}" data-a="st" ${id} data-k="${k}">${l}</button>`).join("")}</div><div class="ctl">${s.state==="v"?`<button data-a="up" ${id}>▲ Subir</button><button data-a="dn" ${id}>▼ Bajar</button>`:""}<button data-a="where" ${id}>📺 ${s.where?esc(s.where):"Dónde ver"}</button><button data-a="ren" ${id}>Renombrar</button><button class="w" data-a="del" ${id}>Eliminar</button></div>`}
-const lst=st=>{const a=S.series.filter(s=>s.state===st);return a.filter(s=>s.fav).concat(a.filter(s=>!s.fav))};
-function card(s){const v=s.state==="v";
- return `<div class="si${v?"":s.state==="x"?" nxt":s.state==="p"?" stop":" wait"}" data-id="${s.id}"><div class="sh2">${v?`<span class="hd" data-drag="${s.id}">≡</span>`:""}<div class="t" data-a="tog" data-id="${s.id}"><b>${esc(s.name)}</b><small>${label(s)}${s.where?`<span class="wh">${esc(s.where)}</span>`:""}</small></div><button class="fav${s.fav?" on":""}" data-a="fav" data-id="${s.id}" aria-label="Favorita">${s.fav?"★":"☆"}</button>${v?`<button class="inc" data-a="inc" data-id="${s.id}" aria-label="Marcar siguiente capítulo">+1</button>`:""}</div>${X===s.id?body(s):""}</div>`}
+ `<div class="hint" style="margin:8px 2px 0">Toca T1, T2… para cambiar los capítulos de esa temporada.</div><div class="dfl"><span>Capítulos por temporada nueva</span><button data-a="defm" ${id}>−</button><b>${s.def||8}</b><button data-a="defp" ${id}>+</button></div><button class="add" data-a="addssn" ${id}>+ Temporada</button><div class="seg">${[["v","Viendo"],["x","Próxima"],["p","Parada"],["e","Esperando"],["t","Terminada"]].map(([k,l])=>`<button class="${s.state===k?"on":""}" data-a="st" ${id} data-k="${k}">${l}</button>`).join("")}</div><div class="ctl">${ds(s)==="v"?`<button data-a="up" ${id}>▲ Subir</button><button data-a="dn" ${id}>▼ Bajar</button>`:""}<button data-a="where" ${id}>📺 ${s.where?esc(s.where):"Dónde ver"}</button><button data-a="ren" ${id}>Renombrar</button><button class="w" data-a="del" ${id}>Eliminar</button></div>`}
+const ds=s=>s.id===X?XS:s.state;
+const lst=st=>{const a=S.series.filter(s=>ds(s)===st);return a.filter(s=>s.fav).concat(a.filter(s=>!s.fav))};
+function card(s){const d=ds(s),v=d==="v";
+ return `<div class="si${v?"":d==="x"?" nxt":d==="p"?" stop":" wait"}" data-id="${s.id}"><div class="sh2">${v?`<span class="hd" data-drag="${s.id}">≡</span>`:""}<div class="t" data-a="tog" data-id="${s.id}"><b>${esc(s.name)}</b><small>${label(s)}${s.where?`<span class="wh">${esc(s.where)}</span>`:""}</small></div><button class="fav${s.fav?" on":""}" data-a="fav" data-id="${s.id}" aria-label="Favorita">${s.fav?"★":"☆"}</button>${v?`<button class="inc" data-a="inc" data-id="${s.id}" aria-label="Marcar siguiente capítulo">+1</button>`:""}</div>${X===s.id?body(s):""}</div>`}
 function render(){const v=lst("v"),nx=lst("x"),pa=lst("p"),e=lst("e"),t=lst("t");
- $("#app").innerHTML=`<div class="bar"><h1>Series</h1><button class="back" data-a="menu">Datos</button></div><main><div id="vl">${v.map(card).join("")}</div>${!v.length?`<p class="hint">${S.series.length?"No tienes series en Viendo.":"Añade las series que estás viendo."}</p>`:""}<button class="add" data-a="addser">+ Añadir serie</button>`+
- (nx.length?`<h2 style="color:#8B5CF6">Próximas</h2>`+nx.map(card).join(""):"")+
+ $("#app").innerHTML=`<div class="bar"><h1>Series</h1><button class="back" data-a="menu">Datos</button></div><main><button class="add" data-a="addser" style="margin-top:14px">+ Añadir serie</button><div id="vl">${v.map(card).join("")}</div>${!v.length?`<p class="hint">${S.series.length?"No tienes series en Viendo.":"Añade las series que estás viendo."}</p>`:""}`+
  (pa.length?`<h2 style="color:var(--mut)">Paradas</h2>`+pa.map(card).join(""):"")+
- (e.length?`<h2>Esperando</h2>`+e.map(card).join(""):"")+(t.length?`<button class="lnk" data-a="done">Terminadas (${t.length})</button>`:"")+`</main>`}
+ (e.length?`<h2>Esperando</h2>`+e.map(card).join(""):"")+
+ (nx.length?`<h2 style="color:#8B5CF6">Próximas</h2>`+nx.map(card).join(""):"")+(t.length?`<button class="lnk" data-a="done">Terminadas (${t.length})</button>`:"")+`</main>`}
 function openSh(h){$("#sh").innerHTML=`<div class="sheet">${h}</div>`;$("#sh").classList.add("on")}
 function closeSh(){$("#sh").classList.remove("on")}
 let tt;function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("on");clearTimeout(tt);tt=setTimeout(()=>t.classList.remove("on"),1800)}
 const nIn=(l,v)=>`<label>${l}<input id="f-c" type="number" inputmode="numeric" min="1" max="99" value="${v}"></label>`;
-function move(id,dir){const vs=lst("v"),i=vs.findIndex(s=>s.id===id),k=i+dir;if(k<0||k>=vs.length)return;const[m]=vs.splice(i,1);vs.splice(k,0,m);S.series=vs.concat(S.series.filter(s=>s.state!=="v"))}
+function move(id,dir){const vs=lst("v"),i=vs.findIndex(s=>s.id===id),k=i+dir;if(k<0||k>=vs.length)return;const[m]=vs.splice(i,1);vs.splice(k,0,m);S.series=vs.concat(S.series.filter(s=>!vs.includes(s)))}
 /* Arrastrar para ordenar */
 function dragIdx(){const r=DR.el.getBoundingClientRect(),c=r.top+r.height/2;return DR.sibs.filter(x=>{const q=x.getBoundingClientRect();return q.top+q.height/2<c}).length}
 document.addEventListener("pointerdown",ev=>{const h=ev.target.closest("[data-drag]");if(!h)return;ev.preventDefault();const el=h.closest(".si");
  DR={id:h.dataset.drag,el,y0:ev.clientY,sibs:[...document.querySelectorAll("#vl .si")].filter(x=>x!==el)};el.classList.add("drag");try{h.setPointerCapture(ev.pointerId)}catch(e){}});
 document.addEventListener("pointermove",ev=>{if(!DR)return;ev.preventDefault();DR.el.style.transform=`translateY(${ev.clientY-DR.y0}px)`;
  DR.sibs.forEach(x=>x.classList.remove("tgt","tgtend"));const k=dragIdx();if(k<DR.sibs.length)DR.sibs[k].classList.add("tgt");else if(DR.sibs.length)DR.sibs[DR.sibs.length-1].classList.add("tgtend")});
-function endDrag(){if(!DR)return;const k=dragIdx(),id=DR.id;DR=null;const vs=lst("v"),i=vs.findIndex(s=>s.id===id);if(i>=0){const[m]=vs.splice(i,1);vs.splice(k,0,m);S.series=vs.concat(S.series.filter(s=>s.state!=="v"));save()}render()}
+function endDrag(){if(!DR)return;const k=dragIdx(),id=DR.id;DR=null;const vs=lst("v"),i=vs.findIndex(s=>s.id===id);if(i>=0){const[m]=vs.splice(i,1);vs.splice(k,0,m);S.series=vs.concat(S.series.filter(s=>!vs.includes(s)));save()}render()}
 document.addEventListener("pointerup",endDrag);document.addEventListener("pointercancel",endDrag);
 document.addEventListener("click",ev=>{
  if(ev.target.id==="sh"){closeSh();return}
  const t=ev.target.closest("[data-a]");if(!t)return;
  const a=t.dataset.a,s=S.series.find(y=>y.id===(t.dataset.id||(SE&&SE.id))),i=+t.dataset.i,j=+t.dataset.j;
- if(a==="tog"&&s){X=X===s.id?null:s.id}
+ if(a==="tog"&&s){X=X===s.id?null:s.id;XS=s.state}
  else if(a==="inc"&&s){const n=next(s);if(!n){toast("No quedan capítulos por marcar");return}s.seasons[n[0]].w[n[1]]=true}
  else if(a==="ep"&&s){const w=s.seasons[i].w;w[j]=!w[j]}
  else if(a==="addep"&&s){s.seasons[i].w.push(false)}
@@ -115,7 +116,7 @@ document.addEventListener("click",ev=>{
  else if(a==="ssn"&&s){SE={id:s.id,i};openSh(`<h3>${esc(s.name)} · T${i+1}</h3>${nIn("Capítulos",s.seasons[i].w.length)}<button class="big p" data-a="savessn">Guardar</button><button class="big w" data-a="delssn">Eliminar temporada</button><button class="big" data-a="close">Cancelar</button>`);return}
  else if(a==="savessn"&&s){const c=Math.max(1,Math.min(99,Math.round(+$("#f-c").value)||1));if(SE.i>=0){const w=s.seasons[SE.i].w;while(w.length<c)w.push(false);w.length=c;}else{s.seasons.push({w:Array(c).fill(false)})}closeSh()}
  else if(a==="delssn"&&s){closeSh();if(!confirm("¿Eliminar la temporada "+(SE.i+1)+"?"))return;s.seasons.splice(SE.i,1)}
- else if(a==="st"&&s){s.state=t.dataset.k;if(s.state==="t")X=null;closeSh()}
+ else if(a==="st"&&s){s.state=t.dataset.k;if(s.state!==XS)toast("Se moverá de lista al plegarla");closeSh()}
  else if(a==="defm"&&s){s.def=Math.max(1,(s.def||8)-1)}
  else if(a==="defp"&&s){s.def=Math.min(99,(s.def||8)+1)}
  else if(a==="up"&&s){move(s.id,-1)}
@@ -126,8 +127,8 @@ document.addEventListener("click",ev=>{
  else if(a==="wclr"&&s){delete s.where;closeSh()}
  else if(a==="ren"&&s){const n=prompt("Nombre de la serie",s.name);if(!n||!n.trim())return;s.name=n.trim()}
  else if(a==="del"&&s){closeSh();if(!confirm("¿Eliminar «"+s.name+"»?"))return;S.series=S.series.filter(y=>y!==s);if(X===s.id)X=null}
- else if(a==="addser"){openSh(`<h3>Nueva serie</h3><label>Nombre<input id="f-n" autocomplete="off" placeholder="Ej. Breaking Bad"></label><label>Dónde ver (opcional)<input id="f-w" list="pl" autocomplete="off" placeholder="Ej. Netflix"><datalist id="pl">${PL.map(p=>`<option value="${esc(p)}">`).join("")}</datalist></label>${nIn("Capítulos de la temporada 1",8)}<button class="big p" data-a="saveser">Añadir a Viendo</button><button class="big" data-a="saveser" data-k="x">Añadir a Próximas</button><button class="big" data-a="close">Cancelar</button>`);return}
- else if(a==="saveser"){const n=$("#f-n").value.trim();if(!n){toast("Pon un nombre");return}const c=Math.max(1,Math.min(99,Math.round(+$("#f-c").value)||1));const o={id:uid(),name:n,state:t.dataset.k||"v",def:c,seasons:[{w:Array(c).fill(false)}]};const w=$("#f-w").value.trim();if(w)o.where=w;S.series.push(o);X=o.id;closeSh()}
+ else if(a==="addser"){openSh(`<h3>Nueva serie</h3><label>Nombre<input id="f-n" autocomplete="off" placeholder="Ej. Breaking Bad"></label><label>Dónde ver (opcional)<input id="f-w" list="pl" autocomplete="off" placeholder="Ej. Netflix"><datalist id="pl">${PL.map(p=>`<option value="${esc(p)}">`).join("")}</datalist></label>${nIn("Capítulos de la temporada 1",8)}<button class="big p" data-a="saveser">Añadir</button><button class="big" data-a="close">Cancelar</button>`);return}
+ else if(a==="saveser"){const n=$("#f-n").value.trim();if(!n){toast("Pon un nombre");return}const c=Math.max(1,Math.min(99,Math.round(+$("#f-c").value)||1));const o={id:uid(),name:n,state:"v",def:c,seasons:[{w:Array(c).fill(false)}]};const w=$("#f-w").value.trim();if(w)o.where=w;S.series.push(o);X=o.id;XS="v";closeSh()}
  else if(a==="done"){const l=S.series.filter(y=>y.state==="t");openSh(`<h3>Terminadas</h3>`+l.map(y=>`<div class="hl"><b>${esc(y.name)}</b><div class="ctl"><button data-a="st" data-id="${y.id}" data-k="v">Volver a Viendo</button><button class="w" data-a="del" data-id="${y.id}">Eliminar</button></div></div>`).join("")+`<button class="big" data-a="close">Cerrar</button>`);return}
  else if(a==="close"){closeSh();return}
  else if(a==="menu"){const lg=!!gs();openSh(`<h3>Datos</h3><p class="hint">${lg?"Tus datos se guardan en la nube. Punto verde arriba a la derecha = sincronizado.":"Sin iniciar sesión, tus datos solo están en este iPhone."}</p>${lg?`<button class="big p" data-a="syncnow">Sincronizar ahora</button>`:`<button class="big p" data-a="login">Iniciar sesión</button>`}<button class="big" data-a="exp">Copiar datos (copia manual)</button><button class="big" data-a="imp">Restaurar desde una copia</button><button class="big" data-a="close">Cerrar</button>`);return}
