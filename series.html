@@ -83,7 +83,7 @@ function body(s){const id=`data-id="${s.id}"`;
 const ds=s=>s.id===X?XS:s.state;
 const lst=st=>{const a=S.series.filter(s=>ds(s)===st);return a.filter(s=>s.fav).concat(a.filter(s=>!s.fav))};
 function card(s){const d=ds(s),v=d==="v";
- return `<div class="si${v?"":d==="x"?" nxt":d==="p"?" stop":" wait"}" data-id="${s.id}"><div class="sh2">${v?`<span class="hd" data-drag="${s.id}">≡</span>`:""}<div class="t" data-a="tog" data-id="${s.id}"><b>${esc(s.name)}</b><small>${label(s)}${s.where?`<span class="wh">${esc(s.where)}</span>`:""}</small></div><button class="fav${s.fav?" on":""}" data-a="fav" data-id="${s.id}" aria-label="Favorita">${s.fav?"★":"☆"}</button>${v?`<button class="inc" data-a="inc" data-id="${s.id}" aria-label="Marcar siguiente capítulo">+1</button>`:""}</div>${X===s.id?body(s):""}</div>`}
+ return `<div class="si${v?"":d==="x"?" nxt":d==="p"?" stop":" wait"}" data-id="${s.id}"><div class="sh2">${v?`<span class="hd" data-drag="${s.id}">≡</span>`:""}<div class="t" data-a="tog" data-id="${s.id}"><b>${esc(s.name)}</b><small>${label(s)}${s.where?`<span class="wh">${esc(s.where)}</span>`:""}</small></div><button class="fav${s.fav?" on":""}" data-a="fav" data-id="${s.id}" aria-label="Favorita">${s.fav?"★":"☆"}</button></div>${X===s.id?body(s):""}</div>`}
 function render(){const v=lst("v"),nx=lst("x"),pa=lst("p"),e=lst("e"),t=lst("t");
  $("#app").innerHTML=`<div class="bar"><h1>Series</h1><button class="back" data-a="menu">Datos</button></div><main><button class="add" data-a="addser" style="margin-top:14px">+ Añadir serie</button><div id="vl">${v.map(card).join("")}</div>${!v.length?`<p class="hint">${S.series.length?"No tienes series en Viendo.":"Añade las series que estás viendo."}</p>`:""}`+
  (pa.length?`<h2 style="color:var(--mut)">Paradas</h2>`+pa.map(card).join(""):"")+
@@ -107,8 +107,7 @@ document.addEventListener("click",ev=>{
  const t=ev.target.closest("[data-a]");if(!t)return;
  const a=t.dataset.a,s=S.series.find(y=>y.id===(t.dataset.id||(SE&&SE.id))),i=+t.dataset.i,j=+t.dataset.j;
  if(a==="tog"&&s){X=X===s.id?null:s.id;XS=s.state}
- else if(a==="inc"&&s){const n=next(s);if(!n){toast("No quedan capítulos por marcar");return}s.seasons[n[0]].w[n[1]]=true}
- else if(a==="ep"&&s){const w=s.seasons[i].w;w[j]=!w[j]}
+ else if(a==="ep"&&s){const w=s.seasons[i].w;if(w[j])w[j]=false;else for(let k=0;k<=j;k++)w[k]=true}
  else if(a==="addep"&&s){s.seasons[i].w.push(false)}
  else if(a==="delep"&&s){const w=s.seasons[i].w;if(w.length>1)w.pop();else{toast("La temporada necesita al menos 1 capítulo");return}}
  else if(a==="fav"&&s){if(s.fav)delete s.fav;else s.fav=true}
@@ -127,8 +126,8 @@ document.addEventListener("click",ev=>{
  else if(a==="wclr"&&s){delete s.where;closeSh()}
  else if(a==="ren"&&s){const n=prompt("Nombre de la serie",s.name);if(!n||!n.trim())return;s.name=n.trim()}
  else if(a==="del"&&s){closeSh();if(!confirm("¿Eliminar «"+s.name+"»?"))return;S.series=S.series.filter(y=>y!==s);if(X===s.id)X=null}
- else if(a==="addser"){openSh(`<h3>Nueva serie</h3><label>Nombre<input id="f-n" autocomplete="off" placeholder="Ej. Breaking Bad"></label><label>Dónde ver (opcional)<input id="f-w" list="pl" autocomplete="off" placeholder="Ej. Netflix"><datalist id="pl">${PL.map(p=>`<option value="${esc(p)}">`).join("")}</datalist></label>${nIn("Capítulos de la temporada 1",8)}<button class="big p" data-a="saveser">Añadir</button><button class="big" data-a="close">Cancelar</button>`);return}
- else if(a==="saveser"){const n=$("#f-n").value.trim();if(!n){toast("Pon un nombre");return}const c=Math.max(1,Math.min(99,Math.round(+$("#f-c").value)||1));const o={id:uid(),name:n,state:"v",def:c,seasons:[{w:Array(c).fill(false)}]};const w=$("#f-w").value.trim();if(w)o.where=w;S.series.push(o);X=o.id;XS="v";closeSh()}
+ else if(a==="addser"){openSh(`<h3>Nueva serie</h3><label>Nombre<input id="f-n" autocomplete="off" placeholder="Ej. Breaking Bad"></label>${nIn("Capítulos de la temporada 1",8)}<button class="big p" data-a="saveser">Añadir</button><button class="big" data-a="close">Cancelar</button>`);return}
+ else if(a==="saveser"){const n=$("#f-n").value.trim();if(!n){toast("Pon un nombre");return}const c=Math.max(1,Math.min(99,Math.round(+$("#f-c").value)||1));const o={id:uid(),name:n,state:"v",def:c,seasons:[{w:Array(c).fill(false)}]};S.series.push(o);X=o.id;XS="v";closeSh()}
  else if(a==="done"){const l=S.series.filter(y=>y.state==="t");openSh(`<h3>Terminadas</h3>`+l.map(y=>`<div class="hl"><b>${esc(y.name)}</b><div class="ctl"><button data-a="st" data-id="${y.id}" data-k="v">Volver a Viendo</button><button class="w" data-a="del" data-id="${y.id}">Eliminar</button></div></div>`).join("")+`<button class="big" data-a="close">Cerrar</button>`);return}
  else if(a==="close"){closeSh();return}
  else if(a==="menu"){const lg=!!gs();openSh(`<h3>Datos</h3><p class="hint">${lg?"Tus datos se guardan en la nube. Punto verde arriba a la derecha = sincronizado.":"Sin iniciar sesión, tus datos solo están en este iPhone."}</p>${lg?`<button class="big p" data-a="syncnow">Sincronizar ahora</button>`:`<button class="big p" data-a="login">Iniciar sesión</button>`}<button class="big" data-a="exp">Copiar datos (copia manual)</button><button class="big" data-a="imp">Restaurar desde una copia</button><button class="big" data-a="close">Cerrar</button>`);return}
