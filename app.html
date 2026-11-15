@@ -1,6 +1,9 @@
 <!doctype html>
 <html lang="es"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Gym">
+<link rel="apple-touch-icon" href="icono-gym.png">
 <title>Gym</title>
 <style>
 :root{--bg:#EEF1F5;--pill:#fff;--ink:#14171A;--on:#14171A;--onink:#fff;color-scheme:light dark}
@@ -18,9 +21,12 @@ const T=[["gym","Gym","gym.html?tab=gym"],["fb","Full body","entreno.html"],["ca
 const nav=document.querySelector("nav");let cur="gym";
 try{cur=localStorage.getItem("app-tab")||"gym"}catch(e){}
 if(!T.some(t=>t[0]===cur))cur="gym";
+const KS=["gym-session","entreno-session"];
+function sync(){try{let b=null;KS.forEach(k=>{const v=JSON.parse(localStorage.getItem(k)||"null");if(v&&v.refresh_token&&(!b||(v.expires_at||0)>(b.expires_at||0)))b=v});if(b){const j=JSON.stringify(b);KS.forEach(k=>localStorage.setItem(k,j))}}catch(e){}}
 function go(id){cur=id;try{localStorage.setItem("app-tab",id)}catch(e){}
  nav.innerHTML=T.map(t=>`<button class="${t[0]===id?"on":""}" data-t="${t[0]}">${t[1]}</button>`).join("");
  const old=document.querySelector("iframe");if(old)old.remove();
+ sync();
  const f=document.createElement("iframe");f.src=T.find(t=>t[0]===id)[2];document.body.appendChild(f)}
 nav.addEventListener("click",e=>{const b=e.target.closest("button");if(b&&b.dataset.t!==cur)go(b.dataset.t)});
 go(cur);
