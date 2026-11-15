@@ -71,9 +71,23 @@ h2{font-size:15px;font-weight:700;color:var(--mut);margin:20px 2px 8px}
 .lgc{width:100%;max-width:340px;background:var(--card);border-radius:18px;padding:20px;display:grid;gap:10px;box-shadow:0 6px 24px #0003}
 .lgc h3{margin:0;font-size:22px;text-align:center}.lgc p{margin:0;color:var(--mut);font-size:14px;text-align:center}
 .lgc input{font:inherit;font-size:17px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:12px;width:100%}
+.sheet{max-height:88vh;overflow:auto}
+#wo{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding-bottom:8px}
+.wt{font-size:24px;font-weight:800;font-variant-numeric:tabular-nums;margin-right:auto}
+.wt.p{color:var(--mut)}
+.wb{padding:10px 14px;border-radius:12px;background:var(--card);font-weight:700;font-size:15px}
+.wb.pri{background:var(--acc);color:#fff}
+.wb.fin{background:var(--ok);color:#fff}
+.wb.grow{flex:1}
+.hrow{display:flex;align-items:center;justify-content:space-between;gap:10px;text-align:left;background:var(--bg);border-radius:14px;padding:12px;width:100%}
+.hrow b{display:block}.hrow span{color:var(--mut);font-size:13px}
+.hrow i{font-style:normal;font-size:12px;font-weight:700;border-radius:99px;padding:4px 10px;white-space:nowrap}
+.pend{background:color-mix(in srgb,var(--bad) 16%,transparent);color:var(--bad)}
+.kc{background:color-mix(in srgb,var(--ok) 16%,transparent);color:var(--ok)}
+.hex{display:grid;gap:6px}.hex div{background:var(--bg);border-radius:12px;padding:8px 10px}.hex span{display:block;color:var(--mut);font-size:13px}
 </style></head>
 <body>
-<div class="top"><div id="tabs"></div><div id="now"></div></div>
+<div class="top"><div id="tabs"></div><div id="wo"></div><div id="now"></div></div>
 <main id="list"></main>
 <div id="sh"></div><div id="toast"></div>
 <script>
@@ -96,13 +110,34 @@ function defS(){const S={cur:null,routines:[{id:uid(),name:"Full body",ex:[
 const sig=X=>JSON.stringify(X.routines.map(r=>[r.name,r.ex.map(e=>[e.g,e.name,e.kg,e.reps,e.sets,e.done.some(Boolean)])]));
 const isDef=()=>sig(S)===sig(defS());
 function load(){try{S=JSON.parse(localStorage.getItem(K))}catch(e){}
- if(!S||!S.routines||!S.routines.length)S=defS()}
+ if(!S||!S.routines||!S.routines.length)S=defS();S.hist=S.hist||[]}
 function save(){try{localStorage.setItem(K,JSON.stringify(S));localStorage.setItem(UPD,String(Date.now()));localStorage.setItem(DRT,"1")}catch(e){}queueCloud()}
 const R=()=>S.routines.find(r=>r.id===S.cur)||S.routines[0];
+const p2=n=>String(n).padStart(2,"0");
+const isoD=d=>d.getFullYear()+"-"+p2(d.getMonth()+1)+"-"+p2(d.getDate());
+const hmD=d=>p2(d.getHours())+":"+p2(d.getMinutes());
+const fd=x=>{const q=String(x.f).split("-");return q[2]+"/"+q[1]+"/"+q[0]};
+const el=w=>Math.max(0,(w.p||Date.now())-w.ini-(w.ac||0));
+const clk=ms=>{const t=Math.floor(ms/1000);return p2(Math.floor(t/3600))+":"+p2(Math.floor(t/60)%60)+":"+p2(t%60)};
+const fdur=s=>{if(s<60)return s+" s";const m=Math.floor(s/60);return m<60?m+" min":Math.floor(m/60)+" h "+p2(m%60)+" min"};
+const pend=()=>(S.hist||[]).filter(h=>h.kcal==null).length;
+function woRender(){const w=S.wo,n=pend(),hb=`<button class="wb" data-a="hist">Historial${n?" ("+n+")":""}</button>`;
+ $("#wo").innerHTML=w?`<span class="wt${w.p?" p":""}" id="wt">${clk(el(w))}${w.p?" ⏸":""}</span><button class="wb" data-a="wtog">${w.p?"Reanudar":"Pausa"}</button><button class="wb fin" data-a="wfin">Terminar</button>`:`<button class="wb pri grow" data-a="wstart">Iniciar entreno</button>${hb}`}
+setInterval(()=>{const t=$("#wt");if(t&&S&&S.wo&&!S.wo.p)t.textContent=clk(el(S.wo))},1000);
+function finWO(){const w=S.wo;if(!w)return;const ex=[],rn=[];
+ S.routines.forEach(r=>{let any=false;r.ex.forEach(e=>{const n=e.done.filter(Boolean).length;if(n){any=true;ex.push({r:r.name,g:e.g,n:e.name,kg:e.kg||0,rep:e.reps||0,t:e.time||0,s:e.sets,h:n})}});if(any)rn.push(r.name)});
+ if(!ex.length&&!confirm("No has marcado ninguna serie. ¿Guardar el entreno igualmente?"))return;
+ const now=Date.now(),d=new Date(w.ini);
+ (S.hist=S.hist||[]).push({id:uid(),f:isoD(d),h:hmD(d),ini:w.ini,fin:now,dur:Math.round(el(w)/1000),rut:rn.join(" + "),ex,kcal:null});
+ S.routines.forEach(r=>r.ex.forEach(e=>{e.done=e.done.map(()=>false);e.pin=false}));
+ S.wo=null;toast("Entreno guardado")}
+function sheetHist(){const h=(S.hist||[]).slice().sort((a,b)=>b.ini-a.ini);
+ openSh(`<h3>Historial</h3>${h.length?h.map(x=>`<button class="hrow" data-a="hdet" data-id="${x.id}"><div><b>${fd(x)} · ${x.h}</b><span>${fdur(x.dur)}${x.rut?" · "+esc(x.rut):""}</span></div>${x.kcal==null?`<i class="pend">Calorías pendientes</i>`:`<i class="kc">${x.kcal} kcal</i>`}</button>`).join(""):`<p class="hint">Aún no hay entrenos guardados.</p>`}<button class="big" data-a="close">Cerrar</button>`)}
+function sheetHD(x){openSh(`<h3>${fd(x)} · ${x.h}</h3><p class="hint" style="margin:0">Duración: ${fdur(x.dur)}${x.rut?" · "+esc(x.rut):""}</p><div class="hex">${x.ex.length?x.ex.map(e=>`<div><b>${esc(e.n)}</b><span>${[e.kg?e.kg+" kg":"",e.rep?e.rep+" rep":"",e.t?e.t+" s":"",e.h+"/"+e.s+" series"].filter(Boolean).join(" · ")}</span></div>`).join(""):`<p class="hint" style="margin:0">Sin series marcadas.</p>`}</div><label>Calorías consumidas (Garmin)<input id="f-c" type="number" inputmode="numeric" min="0" placeholder="Pendiente" value="${x.kcal==null?"":x.kcal}"></label><button class="big pri" data-a="hsave" data-id="${x.id}">Guardar calorías</button><button class="big warn" data-a="hdel" data-id="${x.id}">Eliminar entreno</button><button class="big" data-a="hist">Volver al historial</button>`)}
 const chips=(e,ws)=>`<span class="m">${e.kg?`<em>${e.kg}<small> kg</small></em>`:""}${e.reps?`<em>${e.reps}<small> rep</small></em>`:""}${e.time?`<em>${e.time}<small> s</small></em>`:""}${ws||(!e.kg&&!e.reps&&!e.time)?`<em>${e.sets}<small> series</small></em>`:""}</span>`;
 const card=e=>`<div class="card${full(e)?" fin":""}" style="--c:${col(e)}"><div class="h"><span class="g">${esc(e.g||"Otro")}</span><b>${esc(e.name)}</b><button class="x" data-a="unpin" data-id="${e.id}" aria-label="Quitar de en marcha">✕</button></div><div class="b">${chips(e,0)}<div class="sets">${e.done.map((d,i)=>`<button class="set${d?" on":""}" data-a="set" data-id="${e.id}" data-i="${i}" aria-label="Serie ${i+1}">${i+1}</button>`).join("")}</div></div></div>`;
 const row=e=>`<div class="row${full(e)?" fin":""}" style="--c:${col(e)}" data-a="${full(e)?"redo":"pin"}" data-id="${e.id}"><div class="ci"><span class="g">${esc(e.g||"Otro")}</span><b>${esc(e.name)}</b>${chips(e,1)}</div><div class="dots">${e.done.map(d=>`<i class="${d?"on":""}"></i>`).join("")}</div><button class="ed" data-a="edit" data-id="${e.id}" aria-label="Editar">✎</button></div>`;
-function render(){const r=R();S.cur=r.id;
+function render(){const r=R();S.cur=r.id;woRender();
  $("#tabs").innerHTML=S.routines.map(x=>`<button class="tab${x.id===r.id?" on":""}" data-a="tab" data-id="${x.id}">${esc(x.name)}</button>`).join("")+`<button class="tab plus" data-a="addr" aria-label="Nueva rutina">+</button><button class="tab plus" data-a="menu" aria-label="Opciones">⋯</button>`;
  const pin=r.ex.filter(e=>e.pin),pen=r.ex.filter(e=>!e.pin&&!full(e)),dn=r.ex.filter(e=>!e.pin&&full(e));
  $("#now").innerHTML=pin.length?pin.map(card).join(""):`<p class="hint">${r.ex.length?"Toca un ejercicio de la lista para ponerlo en marcha (hasta 3 a la vez).":"Rutina vacía. Añade tu primer ejercicio."}</p>`;
@@ -117,7 +152,7 @@ document.addEventListener("click",ev=>{
  const a=t.dataset.a,r=R(),e=r.ex.find(x=>x.id===t.dataset.id);
  if(a==="tab")S.cur=t.dataset.id;
  else if(a==="addr"){const n=prompt("Nombre de la rutina");if(!n||!n.trim())return;const x={id:uid(),name:n.trim(),ex:[]};S.routines.push(x);S.cur=x.id}
- else if(a==="menu"){openSh(`<h3>${esc(r.name)}</h3>${gs()?`<button class="big" data-a="syncnow">Sincronizar ahora</button>`:`<button class="big" data-a="login">Iniciar sesión</button>`}<button class="big" data-a="reset">Reiniciar series</button><button class="big" data-a="ren">Renombrar rutina</button><button class="big warn" data-a="delr">Eliminar rutina</button><button class="big" data-a="close">Cerrar</button>`);return}
+ else if(a==="menu"){openSh(`<h3>${esc(r.name)}</h3>${gs()?`<button class="big" data-a="syncnow">Sincronizar ahora</button>`:`<button class="big" data-a="login">Iniciar sesión</button>`}<button class="big" data-a="hist">Historial${pend()?" ("+pend()+" sin calorías)":""}</button><button class="big" data-a="reset">Reiniciar series</button><button class="big" data-a="ren">Renombrar rutina</button><button class="big warn" data-a="delr">Eliminar rutina</button><button class="big" data-a="close">Cerrar</button>`);return}
  else if(a==="login"){closeSh();showLogin();return}
  else if(a==="syncnow"){closeSh();sync().then(()=>toast("Sincronizado"));return}
  else if(a==="close"){closeSh();return}
@@ -130,6 +165,13 @@ document.addEventListener("click",ev=>{
  else if(a==="redo"&&e)e.done=e.done.map(()=>false);
  else if(a==="edit"&&e){sheetEx(e);return}
  else if(a==="new"){sheetEx(null);return}
+ else if(a==="wstart"){if(!S.wo)S.wo={ini:Date.now(),ac:0,p:null}}
+ else if(a==="wtog"){const w=S.wo;if(w){if(w.p){w.ac+=Date.now()-w.p;w.p=null}else w.p=Date.now()}}
+ else if(a==="wfin"){if(!confirm("¿Terminar el entreno?"))return;finWO()}
+ else if(a==="hist"){sheetHist();return}
+ else if(a==="hdet"){const x=(S.hist||[]).find(h=>h.id===t.dataset.id);if(x)sheetHD(x);return}
+ else if(a==="hsave"){const x=(S.hist||[]).find(h=>h.id===t.dataset.id);if(x){const v=$("#f-c").value.trim();x.kcal=v===""?null:Math.max(0,Math.round(+v)||0);sheetHist();toast("Guardado")}}
+ else if(a==="hdel"){if(!confirm("¿Eliminar este entreno del historial?"))return;S.hist=(S.hist||[]).filter(h=>h.id!==t.dataset.id);sheetHist()}
  else if(a==="savex"){const n=$("#f-n").value.trim();if(!n){toast("Pon un nombre");return}
   const g=$("#f-g").value,kg=+$("#f-k").value||0,rp=+$("#f-r").value||0,st=Math.max(1,Math.min(10,Math.round(+$("#f-s").value)||1)),tm=+$("#f-t").value||0;
   if(ED){ED.g=g;ED.name=n;ED.kg=kg;ED.reps=rp;ED.time=tm;if(st!==ED.sets){ED.done=Array.from({length:st},(_,i)=>!!ED.done[i]);ED.sets=st}}else r.ex.push(Object.assign(mk(g,n,kg,rp,st),{time:tm}));closeSh()}
@@ -153,7 +195,7 @@ async function sync(){if(cbusy||ctimer)return;if(!gs()){dot("none");return}cbusy
   if(!locAt&&!isDef()){locAt=Date.now();localStorage.setItem(UPD,String(locAt));localStorage.setItem(DRT,"1")}
   if(!rows.length||!rem||!rem.state){const h=await hd(true);h.Prefer="resolution=merge-duplicates,return=minimal";const p=await fetch(`${SB}/rest/v1/vista_semanal`,{method:"POST",headers:h,body:JSON.stringify({id:ROW,datos:{state:S,updatedAt:lupd()||Date.now()}})});if(!p.ok)throw new Error("sb "+p.status);localStorage.setItem(DRT,"0")}
   else if(dirty()||locAt>remAt){await cput(lupd())}
-  else if(remAt>locAt){S=rem.state;if(!S.routines||!S.routines.length)S=defS();localStorage.setItem(K,JSON.stringify(S));localStorage.setItem(UPD,String(remAt));localStorage.setItem(DRT,"0");if(!document.querySelector("#sh.on"))render()}
+  else if(remAt>locAt){S=rem.state;if(!S.routines||!S.routines.length)S=defS();S.hist=S.hist||[];localStorage.setItem(K,JSON.stringify(S));localStorage.setItem(UPD,String(remAt));localStorage.setItem(DRT,"0");if(!document.querySelector("#sh.on"))render()}
   dot(dirty()?"pending":"ok")}
  catch(e){dot(gs()?"off":"none");if(e.message==="nologin"&&!gs())showLogin()}
  finally{cbusy=false}}
