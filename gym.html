@@ -72,6 +72,12 @@ h2{font-size:15px;font-weight:700;color:var(--mut);margin:22px 2px 8px}
 .hint{color:var(--mut);font-size:14px;margin:8px 2px}
 #toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 24px);transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:99px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:30}
 #toast.on{opacity:1}
+.fm{display:grid;gap:10px}.fm label{display:grid;gap:4px;font-size:13px;color:var(--mut)}.fm input{font:inherit;font-size:17px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:11px 12px;width:100%}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.tm{font-size:44px;font-weight:800;text-align:center;font-variant-numeric:tabular-nums;margin:6px 0 10px}
+.tmr{background:var(--card);border-radius:16px;padding:12px;margin:12px 0;border-left:8px solid var(--c)}
+.pend{display:inline-block;margin-top:5px;font-size:12px;font-weight:700;color:#F08C00;background:color-mix(in srgb,#F08C00 18%,var(--card));border:1px solid #F08C00;border-radius:8px;padding:2px 7px}
+.rt{font-size:18px;font-weight:800;text-align:center;color:var(--c);min-height:24px}
 </style></head>
 <body>
 <div id="app"></div><div id="sh"></div><div id="toast"></div>
@@ -86,8 +92,19 @@ const FLAGOFF='<svg viewBox="0 0 24 24" width="22" height="22" style="flex:none"
 const pad=n=>String(n).padStart(2,"0");
 const dayOf=ts=>{const d=new Date(ts);return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())};
 const today=()=>dayOf(Date.now());
-const fdate=ts=>new Date(ts).toLocaleDateString("es-ES",{weekday:"short",day:"numeric",month:"short"});
-const sdate=ts=>new Date(ts).toLocaleDateString("es-ES",{day:"numeric",month:"numeric"});
+const fdate=ts=>{const d=new Date(ts);return pad(d.getDate())+"/"+pad(d.getMonth()+1)+"/"+d.getFullYear()};
+const ftime=ts=>{const d=new Date(ts);return pad(d.getHours())+":"+pad(d.getMinutes())};
+const fdt=ts=>fdate(ts)+" "+ftime(ts);
+const sdate=fdt;
+const fday=d=>d.split("-").reverse().join("/");
+const fdur=ms=>{const t=Math.floor(ms/1000);return pad(Math.floor(t/3600))+":"+pad(Math.floor(t%3600/60))+":"+pad(t%60)};
+const pn=v=>parseFloat(String(v).replace(",","."))||0;
+const dec=n=>n.toFixed(1).replace(".",",");
+function pace(d,secs){let p=Math.round(secs/d);return Math.floor(p/60)+":"+pad(p%60)+" /km"}
+const kmh=(d,secs)=>dec(d/(secs/3600))+" km/h";
+const wel=w=>w.acc+(w.run?Date.now()-w.run:0);
+let STD=null;
+function fix(){S.wk=S.wk||{};S.wo=S.wo||[];S.steps=S.steps||[];if(!S.v){S.logs.forEach(l=>{if(!l.wid)l.wid="legacy"});S.v=3}}
 const hasD=e=>(e.sets||[]).some(t=>t.kg||t.reps);
 const newSet=()=>({kg:"",reps:"",rir:""});
 function defTpl(){const X=(name,n,kg,reps,rest,fl)=>({id:uid(),name,n,kg,reps,rest,flag:!!fl,info:[]});return[
@@ -104,12 +121,31 @@ function save(){try{localStorage.setItem(K,JSON.stringify(S));localStorage.setIt
 function draft(T){let d=S.draft[T.id];if(!d||d.day!==today())d=S.draft[T.id]={day:today(),ex:{}};return d}
 function dx(T,x){const D=draft(T);return D.ex[x.id]||(D.ex[x.id]={sets:Array.from({length:x.n||3},newSet),fin:false,logId:null})}
 function prevOf(x,day){const nm=x.name.trim().toLowerCase();return S.logs.filter(l=>l.day<day&&l.name.trim().toLowerCase()===nm).sort((a,b)=>b.ts-a.ts)[0]||null}
-function groups(){const g={};S.logs.forEach(l=>{const k=l.day+"|"+(l.tid||l.tname);const o=g[k]||(g[k]={k,day:l.day,ts:0,tid:l.tid,name:l.tname,logs:[]});o.logs.push(l);o.ts=Math.max(o.ts,l.ts)});return g}
-function home(){const hist=Object.values(groups()).sort((a,b)=>b.ts-a.ts);
+function groups(){const g={};S.logs.forEach(l=>{const k=(l.wid&&l.wid!=="legacy")?"w"+l.wid:l.day+"|"+(l.tid||l.tname);const o=g[k]||(g[k]={k,day:l.day,ts:0,tid:l.tid,name:l.tname,logs:[]});o.logs.push(l);o.ts=Math.max(o.ts,l.ts);o.wid=l.wid});return g}
+function calBlock(w){return `<label>Calorías consumidas (kcal)<input id="cal-in" type="number" inputmode="numeric" value="${w.cal==null?"":w.cal}"></label><button class="big p" data-a="savecal" data-id="${w.id}">Guardar calorías</button>`}
+const PEND='<span class="pend">Pendiente de calorías</span>';
+function wbar(T){const w=S.wk[T.id],act=w&&Date.now()-w.st<=43200000,unf=S.logs.filter(l=>l.tid===T.id&&!l.wid);let h="";
+ if(!act&&unf.some(l=>l.day<today())){const d=Math.min(...unf.map(l=>l.ts));h+=`<div class="flag"><span><b>Entreno sin finalizar</b> del ${fdt(d)}</span><button class="plus" data-a="wclose">Finalizar ahora</button></div>`}
+ if(!act)h+=`<button class="save" style="background:var(--c)" data-a="wstart">Comenzar entrenamiento</button>`;
+ else h+=`<div class="tmr"><div id="tm" class="tm" style="opacity:${w.run?1:.5}">${fdur(wel(w))}</div><div class="g2"><button class="big" data-a="wpause">${w.run?"Pausa":"Reanudar"}</button><button class="big w" data-a="wend">Finalizar entreno</button></div></div>`;
+ return h}
+function home(){const items=Object.values(groups()).map(g=>({t:g.ts,g})).concat(S.wo.filter(w=>w.type==="c").map(c=>({t:c.ts,c}))).sort((a,b)=>b.t-a.t);
+ const lc=S.wo.filter(w=>w.type==="c").sort((a,b)=>b.ts-a.ts)[0],ls=[...S.steps].sort((a,b)=>b.d.localeCompare(a.d))[0];
  $("#app").innerHTML=`<div class="bar"><h1>Gym</h1><button class="back" data-a="menu">Datos</button></div><main><h2>Sesiones</h2>`+
  S.tpl.map(T=>{const l=S.logs.filter(x=>x.tid===T.id).sort((a,b)=>b.ts-a.ts)[0];return `<button class="tc" style="--c:${T.color}" data-a="open" data-id="${T.id}"><div class="t"><b>${esc(T.name)}</b><small>${T.ex.length} ejercicios · ${l?"última vez "+sdate(l.ts):"sin hacer aún"}</small></div><span class="go">›</span></button>`}).join("")+
+ `<button class="tc" style="--c:#0C8599" data-a="ocardio"><div class="t"><b>Cardio</b><small>${lc?"última vez "+fdt(lc.ts):"sin hacer aún"}</small></div><span class="go">›</span></button>`+
+ `<button class="tc" style="--c:#7048E8" data-a="osteps"><div class="t"><b>Pasos</b><small>${ls?"último registro "+fday(ls.d):"sin registros aún"}</small></div><span class="go">›</span></button>`+
  `<button class="add" data-a="newtpl">+ Otra sesión</button><h2>Historial</h2>`+
- (hist.length?hist.map(g=>{const T=S.tpl.find(x=>x.id===g.tid);return `<button class="hrow" style="--c:${T?T.color:"#6B7480"}" data-a="hist" data-k="${esc(g.k)}"><div class="t"><b>${esc(g.name)}</b><small>${fdate(g.ts)} · ${g.logs.length} ejercicios guardados</small></div></button>`}).join(""):`<p class="hint">Aquí aparecerán los ejercicios que guardes.</p>`)+`</main>`}
+ (items.length?items.map(it=>{if(it.c){const c=it.c;return `<button class="hrow" style="--c:#0C8599" data-a="hc" data-id="${c.id}"><div class="t"><b>Cardio</b><small>${fdt(c.ts)} · ${dec(c.dist)} km · ${fdur(c.secs*1000)} · ${pace(c.dist,c.secs)} · ${kmh(c.dist,c.secs)}</small>${c.cal==null?PEND:""}</div></button>`}
+  const g=it.g,T=S.tpl.find(x=>x.id===g.tid),wo=S.wo.find(w=>w.id===g.wid),leg=g.wid==="legacy";
+  return `<button class="hrow" style="--c:${T?T.color:"#6B7480"}" data-a="hist" data-k="${esc(g.k)}"><div class="t"><b>${esc(g.name)}</b><small>${fdt(wo?wo.start:g.ts)}${wo&&wo.dur!=null?" · "+fdur(wo.dur):""} · ${g.logs.length} ejercicios guardados</small>${!g.wid?'<span class="pend">Sin finalizar</span>':(wo&&wo.cal==null?PEND:"")}</div></button>`}).join(""):`<p class="hint">Aquí aparecerán los ejercicios que guardes.</p>`)+`</main>`}
+function cardioV(){$("#app").innerHTML=`<div class="bar"><button class="back" data-a="back">‹ Volver</button></div><main style="--c:#0C8599"><h1 class="st">Cardio</h1><div class="last">${fdate(Date.now())}</div><div class="ex fm" id="cf"><label>Distancia (km)<input id="c-d" type="text" inputmode="decimal" placeholder="5,2"></label><div class="g3"><label>Horas<input id="c-h" type="number" inputmode="numeric"></label><label>Min<input id="c-m" type="number" inputmode="numeric"></label><label>Seg<input id="c-s" type="number" inputmode="numeric"></label></div><div class="rt" id="c-rt"></div><button class="save" style="background:var(--c)" data-a="csave">Guardar cardio</button></div></main>`}
+function crt(){const d=pn($("#c-d").value),t=Math.round(pn($("#c-h").value)*3600+pn($("#c-m").value)*60+pn($("#c-s").value));$("#c-rt").textContent=d>0&&t>0?pace(d,t)+" · "+kmh(d,t):""}
+function stepsV(){const d=STD||dayOf(Date.now()-864e5),r=S.steps.find(z=>z.d===d)||{};
+ const rows=[...S.steps].sort((a,b)=>b.d.localeCompare(a.d)).map(z=>{const ws=S.wo.filter(w=>w.day===z.d);let k="";
+  if(z.k!=null){k="Total "+z.k+" kcal";if(ws.every(w=>w.cal!=null))k+=" · Fuera de entreno: "+(z.k-ws.reduce((a,w)=>a+w.cal,0))+" kcal";else k+=" · Falta registrar calorías del entreno"}
+  return `<div class="hl" style="display:flex;align-items:center;gap:6px"><div data-a="stedit" data-d="${z.d}" style="flex:1;min-width:0;cursor:pointer"><b>${fday(z.d)} · ${z.p} pasos</b>${k?`<small>${k}</small>`:""}</div><button class="x" data-a="stdel" data-d="${z.d}" aria-label="Eliminar">✕</button></div>`}).join("");
+ $("#app").innerHTML=`<div class="bar"><button class="back" data-a="back">‹ Volver</button></div><main style="--c:#7048E8"><h1 class="st">Pasos</h1><p class="hint">Pasos y calorías totales del día (Garmin).</p><div class="ex fm"><label>Fecha<input id="st-d" type="date" value="${d}"></label><label>Pasos<input id="st-p" type="number" inputmode="numeric" value="${r.p==null?"":r.p}"></label><label>Calorías totales del día (kcal, opcional)<input id="st-k" type="number" inputmode="numeric" value="${r.k==null?"":r.k}"></label><button class="save" style="background:var(--c)" data-a="stsave">Guardar</button></div><h2>Registros</h2>${rows||'<p class="hint">Aún no hay registros.</p>'}</main>`}
 function exBlock(T,x,D){const e=dx(T,x);
  if(e.fin)return `<div class="ex fin" style="--c:${T.color}" data-a="reopen" data-x="${x.id}"><span class="ok">✓</span><div class="t"><b>${esc(x.name)}</b><small>${e.sets.filter(t=>t.kg||t.reps).length} series guardadas · toca para editar</small></div></div>`;
  const p=S.cmp?prevOf(x,D.day):null,first=e.sets[0]&&(e.sets[0].kg||e.sets[0].reps);
@@ -124,11 +160,11 @@ function exBlock(T,x,D){const e=dx(T,x);
   `<input type="number" inputmode="numeric" placeholder="${esc(x.reps||"")}" data-x="${x.id}" data-i="${i}" data-f="reps" value="${esc(t.reps)}">`+
   `<input type="number" inputmode="numeric" data-x="${x.id}" data-i="${i}" data-f="rir" value="${esc(t.rir)}">`+
   `<button class="x" data-a="delset" data-x="${x.id}" data-i="${i}" aria-label="Quitar serie">−</button>${q?`<div class="pv">Antes: ${esc(q.kg||"–")} kg × ${esc(q.reps||"–")}${q.rir!==""&&q.rir!=null?" · RIR "+esc(q.rir):""}<u data-a="cp" data-x="${x.id}" data-i="${i}">copiar</u></div>`:""}</div>`}).join("")+
- `<button class="add" data-a="addset" data-x="${x.id}">+ Serie</button><button class="save" data-a="fin" data-x="${x.id}">Guardar ejercicio</button></div>`}
+ `<button class="add" data-a="addset" data-x="${x.id}">+ Serie</button><button class="save" data-a="fin" data-x="${x.id}">Ejercicio terminado</button></div>`}
 function sess(){const T=S.tpl.find(x=>x.id===cur);if(!T){view="home";return home()}const D=draft(T);
- $("#app").innerHTML=`<div class="bar"><button class="back" data-a="back">‹ Volver</button><span style="flex:1"></span><button class="sw${S.cmp?" on":""}" data-a="cmp"><span>Comparar</span><i></i></button></div><main style="--c:${T.color}"><h1 class="st">${esc(T.name)}</h1><div class="last">${fdate(Date.now())}</div>`+
+ $("#app").innerHTML=`<div class="bar"><button class="back" data-a="back">‹ Volver</button><span style="flex:1"></span><button class="sw${S.cmp?" on":""}" data-a="cmp"><span>Comparar</span><i></i></button></div><main style="--c:${T.color}"><h1 class="st">${esc(T.name)}</h1><div class="last">${fdate(Date.now())}</div>${wbar(T)}`+
  T.ex.map(x=>exBlock(T,x,D)).join("")+`<button class="add" data-a="addex">Añadir ejercicio</button><button class="add" data-a="reset">Reiniciar sesión de hoy</button></main>`}
-const render=()=>view==="home"?home():sess();
+const render=()=>{fix();return view==="home"?home():view==="c"?cardioV():view==="p"?stepsV():sess()};
 function openSh(h){$("#sh").innerHTML=`<div class="sheet">${h}</div>`;$("#sh").classList.add("on")}
 function closeSh(){$("#sh").classList.remove("on");ED=null;EI=null}
 let tt;function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("on");clearTimeout(tt);tt=setTimeout(()=>t.classList.remove("on"),1600)}
@@ -166,9 +202,23 @@ document.addEventListener("click",ev=>{
   const k=S.logs.findIndex(l=>l.id===rec.id);if(k>=0)S.logs[k]=rec;else S.logs.push(rec);e.logId=rec.id;e.fin=true;toast("Guardado")}
  else if(a==="reopen"&&e){e.fin=false}
  else if(a==="reset"){if(!confirm("Se vaciarán los datos de hoy de esta sesión, también los ya guardados. ¿Continuar?"))return;const d=draft(T).day;S.logs=S.logs.filter(l=>!(l.tid===T.id&&l.day===d));delete S.draft[T.id]}
- else if(a==="hist"){const g=groups()[t.dataset.k];if(!g)return;
-  openSh(`<h3>${esc(g.name)}</h3><p class="hint">${fdate(g.ts)}</p>`+g.logs.map(l=>`<div class="hl"><b>${esc(l.name)}</b>${l.sets.map(s=>`<small>${esc(s.kg||"–")} kg × ${esc(s.reps||"–")}${s.rir!==""&&s.rir!=null?" · RIR "+esc(s.rir):""}</small>`).join("")}</div>`).join("")+`<button class="big w" data-a="delday" data-k="${esc(g.k)}">Eliminar este día</button><button class="big" data-a="close">Cerrar</button>`);return}
- else if(a==="delday"){const g=groups()[t.dataset.k];closeSh();if(!g||!confirm("¿Eliminar estos datos del historial?"))return;const ids=new Set(g.logs.map(l=>l.id));S.logs=S.logs.filter(l=>!ids.has(l.id))}
+ else if(a==="hist"){const g=groups()[t.dataset.k];if(!g)return;const wo=S.wo.find(w=>w.id===g.wid);
+  openSh(`<h3>${esc(g.name)}</h3><p class="hint">${wo?fdt(wo.start)+" – "+ftime(wo.end)+(wo.dur!=null?" · duración "+fdur(wo.dur):""):fdate(g.ts)}${!g.wid?" · sin finalizar":""}</p>`+g.logs.map(l=>`<div class="hl"><b>${esc(l.name)}<span style="color:var(--mut);font-weight:500;font-size:13px"> · ${fdt(l.ts)}</span></b>${l.sets.map(s=>`<small>${esc(s.kg||"–")} kg × ${esc(s.reps||"–")}${s.rir!==""&&s.rir!=null?" · RIR "+esc(s.rir):""}</small>`).join("")}</div>`).join("")+(wo?calBlock(wo):"")+`<button class="big w" data-a="delday" data-k="${esc(g.k)}">Eliminar este día</button><button class="big" data-a="close">Cerrar</button>`);return}
+ else if(a==="delday"){const g=groups()[t.dataset.k];closeSh();if(!g||!confirm("¿Eliminar estos datos del historial?"))return;const ids=new Set(g.logs.map(l=>l.id));S.logs=S.logs.filter(l=>!ids.has(l.id));S.wo=S.wo.filter(w=>w.type==="c"||S.logs.some(l=>l.wid===w.id))}
+ else if(a==="savecal"){const w=S.wo.find(z=>z.id===t.dataset.id),v=$("#cal-in").value.trim();closeSh();if(w)w.cal=v===""?null:Math.round(pn(v));toast("Calorías guardadas")}
+ else if(a==="wstart"&&T){S.wk[T.id]={day:today(),st:Date.now(),acc:0,run:Date.now()}}
+ else if(a==="wpause"&&T){const w=S.wk[T.id];if(w){if(w.run){w.acc+=Date.now()-w.run;w.run=null}else w.run=Date.now()}}
+ else if(a==="wend"&&T){const w=S.wk[T.id],L=S.logs.filter(l=>l.tid===T.id&&!l.wid);if(!w)return;if(!L.length){toast("Termina al menos un ejercicio");return}
+  const wo={id:uid(),type:"w",tid:T.id,tname:T.name,day:dayOf(w.st),start:w.st,end:Date.now(),dur:wel(w),cal:null};S.wo.push(wo);L.forEach(l=>l.wid=wo.id);delete S.wk[T.id];delete S.draft[T.id];view="home";toast("Entreno guardado")}
+ else if(a==="wclose"&&T){const L=S.logs.filter(l=>l.tid===T.id&&!l.wid&&l.day<today());if(L.length){const ts=L.map(l=>l.ts),wo={id:uid(),type:"w",tid:T.id,tname:T.name,day:dayOf(Math.min(...ts)),start:Math.min(...ts),end:Math.max(...ts),dur:null,cal:null};S.wo.push(wo);L.forEach(l=>l.wid=wo.id)}delete S.wk[T.id];toast("Entreno finalizado")}
+ else if(a==="ocardio"){view="c"}
+ else if(a==="osteps"){view="p";STD=null}
+ else if(a==="csave"){const d=pn($("#c-d").value),secs=Math.round(pn($("#c-h").value)*3600+pn($("#c-m").value)*60+pn($("#c-s").value));if(!(d>0&&secs>0)){toast("Pon distancia y tiempo");return}S.wo.push({id:uid(),type:"c",ts:Date.now(),day:today(),dist:d,secs,cal:null});view="home";toast("Cardio guardado")}
+ else if(a==="hc"){const c=S.wo.find(w=>w.id===t.dataset.id);if(!c)return;openSh(`<h3>Cardio</h3><p class="hint">${fdt(c.ts)}</p><div class="hl"><b>${dec(c.dist)} km · ${fdur(c.secs*1000)}</b><small>${pace(c.dist,c.secs)}</small><small>${kmh(c.dist,c.secs)}</small></div>`+calBlock(c)+`<button class="big w" data-a="delc" data-id="${c.id}">Eliminar</button><button class="big" data-a="close">Cerrar</button>`);return}
+ else if(a==="delc"){closeSh();if(!confirm("¿Eliminar este cardio?"))return;S.wo=S.wo.filter(w=>w.id!==t.dataset.id)}
+ else if(a==="stsave"){const d=$("#st-d").value,p=Math.round(pn($("#st-p").value)),kv=$("#st-k").value.trim();if(!d||!(p>0)){toast("Pon fecha y pasos");return}S.steps=S.steps.filter(z=>z.d!==d);S.steps.push({d,p,k:kv===""?null:Math.round(pn(kv))});STD=null;toast("Guardado")}
+ else if(a==="stedit"){STD=t.dataset.d;window.scrollTo(0,0)}
+ else if(a==="stdel"){if(!confirm("¿Eliminar este registro?"))return;S.steps=S.steps.filter(z=>z.d!==t.dataset.d)}
  else if(a==="menu"){openSh(`<h3>Datos</h3><p class="hint">${gs()?"Tus datos se guardan en la nube. Punto verde arriba a la derecha = sincronizado.":"Sin iniciar sesión, tus datos solo están en este iPhone."}</p>${gs()?`<button class="big p" data-a="syncnow">Sincronizar ahora</button>`:`<button class="big p" data-a="login">Iniciar sesión</button>`}<button class="big" data-a="exp">Copiar datos (copia manual)</button><button class="big" data-a="imp">Restaurar desde una copia</button><button class="big" data-a="close">Cerrar</button>`);return}
  else if(a==="login"){closeSh();showLogin();return}
  else if(a==="syncnow"){closeSh();sync().then(()=>toast("Sincronizado"));return}
@@ -203,6 +253,9 @@ function showLogin(){if($("#lg"))return;const d=document.createElement("div");d.
  const go=async()=>{const m=$("#lg-m");m.textContent="Entrando…";try{ssave(await areq("token?grant_type=password",{email:$("#lg-e").value.trim(),password:$("#lg-p").value}));d.remove();dot("pending");await sync();toast("Sesión iniciada")}catch(e){m.textContent="No se pudo entrar: revisa el correo y la contraseña."}};
  $("#lg-b").onclick=go;$("#lg-x").onclick=()=>d.remove();$("#lg-p").addEventListener("keydown",e=>{if(e.key==="Enter")go()})}
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")sync()});
+document.addEventListener("input",ev=>{if(ev.target.closest&&ev.target.closest("#cf"))crt()});
+document.addEventListener("change",ev=>{if(ev.target.id==="st-d"){STD=ev.target.value||null;render()}});
+setInterval(()=>{const el=$("#tm"),w=S&&S.wk&&S.wk[cur];if(el&&view==="s"&&w)el.textContent=fdur(wel(w))},1000);
 load();render();
 if(!gs())showLogin();else sync();
 </script></body></html>
