@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Gym</title>
+<style>
+:root{--bg:#EEF1F5;--pill:#fff;--ink:#14171A;--on:#14171A;--onink:#fff;color-scheme:light dark}
+@media(prefers-color-scheme:dark){:root{--bg:#0F1114;--pill:#22262B;--ink:#F2F4F6;--on:#F2F4F6;--onink:#14171A}}
+*{box-sizing:border-box}html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font:600 17px -apple-system,system-ui,sans-serif;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+nav{display:flex;gap:8px;padding:10px 12px;overflow-x:auto;flex:none}
+nav button{font:inherit;border:0;border-radius:999px;padding:12px 20px;background:var(--pill);color:var(--ink);white-space:nowrap}
+nav button.on{background:var(--on);color:var(--onink)}
+iframe{flex:1;width:100%;border:0;background:var(--bg)}
+</style></head><body>
+<nav></nav>
+<script>
+const T=[["gym","Gym","gym.html?tab=gym"],["fb","Full body","entreno.html"],["cardio","Cardio","gym.html?tab=cardio"],["pasos","Pasos","gym.html?tab=pasos"]];
+const nav=document.querySelector("nav");let cur="gym";
+try{cur=localStorage.getItem("app-tab")||"gym"}catch(e){}
+if(!T.some(t=>t[0]===cur))cur="gym";
+function go(id){cur=id;try{localStorage.setItem("app-tab",id)}catch(e){}
+ nav.innerHTML=T.map(t=>`<button class="${t[0]===id?"on":""}" data-t="${t[0]}">${t[1]}</button>`).join("");
+ const old=document.querySelector("iframe");if(old)old.remove();
+ const f=document.createElement("iframe");f.src=T.find(t=>t[0]===id)[2];document.body.appendChild(f)}
+nav.addEventListener("click",e=>{const b=e.target.closest("button");if(b&&b.dataset.t!==cur)go(b.dataset.t)});
+go(cur);
+</script></body></html>

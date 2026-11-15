@@ -78,13 +78,16 @@ h2{font-size:15px;font-weight:700;color:var(--mut);margin:22px 2px 8px}
 .tmr{background:var(--card);border-radius:16px;padding:12px;margin:12px 0;border-left:8px solid var(--c)}
 .pend{display:inline-block;margin-top:5px;font-size:12px;font-weight:700;color:#F08C00;background:color-mix(in srgb,#F08C00 18%,var(--card));border:1px solid #F08C00;border-radius:8px;padding:2px 7px}
 .rt{font-size:18px;font-weight:800;text-align:center;color:var(--c);min-height:24px}
+.t .xc{display:none!important}
 </style></head>
 <body>
 <div id="app"></div><div id="sh"></div><div id="toast"></div>
 <script>
 const K="gym-v3",$=s=>document.querySelector(s);
 const PAL=["#4263EB","#E8590C","#2F9E44","#C2255C","#7048E8","#0C8599","#E67700","#E03131"];
-let S,view="home",cur=null,ED=null,EI=null;
+const TAB=new URLSearchParams(location.search).get("tab")||"";if(TAB)document.documentElement.classList.add("t");
+const HOME=()=>TAB==="cardio"?"c":TAB==="pasos"?"p":"home";
+let S,view=HOME(),cur=null,ED=null,EI=null;
 const uid=()=>Math.random().toString(36).slice(2,9);
 const esc=t=>String(t==null?"":t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const FLAG='<svg viewBox="0 0 24 24" width="22" height="22" style="flex:none"><path fill="#F08C00" d="M5 3v18h2v-7h5l1 2h7V5h-6l-1-2z"/></svg>';
@@ -133,19 +136,20 @@ function home(){const items=Object.values(groups()).map(g=>({t:g.ts,g})).concat(
  const lc=S.wo.filter(w=>w.type==="c").sort((a,b)=>b.ts-a.ts)[0],ls=[...S.steps].sort((a,b)=>b.d.localeCompare(a.d))[0];
  $("#app").innerHTML=`<div class="bar"><h1>Gym</h1><button class="back" data-a="menu">Datos</button></div><main><h2>Sesiones</h2>`+
  S.tpl.map(T=>{const l=S.logs.filter(x=>x.tid===T.id).sort((a,b)=>b.ts-a.ts)[0];return `<button class="tc" style="--c:${T.color}" data-a="open" data-id="${T.id}"><div class="t"><b>${esc(T.name)}</b><small>${T.ex.length} ejercicios · ${l?"última vez "+sdate(l.ts):"sin hacer aún"}</small></div><span class="go">›</span></button>`}).join("")+
- `<button class="tc" style="--c:#0C8599" data-a="ocardio"><div class="t"><b>Cardio</b><small>${lc?"última vez "+fdt(lc.ts):"sin hacer aún"}</small></div><span class="go">›</span></button>`+
- `<button class="tc" style="--c:#7048E8" data-a="osteps"><div class="t"><b>Pasos</b><small>${ls?"último registro "+fday(ls.d):"sin registros aún"}</small></div><span class="go">›</span></button>`+
+ `<button class="tc xc" style="--c:#0C8599" data-a="ocardio"><div class="t"><b>Cardio</b><small>${lc?"última vez "+fdt(lc.ts):"sin hacer aún"}</small></div><span class="go">›</span></button>`+
+ `<button class="tc xc" style="--c:#7048E8" data-a="osteps"><div class="t"><b>Pasos</b><small>${ls?"último registro "+fday(ls.d):"sin registros aún"}</small></div><span class="go">›</span></button>`+
  `<button class="add" data-a="newtpl">+ Otra sesión</button><h2>Historial</h2>`+
- (items.length?items.map(it=>{if(it.c){const c=it.c;return `<button class="hrow" style="--c:#0C8599" data-a="hc" data-id="${c.id}"><div class="t"><b>Cardio</b><small>${fdt(c.ts)} · ${dec(c.dist)} km · ${fdur(c.secs*1000)} · ${pace(c.dist,c.secs)} · ${kmh(c.dist,c.secs)}</small>${c.cal==null?PEND:""}</div></button>`}
+ (items.length?items.map(it=>{if(it.c){const c=it.c;return `<button class="hrow xc" style="--c:#0C8599" data-a="hc" data-id="${c.id}"><div class="t"><b>Cardio</b><small>${fdt(c.ts)} · ${dec(c.dist)} km · ${fdur(c.secs*1000)} · ${pace(c.dist,c.secs)} · ${kmh(c.dist,c.secs)}</small>${c.cal==null?PEND:""}</div></button>`}
   const g=it.g,T=S.tpl.find(x=>x.id===g.tid),wo=S.wo.find(w=>w.id===g.wid),leg=g.wid==="legacy";
   return `<button class="hrow" style="--c:${T?T.color:"#6B7480"}" data-a="hist" data-k="${esc(g.k)}"><div class="t"><b>${esc(g.name)}</b><small>${fdt(wo?wo.start:g.ts)}${wo&&wo.dur!=null?" · "+fdur(wo.dur):""} · ${g.logs.length} ejercicios guardados</small>${!g.wid?'<span class="pend">Sin finalizar</span>':(wo&&wo.cal==null?PEND:"")}</div></button>`}).join(""):`<p class="hint">Aquí aparecerán los ejercicios que guardes.</p>`)+`</main>`}
-function cardioV(){$("#app").innerHTML=`<div class="bar"><button class="back" data-a="back">‹ Volver</button></div><main style="--c:#0C8599"><h1 class="st">Cardio</h1><div class="last">${fdate(Date.now())}</div><div class="ex fm" id="cf"><label>Distancia (km)<input id="c-d" type="text" inputmode="decimal" placeholder="5,2"></label><div class="g3"><label>Horas<input id="c-h" type="number" inputmode="numeric"></label><label>Min<input id="c-m" type="number" inputmode="numeric"></label><label>Seg<input id="c-s" type="number" inputmode="numeric"></label></div><div class="rt" id="c-rt"></div><button class="save" style="background:var(--c)" data-a="csave">Guardar cardio</button></div></main>`}
+function cardioV(){$("#app").innerHTML=`${TAB?"":'<div class="bar"><button class="back" data-a="back">‹ Volver</button></div>'}<main style="--c:#0C8599"><h1 class="st">Cardio</h1><div class="last">${fdate(Date.now())}</div><div class="ex fm" id="cf"><label>Distancia (km)<input id="c-d" type="text" inputmode="decimal" placeholder="5,2"></label><div class="g3"><label>Horas<input id="c-h" type="number" inputmode="numeric"></label><label>Min<input id="c-m" type="number" inputmode="numeric"></label><label>Seg<input id="c-s" type="number" inputmode="numeric"></label></div><div class="rt" id="c-rt"></div><button class="save" style="background:var(--c)" data-a="csave">Guardar cardio</button></div><h2>Historial</h2>${cr()}</main>`}
 function crt(){const d=pn($("#c-d").value),t=Math.round(pn($("#c-h").value)*3600+pn($("#c-m").value)*60+pn($("#c-s").value));$("#c-rt").textContent=d>0&&t>0?pace(d,t)+" · "+kmh(d,t):""}
+function cr(){const a=S.wo.filter(w=>w.type==="c").sort((x,y)=>y.ts-x.ts);return a.length?a.map(c=>`<button class="hrow" style="--c:#0C8599" data-a="hc" data-id="${c.id}"><div class="t"><b>Cardio</b><small>${fdt(c.ts)} · ${dec(c.dist)} km · ${fdur(c.secs*1000)} · ${pace(c.dist,c.secs)} · ${kmh(c.dist,c.secs)}</small>${c.cal==null?PEND:""}</div></button>`).join(""):'<p class="hint">Aún no hay cardios.</p>'}
 function stepsV(){const d=STD||dayOf(Date.now()-864e5),r=S.steps.find(z=>z.d===d)||{};
  const rows=[...S.steps].sort((a,b)=>b.d.localeCompare(a.d)).map(z=>{const ws=S.wo.filter(w=>w.day===z.d);let k="";
   if(z.k!=null){k="Total "+z.k+" kcal";if(ws.every(w=>w.cal!=null))k+=" · Fuera de entreno: "+(z.k-ws.reduce((a,w)=>a+w.cal,0))+" kcal";else k+=" · Falta registrar calorías del entreno"}
   return `<div class="hl" style="display:flex;align-items:center;gap:6px"><div data-a="stedit" data-d="${z.d}" style="flex:1;min-width:0;cursor:pointer"><b>${fday(z.d)} · ${z.p} pasos</b>${k?`<small>${k}</small>`:""}</div><button class="x" data-a="stdel" data-d="${z.d}" aria-label="Eliminar">✕</button></div>`}).join("");
- $("#app").innerHTML=`<div class="bar"><button class="back" data-a="back">‹ Volver</button></div><main style="--c:#7048E8"><h1 class="st">Pasos</h1><p class="hint">Pasos y calorías totales del día (Garmin).</p><div class="ex fm"><label>Fecha<input id="st-d" type="date" value="${d}"></label><label>Pasos<input id="st-p" type="number" inputmode="numeric" value="${r.p==null?"":r.p}"></label><label>Calorías totales del día (kcal, opcional)<input id="st-k" type="number" inputmode="numeric" value="${r.k==null?"":r.k}"></label><button class="save" style="background:var(--c)" data-a="stsave">Guardar</button></div><h2>Registros</h2>${rows||'<p class="hint">Aún no hay registros.</p>'}</main>`}
+ $("#app").innerHTML=`${TAB?"":'<div class="bar"><button class="back" data-a="back">‹ Volver</button></div>'}<main style="--c:#7048E8"><h1 class="st">Pasos</h1><p class="hint">Pasos y calorías totales del día (Garmin).</p><div class="ex fm"><label>Fecha<input id="st-d" type="date" value="${d}"></label><label>Pasos<input id="st-p" type="number" inputmode="numeric" value="${r.p==null?"":r.p}"></label><label>Calorías totales del día (kcal, opcional)<input id="st-k" type="number" inputmode="numeric" value="${r.k==null?"":r.k}"></label><button class="save" style="background:var(--c)" data-a="stsave">Guardar</button></div><h2>Registros</h2>${rows||'<p class="hint">Aún no hay registros.</p>'}</main>`}
 function exBlock(T,x,D){const e=dx(T,x);
  if(e.fin)return `<div class="ex fin" style="--c:${T.color}" data-a="reopen" data-x="${x.id}"><span class="ok">✓</span><div class="t"><b>${esc(x.name)}</b><small>${e.sets.filter(t=>t.kg||t.reps).length} series guardadas · toca para editar</small></div></div>`;
  const p=S.cmp?prevOf(x,D.day):null,first=e.sets[0]&&(e.sets[0].kg||e.sets[0].reps);
@@ -178,7 +182,7 @@ document.addEventListener("click",ev=>{
  const t=ev.target.closest("[data-a]");if(!t)return;
  const a=t.dataset.a,T=S.tpl.find(y=>y.id===cur),x=T&&T.ex.find(y=>y.id===(t.dataset.x||(EI&&EI.x))),e=T&&x?dx(T,x):null;
  if(a==="open"){cur=t.dataset.id;view="s"}
- else if(a==="back"){view="home"}
+ else if(a==="back"){view=HOME()}
  else if(a==="cmp"){S.cmp=!S.cmp}
  else if(a==="newtpl"){const nm=prompt("Nombre de la sesión");if(!nm||!nm.trim())return;const N={id:uid(),name:nm.trim(),color:PAL[S.tpl.length%PAL.length],ex:[]};S.tpl.push(N);cur=N.id;view="s"}
  else if(a==="addex"){sheetEx(null,T);return}
@@ -213,7 +217,7 @@ document.addEventListener("click",ev=>{
  else if(a==="wclose"&&T){const L=S.logs.filter(l=>l.tid===T.id&&!l.wid&&l.day<today());if(L.length){const ts=L.map(l=>l.ts),wo={id:uid(),type:"w",tid:T.id,tname:T.name,day:dayOf(Math.min(...ts)),start:Math.min(...ts),end:Math.max(...ts),dur:null,cal:null};S.wo.push(wo);L.forEach(l=>l.wid=wo.id)}delete S.wk[T.id];toast("Entreno finalizado")}
  else if(a==="ocardio"){view="c"}
  else if(a==="osteps"){view="p";STD=null}
- else if(a==="csave"){const d=pn($("#c-d").value),secs=Math.round(pn($("#c-h").value)*3600+pn($("#c-m").value)*60+pn($("#c-s").value));if(!(d>0&&secs>0)){toast("Pon distancia y tiempo");return}S.wo.push({id:uid(),type:"c",ts:Date.now(),day:today(),dist:d,secs,cal:null});view="home";toast("Cardio guardado")}
+ else if(a==="csave"){const d=pn($("#c-d").value),secs=Math.round(pn($("#c-h").value)*3600+pn($("#c-m").value)*60+pn($("#c-s").value));if(!(d>0&&secs>0)){toast("Pon distancia y tiempo");return}S.wo.push({id:uid(),type:"c",ts:Date.now(),day:today(),dist:d,secs,cal:null});view=HOME();toast("Cardio guardado")}
  else if(a==="hc"){const c=S.wo.find(w=>w.id===t.dataset.id);if(!c)return;openSh(`<h3>Cardio</h3><p class="hint">${fdt(c.ts)}</p><div class="hl"><b>${dec(c.dist)} km · ${fdur(c.secs*1000)}</b><small>${pace(c.dist,c.secs)}</small><small>${kmh(c.dist,c.secs)}</small></div>`+calBlock(c)+`<button class="big w" data-a="delc" data-id="${c.id}">Eliminar</button><button class="big" data-a="close">Cerrar</button>`);return}
  else if(a==="delc"){closeSh();if(!confirm("¿Eliminar este cardio?"))return;S.wo=S.wo.filter(w=>w.id!==t.dataset.id)}
  else if(a==="stsave"){const d=$("#st-d").value,p=Math.round(pn($("#st-p").value)),kv=$("#st-k").value.trim();if(!d||!(p>0)){toast("Pon fecha y pasos");return}S.steps=S.steps.filter(z=>z.d!==d);S.steps.push({d,p,k:kv===""?null:Math.round(pn(kv))});STD=null;toast("Guardado")}
