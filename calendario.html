@@ -25,6 +25,13 @@ body{background:#000;color:#111;font:600 14px -apple-system,system-ui,sans-serif
 .br{display:grid;grid-template-columns:78px 1fr auto;gap:6px;align-items:center;margin:4px 0;font-size:13px}.br i{display:block;height:10px;border-radius:5px;background:#4263EB}
 .pe{background:#ffe3e3;color:#c92a2a;border-radius:99px;padding:2px 8px;font-size:12px}
 .x{width:100%;border:0;border-radius:12px;padding:13px;background:#111;color:#fff;font:inherit;margin-top:8px}
+#card{background:#000}.top{background:#000;border-bottom:1px solid #222;color:#fff}.wd,.g{grid-template-columns:24px repeat(7,1fr)}.wd span{color:#ccc;font-size:12px;font-weight:700}
+.m h2{color:#fff;text-transform:uppercase;letter-spacing:.5px}.g{gap:0}
+.w{color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.d{display:flex;flex-direction:column;padding:0;min-height:64px;border:1px solid #000;border-radius:0;background:none}.d.t{border:2px solid #fff}
+.b{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#111;font-size:11px;font-weight:700;text-align:center;padding:2px;min-width:0}.b u{text-decoration:none;font-size:14px}
+.b.r{background:#f2f2f2;color:#bbb}.b.f{background:transparent;color:#777}
+.a{color:#fff;font-size:10px;font-weight:700;text-align:center;padding:3px 0;border-top:1px solid #000}
 </style></head><body>
 <div id="card"><div class="top"><div class="leg" id="leg"></div><div class="wd"></div></div><div id="ms"></div></div>
 <div id="sh"><div class="sheet" id="sc"></div></div>
@@ -32,7 +39,7 @@ body{background:#000;color:#111;font:600 14px -apple-system,system-ui,sans-serif
 const J=k=>{try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}},$=s=>document.querySelector(s);
 const G=J("gym-v3")||{},E=J("entreno-v2")||{},BW=(J("peso-corporal")||[]).sort((a,b)=>a.d<b.d?-1:1);
 const N=s=>String(s||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim();
-const C={Torso:"#4263EB",Brazos:"#E8590C",Pierna:"#2F9E44","Full body":"#7048E8",Cardio:"#E03131",Otro:"#868E96"};
+const C={Torso:"#2E7BD0",Brazos:"#EA9363",Pierna:"#C45BD0","Full body":"#E43D1E",Cardio:"#6A3FD1",Otro:"#868E96"},LB={"Full body":"Casa"};
 const p2=n=>String(n).padStart(2,"0"),esc=s=>String(s).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
 const dayOf=t=>{const d=new Date(t);return d.getFullYear()+"-"+p2(d.getMonth()+1)+"-"+p2(d.getDate())};
 const hm=t=>{const d=new Date(t);return p2(d.getHours())+":"+p2(d.getMinutes())};
@@ -56,7 +63,7 @@ const days={},DY=d=>days[d]||(days[d]={w:[],c:[],s:null});
 function fin(w,d){w.v=0;w.r=0;w.vm={};w.ex.forEach(e=>{w.v+=e.v;w.r+=e.r;const g=VG(e.m);w.vm[g]=(w.vm[g]||0)+e.v});
  const gs=[...new Set(w.ex.map(e=>CG[e.m]).filter(Boolean))];w.gr=w.fb?["Full body"]:gs.length?gs:["Otro"];DY(d).w.push(w)}
 const gm=(l)=>{const i=l.name.indexOf("-"),m=MU[N(i>0?l.name.slice(0,i):"")];return m||(N(l.tname)==="pierna"?"Pierna":"Otro")};
-function gex(l,d){let v=0,r=0;const sets=(l.sets||[]).map(s=>{const kg=kgOf(s.kg),rep=num(s.reps),o=vol(l.name,kg,rep,1,rep,gx2(l.name),d);v+=o.v;r+=o.r;return{t:(s.kg?s.kg+" × ":"")+rep}});return{n:l.name,m:gm(l),sets,v,r}}
+function gex(l,d){let v=0,r=0;const sets=(l.sets||[]).map(s=>{const kg=kgOf(s.kg),rep=num(s.reps);if(!s.w){const o=vol(l.name,kg,rep,1,rep,gx2(l.name),d);v+=o.v;r+=o.r}return{t:(s.w?"Calentamiento: ":"")+(s.kg?s.kg+" × ":"")+rep}});return{n:l.name,m:gm(l),sets,v,r}}
 const WO=G.wo||[],LG=G.logs||[];
 WO.filter(w=>w.type==="w").forEach(w=>{const L=LG.filter(l=>l.wid===w.id);if(!L.length)return;
  fin({id:w.id,nm:w.tname,start:w.start,end:w.end,dur:w.dur||(w.end-w.start),cal:w.cal,ex:L.map(l=>gex(l,w.day))},w.day)});
@@ -68,15 +75,20 @@ WO.filter(w=>w.type==="c").forEach(c=>DY(c.day).c.push(c));
 (G.steps||[]).forEach(z=>DY(z.d).s=z);
 const pace=(d,s)=>{const m=s/60/d;return Math.floor(m)+":"+p2(Math.round((m%1)*60)%60)+" min/km"},kmh=(d,s)=>nf(d/(s/3600),1)+" km/h";
 // calendario
-$("#leg").innerHTML=Object.keys(C).filter(k=>k!=="Otro").map(k=>`<span><i style="background:${C[k]}"></i>${k}</span>`).join("");
-$(".wd").innerHTML=["Lunes","Martes","Miércoles","Jueves","Viernes","Sábado","Domingo"].map(x=>`<span>${x}</span>`).join("");
-const now=new Date(),ks=Object.keys(days).sort();let a=ks.length?new Date(ks[0]+"T00:00"):now;a=new Date(Math.min(a,now));
-let y=a.getFullYear(),mo=a.getMonth(),h="";const ty=now.getFullYear(),tm=now.getMonth(),td=dayOf(now);
-for(;y<ty||(y===ty&&mo<=tm+1);){const f=new Date(y,mo,1),n=new Date(y,mo+1,0).getDate(),off=(f.getDay()+6)%7;
- h+=`<section class="m" ${y===ty&&mo===tm?'id="cur"':""}><h2>${f.toLocaleDateString("es-ES",{month:"long",year:"numeric"})}</h2><div class="g">`+"<div></div>".repeat(off);
- for(let i=1;i<=n;i++){const d=y+"-"+p2(mo+1)+"-"+p2(i),x=days[d],ch=[];
-  if(x){x.w.forEach(w=>w.gr.forEach(g=>ch.push(g)));x.c.forEach(()=>ch.push("Cardio"))}
-  h+=`<div class="d${d===td?" t":""}" data-d="${d}"><b>${i}</b>${[...new Set(ch.filter((g,j)=>g==="Cardio"||ch.indexOf(g)===j))].map(g=>`<span class="c" style="background:${C[g]}">${g}</span>`).join("")}</div>`}
+$("#leg").innerHTML=["Torso","Brazos","Pierna","Full body","Cardio"].map(k=>`<span><i style="background:${C[k]}"></i>${LB[k]||k}</span>`).join("");
+$(".wd").innerHTML="<span></span>"+["L","M","X","J","V","S","D"].map(x=>`<span>${x}</span>`).join("");
+const wk=d=>{const t=new Date(d.getFullYear(),d.getMonth(),d.getDate());t.setDate(t.getDate()+3-(t.getDay()+6)%7);const w1=new Date(t.getFullYear(),0,4);return 1+Math.round(((t-w1)/864e5-3+(w1.getDay()+6)%7)/7)};
+const now=new Date(),td=dayOf(now);
+function cell(d,n){const x=days[d],past=d<td,gm=[],ca=x&&x.c.length,fb=x&&x.w.some(w=>w.fb);
+ if(x)x.w.forEach(w=>!w.fb&&w.gr.forEach(g=>gm.includes(g)||gm.push(g)));
+ const top=gm.length?gm.map((g,j)=>`<div class="b" style="background:${C[g]}">${j?"":`<u>${n}</u>`}${g}</div>`).join(""):
+  fb||ca?`<div class="b" style="background:#f2f2f2"><u>${n}</u>No Gym</div>`:`<div class="b ${past?"r":"f"}"><u>${n}</u>${past?"Descanso":""}</div>`;
+ return `<div class="d${d===td?" t":""}" data-d="${d}">${top}${fb?`<div class="a" style="background:${C["Full body"]}">Casa</div>`:""}${ca?`<div class="a" style="background:${C.Cardio}">Cardio</div>`:""}</div>`}
+const ks=Object.keys(days).sort();let a=ks.length?new Date(ks[0]+"T00:00"):now;a=new Date(Math.min(a,now));
+let y=a.getFullYear(),mo=a.getMonth(),h="";const ty=now.getFullYear(),tm=now.getMonth();
+for(;y<ty||(y===ty&&mo<=tm+1);){const f=new Date(y,mo,1),n=new Date(y,mo+1,0).getDate();let m=new Date(y,mo,1-(f.getDay()+6)%7);
+ h+=`<section class="m" ${y===ty&&mo===tm?'id="cur"':""}><h2>${f.toLocaleDateString("es-ES",{month:"long",year:"numeric"})}</h2><div class="g">`;
+ while(m<=new Date(y,mo,n)){h+=`<div class="w">S${wk(m)}</div>`;for(let k=0;k<7;k++){const dd=new Date(m.getFullYear(),m.getMonth(),m.getDate()+k);h+=dd.getMonth()===mo?cell(dayOf(dd),dd.getDate()):'<div></div>'}m=new Date(m.getFullYear(),m.getMonth(),m.getDate()+7)}
  h+="</div></section>";if(++mo>11){mo=0;y++}}
 $("#ms").innerHTML=h;const cu=$("#cur");if(cu)cu.scrollIntoView();
 $("#ms").addEventListener("click",e=>{const d=e.target.closest(".d");if(d)open(d.dataset.d)});

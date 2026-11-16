@@ -1,0 +1,21 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Progreso</title>
+<style>*{box-sizing:border-box}body{margin:0;background:#f1f3f5;color:#111;font:600 15px -apple-system,system-ui,sans-serif;padding:env(safe-area-inset-top,0px) 10px calc(env(safe-area-inset-bottom,0px) + 30px)}
+h1{font-size:24px;margin:14px 4px 4px}.mut{color:#666;font-size:13px;font-weight:500}.cd{background:#fff;border-radius:14px;padding:12px;margin:8px 0;border-left:6px solid #adb5bd}.cd.up{border-color:#2F9E44}
+.r{display:flex;justify-content:space-between;gap:8px;align-items:baseline}.big{font-size:19px}.up .big{color:#2F9E44}
+.bar{height:8px;border-radius:4px;background:#e9ecef;margin:8px 0 4px;overflow:hidden}.bar i{display:block;height:100%;background:#4263EB}.up .bar i{background:#2F9E44}</style></head><body>
+<h1>Progreso</h1><p class="mut" style="margin:0 4px">Última sesión de cada ejercicio. Si llegas al total de repeticiones máximo con tu peso más alto, toca subir.</p><div id="v"></div>
+<script>
+let G={};try{G=JSON.parse(localStorage.getItem("gym-v3"))||{}}catch(e){}
+const LG=G.logs||[];
+const REF=[[/press banca/,"Press Banca",37,5],[/press inclinado/,"Press inclinado",34,2.5],[/press declinado/,"Press Declinado",34,2.5],[/aperturas/,"Aperturas en máquina",34,5],[/jalon/,"Jalón al pecho",37,5],[/remo en polea baja/,"Remo en polea baja",37,5],[/high row/,"High Row",34,2.5],[/reverse fly/,"Reverse fly",37,5],[/curl mancuernas/,"Curl Mancuerna",34,2.5],[/predicador/,"Curl Predicador",34,5],[/martillo/,"Curl Martillo",34,2.5],[/polea sobre cabeza/,"Extensión polea elevada",34,5],[/pushdown/,"Pushdown",34,5],[/fondos/,"Fondo en máquina",34,5],[/^hombros? - press$/,"Press (hombros)",40,2.5],[/elevacion lateral/,"Elevación lateral",40,2.5],[/menton/,"Barra Z al mentón",40,5],[/agarre inverso/,"Barra Z invertida",46,5],[/^prensa$/,"Prensa",40,5],[/gemelos sentado/,"Gemelos sentado",34,2.5],[/cuadriceps/,"Extensión Cuádriceps",34,5],[/femoral/,"Curl femoral sentado",34,5],[/aductores/,"Aductores (cierre)",34,5],[/abductores/,"Abductores (apertura)",34,5],[/gemelos de pie/,"Gemelos de pie",34,5]];
+function sug(name,before,logs){const nn=s=>String(s||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim(),kk=v=>String(v==null?"":v).split("+").reduce((a,p)=>a+(parseFloat(p.replace(",","."))||0),0);
+ const r=REF.find(x=>x[0].test(nn(name)));if(!r)return null;
+ const L=logs.filter(l=>REF.find(x=>x[0].test(nn(l.name)))===r&&(!before||l.day<before)).sort((a,b)=>b.ts-a.ts);if(!L.length)return null;
+ const ss=(L[0].sets||[]).filter(s=>!s.w),ks=ss.map(s=>kk(s.kg)),mk=Math.max(0,...ks);if(!mk)return null;
+ const tot=ss.reduce((a,s,i)=>a+(ks[i]===mk?(parseFloat(String(s.reps).replace(",","."))||0):0),0);
+ return{lab:r[1],max:r[2],inc:r[3],day:L[0].day,kg:mk,tot,up:tot>=r[2],next:mk+r[3]}}
+const fk=v=>String(v).replace(".",","),dm=d=>d.split("-").reverse().join("/");
+const out=[];const seen=new Set();LG.forEach(l=>{const r=REF.find(x=>x[0].test(String(l.name||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim()));if(r&&!seen.has(r)){seen.add(r);const s=sug(l.name,null,LG);if(s)out.push(s)}});
+out.sort((a,b)=>(b.up-a.up)||a.lab.localeCompare(b.lab));
+document.getElementById("v").innerHTML=out.map(s=>`<div class="cd ${s.up?"up":""}"><div class="r"><b>${s.lab}</b><span class="mut">${dm(s.day)}</span></div><div class="r"><span class="big">${s.up?"Sube a "+fk(s.next)+" kg":"Mantén "+fk(s.kg)+" kg"}</span><span class="mut">${s.up?"+"+fk(s.inc)+" kg":"faltan "+fk(Math.max(0,s.max-s.tot))+" reps"}</span></div><div class="bar"><i style="width:${Math.min(100,s.tot/s.max*100)}%"></i></div><div class="mut">${fk(s.tot)} / ${s.max} reps con ${fk(s.kg)} kg</div></div>`).join("")||'<p class="mut">Aún no hay entrenos de Gym con ejercicios de la tabla.</p>';
+</script></body></html>

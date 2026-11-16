@@ -46,7 +46,7 @@ const days={},DY=d=>days[d]||(days[d]={w:[],c:[],s:null});
 function fin(w,d){w.d=d;w.v=0;w.r=0;w.vm={};w.ex.forEach(e=>{w.v+=e.v;w.r+=e.r;const g=VG(e.m);w.vm[g]=(w.vm[g]||0)+e.v});
  const gs=[...new Set(w.ex.map(e=>CG[e.m]).filter(Boolean))];w.gr=w.fb?["Full body"]:gs.length?gs:["Otro"];DY(d).w.push(w)}
 const gm=(l)=>{const i=l.name.indexOf("-"),m=MU[N(i>0?l.name.slice(0,i):"")];return m||(N(l.tname)==="pierna"?"Pierna":"Otro")};
-function gex(l,d){let v=0,r=0;const sets=(l.sets||[]).map(s=>{const kg=kgOf(s.kg),rep=num(s.reps),o=vol(l.name,kg,rep,1,rep,gx2(l.name),d);v+=o.v;r+=o.r;return{t:(s.kg?s.kg+" × ":"")+rep}});return{n:l.name,m:gm(l),sets,v,r}}
+function gex(l,d){let v=0,r=0;const sets=(l.sets||[]).map(s=>{const kg=kgOf(s.kg),rep=num(s.reps);if(!s.w){const o=vol(l.name,kg,rep,1,rep,gx2(l.name),d);v+=o.v;r+=o.r}return{t:(s.w?"Calentamiento: ":"")+(s.kg?s.kg+" × ":"")+rep}});return{n:l.name,m:gm(l),sets,v,r}}
 const WO=G.wo||[],LG=G.logs||[];
 WO.filter(w=>w.type==="w").forEach(w=>{const L=LG.filter(l=>l.wid===w.id);if(!L.length)return;
  fin({id:w.id,nm:w.tname,start:w.start,end:w.end,dur:w.dur||(w.end-w.start),cal:w.cal,ex:L.map(l=>gex(l,w.day))},w.day)});
