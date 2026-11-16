@@ -136,12 +136,18 @@ function hlist(){const items=Object.values(groups()).map(g=>({t:g.ts,g})).concat
  return items.length?items.map(it=>{if(it.c){const c=it.c;return `<button class="hrow xc" style="--c:#0C8599" data-a="hc" data-id="${c.id}"><div class="t"><b>Cardio</b><small>${fdt(c.ts)} · ${dec(c.dist)} km · ${fdur(c.secs*1000)} · ${pace(c.dist,c.secs)} · ${kmh(c.dist,c.secs)}</small>${c.cal==null?PEND:""}</div></button>`}
   const g=it.g,T=S.tpl.find(x=>x.id===g.tid),wo=S.wo.find(w=>w.id===g.wid);
   return `<button class="hrow" style="--c:${T?T.color:"#6B7480"}" data-a="hist" data-k="${esc(g.k)}"><div class="t"><b>${esc(g.name)}</b><small>${fdt(wo?wo.start:g.ts)}${wo&&wo.dur!=null?" · "+fdur(wo.dur):""} · ${g.logs.length} ejercicios guardados</small>${!g.wid?'<span class="pend">Sin finalizar</span>':(wo&&wo.cal==null?PEND:"")}</div></button>`}).join(""):`<p class="hint">Aquí aparecerán los ejercicios que guardes.</p>`}
+function fbl(){try{const h=(JSON.parse(localStorage.getItem("entreno-v2"))||{}).hist||[];const l=h.sort((a,b)=>(b.ini||0)-(a.ini||0))[0];return l?"última vez "+String(l.f).split("-").reverse().join("/"):"sin hacer aún"}catch(e){return "sin hacer aún"}}
+function fbOpen(){try{const K=["gym-session","entreno-session"];let b=null;K.forEach(k=>{const v=JSON.parse(localStorage.getItem(k)||"null");if(v&&v.refresh_token&&(!b||(v.expires_at||0)>(b.expires_at||0)))b=v});if(b){const j=JSON.stringify(b);K.forEach(k=>localStorage.setItem(k,j))}}catch(e){}
+ const o=document.createElement("div");o.style.cssText="position:fixed;inset:0;z-index:50;background:var(--bg);display:flex;flex-direction:column";
+ o.innerHTML='<div class="bar"><button class="back" id="fbx">\u2039 Volver</button></div><iframe src="entreno.html" style="flex:1;width:100%;border:0"></iframe>';
+ document.body.appendChild(o);o.querySelector("#fbx").onclick=()=>{o.remove();try{render()}catch(e){location.reload()}}}
 function home(){const lc=S.wo.filter(w=>w.type==="c").sort((a,b)=>b.ts-a.ts)[0],ls=[...S.steps].sort((a,b)=>b.d.localeCompare(a.d))[0],n=S.wo.filter(w=>w.cal==null&&(!TAB||w.type!=="c")).length;
- $("#app").innerHTML=`<div class="bar"><h1>Gym</h1><button class="back" data-a="menu">Datos</button></div><main><button class="big" data-a="hview" style="display:block;width:100%;margin:4px 0 8px">Historial${n?" ("+n+")":""}</button><h2>Sesiones</h2>`+
+ $("#app").innerHTML=`<div class="bar"><h1>Entrenamiento</h1><button class="back" data-a="menu">Datos</button></div><main><button class="big" data-a="hview" style="display:block;width:100%;margin:4px 0 8px">Historial${n?" ("+n+")":""}</button><h2>Gym</h2>`+
  S.tpl.map(T=>{const l=S.logs.filter(x=>x.tid===T.id).sort((a,b)=>b.ts-a.ts)[0];return `<button class="tc" style="--c:${T.color}" data-a="open" data-id="${T.id}"><div class="t"><b>${esc(T.name)}</b><small>${T.ex.length} ejercicios · ${l?"última vez "+sdate(l.ts):"sin hacer aún"}</small></div><span class="go">›</span></button>`}).join("")+
+ `<button class="add" data-a="newtpl">+ Otra sesión</button><h2>Resto</h2><button class="tc" style="--c:#7048E8" data-a="ofb"><div class="t"><b>Full body</b><small>${fbl()}</small></div><span class="go">›</span></button>`+
  `<button class="tc xc" style="--c:#0C8599" data-a="ocardio"><div class="t"><b>Cardio</b><small>${lc?"última vez "+fdt(lc.ts):"sin hacer aún"}</small></div><span class="go">›</span></button>`+
  `<button class="tc xc" style="--c:#7048E8" data-a="osteps"><div class="t"><b>Pasos</b><small>${ls?"último registro "+fday(ls.d):"sin registros aún"}</small></div><span class="go">›</span></button>`+
- `<button class="add" data-a="newtpl">+ Otra sesión</button></main>`}
+ `</main>`}
 function histV(kind){const body=kind==="c"?cr():kind==="p"?srows():hlist();
  $("#app").innerHTML=`<div class="bar"><button class="back" data-a="back">‹ Volver</button></div><main><h1 class="st">Historial</h1>${body}</main>`}
 function cardioV(){const n=S.wo.filter(w=>w.type==="c"&&w.cal==null).length;
@@ -221,6 +227,7 @@ document.addEventListener("click",ev=>{
  else if(a==="hview"){view="h"}
  else if(a==="hcv"){view="ch"}
  else if(a==="hpv"){view="ph"}
+ else if(a==="ofb"){fbOpen();return}
  else if(a==="ocardio"){view="c"}
  else if(a==="osteps"){view="p";STD=null}
  else if(a==="csave"){const d=pn($("#c-d").value),secs=Math.round(pn($("#c-h").value)*3600+pn($("#c-m").value)*60+pn($("#c-s").value));if(!(d>0&&secs>0)){toast("Pon distancia y tiempo");return}S.wo.push({id:uid(),type:"c",ts:Date.now(),day:today(),dist:d,secs,cal:null});view=HOME();toast("Cardio guardado")}

@@ -4,7 +4,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Gym">
 <link rel="apple-touch-icon" href="icono-gym.png">
-<title>Gym</title>
+<title>Entrenamiento</title>
 <style>
 :root{--bg:#EEF1F5;--pill:#fff;--ink:#14171A;--on:#14171A;--onink:#fff;color-scheme:light dark}
 @media(prefers-color-scheme:dark){:root{--bg:#0F1114;--pill:#22262B;--ink:#F2F4F6;--on:#F2F4F6;--onink:#14171A}}
@@ -17,7 +17,7 @@ iframe{flex:1;width:100%;border:0;background:var(--bg)}
 </style></head><body>
 <nav></nav>
 <script>
-const T=[["gym","Gym","gym.html?tab=gym"],["fb","Full body","entreno.html"],["cardio","Cardio","gym.html?tab=cardio"],["pasos","Pasos","gym.html?tab=pasos"],["cal","Calendario","calendario.html"],["vol","Volumen","volumen.html"]];
+const T=[["gym","Entrenamiento","gym.html"],["cal","Calendario","calendario.html"],["vol","Volumen","volumen.html"]];
 const nav=document.querySelector("nav");let cur="gym";
 try{cur=localStorage.getItem("app-tab")||"gym"}catch(e){}
 if(!T.some(t=>t[0]===cur))cur="gym";
