@@ -99,7 +99,7 @@ function open(d){const x=days[d]||{w:[],c:[],s:null},dt=new Date(d+"T00:00");
  if(!x.w.length&&!x.c.length&&!x.s)s+='<p class="mut">Sin actividad este día.</p>';
  const vm={};let tv=0,tr=0;
  x.w.forEach(w=>{tv+=w.v;tr+=w.r;for(const k in w.vm)vm[k]=(vm[k]||0)+w.vm[k];const c=C[w.gr[0]];
-  s+=`<div class="bl" style="--c:${c}"><div class="bh"><span>${w.gr.join(" + ")}</span><span>${w.start?hm(w.start)+"–"+hm(w.end)+" · ":""}${w.dur?fdur(w.dur):""}</span></div><div class="bb">`+
+  s+=`<div class="bl" style="--c:${c}"><div class="bh"><span>${w.gr.join(" + ")}</span><span>${w.start&&w.end>w.start?hm(w.start)+"–"+hm(w.end)+" · ":""}${w.dur?fdur(w.dur):""}</span></div><div class="bb">`+
   w.ex.map(e=>`<div class="ex"><b>${esc(e.n)}</b><div>${e.sets.map(t=>`<span class="ch">${esc(t.t)}</span>`).join("")}</div><span class="mut">${e.v?fv(e.v):nf(e.r)+" reps sin peso"}</span></div>`).join("")+
   `<div class="ex"><b>Volumen: ${fv(w.v)}</b></div></div></div>`});
  x.c.forEach(c=>{s+=`<div class="bl" style="--c:${C.Cardio}"><div class="bh"><span>Cardio</span><span>${fdur(c.secs*1000)}</span></div><div class="bb"><div class="k"><div><small>Distancia</small><b>${nf(c.dist,2)} km</b></div><div><small>Tiempo</small><b>${fdur(c.secs*1000)}</b></div><div><small>Ritmo</small><b>${pace(c.dist,c.secs)}</b></div><div><small>Velocidad</small><b>${kmh(c.dist,c.secs)}</b></div></div></div></div>`});
