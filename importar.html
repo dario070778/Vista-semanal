@@ -1,20 +1,28 @@
 <!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Importar sesiones</title>
 <style>body{font:600 16px -apple-system,system-ui,sans-serif;padding:24px;background:#f1f3f5;color:#111}button{font:inherit;border:0;border-radius:12px;padding:14px 18px;background:#111;color:#fff;width:100%;margin-top:14px}.c{background:#fff;border-radius:14px;padding:14px;margin:10px 0}</style></head><body>
 <h2>Importar sesiones de noviembre</h2>
-<div class="c">Gym: martes 3 (Pecho y espalda) y miércoles 4 (Pierna).<br>Cardio: martes 3 (6,26 km, 54 min 36 s) y jueves 12 (6,13 km, 52 min 9 s).</div>
+<div class="c">Full body: 3, 10 y 12 de noviembre.<br>Gym: martes 3 (Pecho y espalda) y miércoles 4 (Pierna).<br>Cardio: martes 3 (6,26 km, 54 min 36 s) y jueves 12 (6,13 km, 52 min 9 s).</div>
 <button id="b">Importar</button><p id="m"></p>
 <script>
 const SES=[["2026-11-03","Pecho y espalda",[["Pecho - Press Banca","60/10/1 60/10/0 60/8/1 60/8/0"],["Pecho - Press Inclinado Mancuernas","22,5/12/2 22,5/12/0 22,5/11/0"],["Pecho - Press Declinado","37,5/10/1 37,5/10/0 37,5/10/0"],["Pecho - Aperturas en máquina","85/12/0 85/10/0 85/10/0"],["Espalda - Jalón al pecho","70/10/2 70/10/1 70/10/0 70/10/0"],["Espalda - Remo en polea baja","80/10/1 80/8/1 80/8/0 80/8/0"],["Espalda - High Row","40/10/2 40/12/0 40/10/0"],["Espalda - Reverse Fly","60/10/1 60/10/1 60/10/0 60/10/0"]]],["2026-11-04","Pierna",[["Prensa","140/10/2 140/10/1 140/10/1 140/10/0"],["Gemelos sentado","45/10/1 45/12/1 45/12/0"],["Extensión Cuádriceps","100/12/1 100/12/0 100/11/0"],["Curl femoral sentado","80/12/1 80/12/0 80/12/0"],["Aductores (cierre)","50/10/1 50/10/0 50/10/0"],["Abductores (apertura)","60/10/1 60/10/0 60/10/0"],["Gemelos de pie","50/12/2 50/12/1 50/12/0"]]]];
+const FB={"2026-11-03": ["Bíceps|Curl|10|12|0|2", "Bíceps|Martillo|10|12|0|2", "Antebrazo|Antebrazo|6|36|0|2", "Tríceps|Superior|10|12|0|2", "Tríceps|Press francés|10|12|0|2", "Hombro|Elevación delantera|10|10|0|2", "Hombro|Elevación lateral|10|10|0|2", "Pierna|Sentadillas|90|15|0|3", "Pierna|Gemelos|90|15|0|3", "Abdominal|Abdominal|0|45|0|3", "Lumbar|Nadador|0|16|0|3", "Lumbar|Perro|0|16|0|3", "Lumbar|Boom|0|12|0|3"], "2026-11-10": ["Bíceps|Curl|10|12|0|2", "Bíceps|Martillo|10|12|0|2", "Antebrazo|Antebrazo|10|36|0|2", "Tríceps|Superior|10|12|0|2", "Tríceps|Press francés|10|12|0|2", "Hombro|Elevación delantera|10|10|0|2", "Hombro|Elevación lateral|10|10|0|2", "Pierna|Sentadillas|90|15|0|3", "Pierna|Gemelos|90|15|0|3", "Abdominal|Abdominal|0|45|0|3", "Lumbar|Nadador|0|16|0|3", "Lumbar|Perro|0|16|0|3", "Lumbar|Boom|0|12|0|3"], "2026-11-12": ["Bíceps|Curl|10|12|0|2", "Bíceps|Martillo|10|12|0|2", "Antebrazo|Antebrazo|10|36|0|3", "Tríceps|Superior|10|12|0|2", "Tríceps|Press francés|10|12|0|2", "Hombro|Elevación delantera|10|10|0|2", "Hombro|Elevación lateral|10|10|0|2", "Pierna|Sentadillas|90|15|0|3", "Pierna|Gemelos|90|15|0|3", "Abdominal|Abdominal|0|44|0|3", "Lumbar|Nadador|0|16|0|3", "Lumbar|Perro|0|16|0|3", "Lumbar|Boom|0|12|0|3", "Pierna|Sentadilla pared|0|0|30|2", "Pecho|Flexiones|0|15|0|2"]};
 const CAR=[["2026-11-03",6.26,3276],["2026-11-12",6.13,3129]];
 const ts=(d,h)=>{const q=d.split("-");return new Date(+q[0],+q[1]-1,+q[2],h,0).getTime()};
 document.getElementById("b").onclick=()=>{try{
  const S=JSON.parse(localStorage.getItem("gym-v3")||"null");if(!S||!Array.isArray(S.logs))throw new Error("Abre antes la app para que cargue tus datos");
- S.wo=S.wo||[];let n=0;
+ S.wo=S.wo||[];let n=0,fbErr=false;
  SES.forEach(s=>{const id="imp-"+s[0];if(S.wo.some(w=>w.id===id))return;const t=(S.tpl||[]).find(x=>x.name===s[1]),t0=ts(s[0],12);
   S.wo.push({id,type:"w",tid:t?t.id:null,tname:s[1],day:s[0],start:t0,end:t0,dur:null,cal:null});
   s[2].forEach((e,i)=>S.logs.push({id:"imp-"+s[0]+"-"+i,ts:t0+i*1000,day:s[0],tid:t?t.id:null,tname:s[1],name:e[0],kg:"",reps:"",wid:id,
    sets:e[1].split(" ").map(x=>{const q=x.split("/");return{kg:q[0],reps:q[1],rir:q[2]}})}));n++});
  CAR.forEach(c=>{const id="imp-c-"+c[0];if(S.wo.some(w=>w.id===id))return;S.wo.push({id,type:"c",ts:ts(c[0],18),day:c[0],dist:c[1],secs:c[2],cal:null});n++});
+
+const E=JSON.parse(localStorage.getItem("entreno-v2")||"null");let nf=0;
+if(E&&Array.isArray(E.routines)){E.hist=E.hist||[];
+ Object.keys(FB).forEach(d=>{if(E.hist.some(x=>x.f===d))return;const t=ts(d,12);
+  E.hist.push({id:"imp-fb-"+d,f:d,h:"",ini:t,fin:t,dur:0,rut:"Full body",kcal:null,ex:FB[d].map(r=>{const q=r.split("|");return{r:"Full body",g:q[0],n:q[1],kg:+q[2],rep:+q[3],t:+q[4],s:+q[5],h:+q[5]}})});nf++});
+ if(nf){localStorage.setItem("entreno-v2",JSON.stringify(E));localStorage.setItem("entreno-updated-at",String(Date.now()));localStorage.setItem("entreno-dirty","1")}n+=nf}
+else fbErr=true;
  localStorage.setItem("gym-v3",JSON.stringify(S));localStorage.setItem("gym-updated-at",String(Date.now()));localStorage.setItem("gym-dirty","1");
- document.getElementById("m").textContent=n?"Listo: "+n+" registros importados. Abre la app para que se sincronice.":"Ya estaba todo importado."}catch(e){document.getElementById("m").textContent="Error: "+e.message}};
+ document.getElementById("m").textContent=n?"Listo: "+n+" registros importados."+(fbErr?" (Full body no: abre antes Full body en la app y vuelve a pulsar)":" Abre la app y entra en Full body para que se sincronice."):"Ya estaba todo importado."}catch(e){document.getElementById("m").textContent="Error: "+e.message}};
 </script></body></html>
