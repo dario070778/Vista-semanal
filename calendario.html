@@ -107,7 +107,7 @@ function cell(d,n){const x=days[d],past=d<td,gm=[],ca=x&&x.c.length,fb=x&&x.w.so
  if(x)x.w.forEach(w=>!w.fb&&w.gr.forEach(g=>gm.includes(g)||gm.push(g)));
  const top=gm.length?gm.map((g,j)=>`<div class="b" style="background:${C[g]}">${j?"":`<u>${n}</u>`}${g}</div>`).join(""):
   fb||ca?`<div class="b" style="background:#f2f2f2"><u>${n}</u>No Gym</div>`:`<div class="b ${past?"r":"f"}"><u>${n}</u>${past?"Descanso":""}</div>`;
- return `<div class="d${d===td?" t":""}" data-d="${d}">${top}${fb?`<div class="a" style="background:${C["Full body"]}">Casa</div>`:""}${ca?`<div class="a" style="background:${C.Cardio}">Cardio</div>`:""}${stars(d)?`<div class="st">${"★".repeat(stars(d))}</div>`:""}</div>`}
+ return `<div class="d${d===td?" t":""}" data-d="${d}">${top}${fb?`<div class="a" style="background:${C["Full body"]}">Casa</div>`:""}${ca?`<div class="a" style="background:${C.Cardio}">Cardio</div>`:""}</div>`}
 const ks=Object.keys(days).sort();let a=ks.length?new Date(ks[0]+"T00:00"):now;a=new Date(Math.min(a,now));
 let y=a.getFullYear(),mo=a.getMonth(),h="";const ty=now.getFullYear(),tm=now.getMonth();
 for(;y<ty||(y===ty&&mo<=tm+1);){const f=new Date(y,mo,1),n=new Date(y,mo+1,0).getDate();let m=new Date(y,mo,1-(f.getDay()+6)%7);
