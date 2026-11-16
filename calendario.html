@@ -31,11 +31,30 @@ body{background:#000;color:#111;font:600 14px -apple-system,system-ui,sans-serif
 .d{display:flex;flex-direction:column;padding:0;min-height:64px;border:1px solid #000;border-radius:0;background:none}.d.t{border:2px solid #fff}
 .b{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#111;font-size:11px;font-weight:700;text-align:center;padding:2px;min-width:0}.b u{text-decoration:none;font-size:14px}
 .b.r{background:#f2f2f2;color:#bbb}.b.f{background:transparent;color:#777}
+.m h2{display:flex;justify-content:space-between;align-items:baseline}.mt{font-size:13px;font-weight:600;color:#aaa;text-transform:none;letter-spacing:0}.st{color:#F2C94C;font-size:10px;line-height:12px;text-align:center;padding:1px 0}.sk{color:#F2C94C;font-size:20px;letter-spacing:2px;margin:4px 0 0}.sk i{font-style:normal;color:#ccc}
 .a{color:#fff;font-size:10px;font-weight:700;text-align:center;padding:3px 0;border-top:1px solid #000}
 </style></head><body>
 <div id="card"><div class="top"><div class="leg" id="leg"></div><div class="wd"></div></div><div id="ms"></div></div>
 <div id="sh"><div class="sheet" id="sc"></div></div>
 <script>
+const SB="https://tdundqjsixqrddszumly.supabase.co",SBK="sb_publishable_KTvtNJcl64iOH4Hee-3L-Q__vSiCgrP";
+async function tok(){let s=null;try{s=JSON.parse(localStorage.getItem("gym-session"))}catch(e){}if(!s)return null;if(s.expires_at-60>Date.now()/1000)return s.access_token;
+ try{const r=await fetch(SB+"/auth/v1/token?grant_type=refresh_token",{method:"POST",headers:{apikey:SBK,"Content-Type":"application/json"},body:JSON.stringify({refresh_token:s.refresh_token})});const j=await r.json();if(!r.ok)return null;const n=JSON.stringify({access_token:j.access_token,refresh_token:j.refresh_token,expires_at:Math.floor(Date.now()/1000)+(+j.expires_in||3600)});["gym-session","entreno-session"].forEach(k=>localStorage.setItem(k,n));return j.access_token}catch(e){return null}}
+function Nube(row,key,emp,onNew,onSt){
+ const UK=key+"-at",DK=key+"-dirty";let busy=0,again=0,tm=null;
+ const lv=()=>{try{return JSON.parse(localStorage.getItem(key))||emp()}catch(e){return emp()}},lat=()=>+localStorage.getItem(UK)||0,em=v=>Array.isArray(v)?!v.length:!Object.keys(v).length;
+ const hd=async j=>{const t=await tok();if(!t)throw new Error("nologin");const h={apikey:SBK,Authorization:"Bearer "+t};if(j){h["Content-Type"]="application/json";h.Prefer="resolution=merge-duplicates,return=minimal"}return h};
+ async function put(){const at=lat();const r=await fetch(SB+"/rest/v1/vista_semanal",{method:"POST",headers:await hd(1),body:JSON.stringify({id:row,datos:{v:lv(),updatedAt:at},actualizado_en:new Date().toISOString()})});if(!r.ok)throw new Error("sb "+r.status);if(lat()===at)localStorage.setItem(DK,"0")}
+ async function sync(){if(busy){again=1;return}busy=1;let st="ok";
+  try{const r=await fetch(SB+"/rest/v1/vista_semanal?id=eq."+row+"&select=datos",{headers:await hd(0)});if(!r.ok)throw new Error("sb "+r.status);
+   const rows=await r.json(),rem=rows.length?rows[0].datos:null,ra=+(rem&&rem.updatedAt)||0;let la=lat();const dirty=localStorage.getItem(DK)==="1";
+   if(!rem||rem.v==null){if(!em(lv())){if(!la){la=Date.now();localStorage.setItem(UK,String(la))}await put()}}
+   else if(dirty||la>ra)await put();
+   else if(ra>la){localStorage.setItem(key,JSON.stringify(rem.v));localStorage.setItem(UK,String(ra));localStorage.setItem(DK,"0");onNew&&onNew()}}
+  catch(e){st=e.message==="nologin"?"none":"off"}
+  busy=0;onSt&&onSt(st==="ok"&&localStorage.getItem(DK)==="1"?"pending":st);if(again){again=0;setTimeout(sync,300)}}
+ function changed(){localStorage.setItem(UK,String(Date.now()));localStorage.setItem(DK,"1");onSt&&onSt("pending");clearTimeout(tm);tm=setTimeout(sync,900)}
+ return{sync,changed,lv}}
 const J=k=>{try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}},$=s=>document.querySelector(s);
 const G=J("gym-v3")||{},E=J("entreno-v2")||{},BW=(J("peso-corporal")||[]).sort((a,b)=>a.d<b.d?-1:1);
 const N=s=>String(s||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim();
@@ -62,15 +81,19 @@ function vol(n,kg,rep,sets,t,x2,d){const m=N(n);
 const days={},DY=d=>days[d]||(days[d]={w:[],c:[],s:null});
 function fin(w,d){w.v=0;w.r=0;w.vm={};w.ex.forEach(e=>{w.v+=e.v;w.r+=e.r;const g=VG(e.m);w.vm[g]=(w.vm[g]||0)+e.v});
  const gs=[...new Set(w.ex.map(e=>CG[e.m]).filter(Boolean))];w.gr=w.fb?["Full body"]:gs.length?gs:["Otro"];DY(d).w.push(w)}
-const gm=(l)=>{const i=l.name.indexOf("-"),m=MU[N(i>0?l.name.slice(0,i):"")];return m||(N(l.tname)==="pierna"?"Pierna":"Otro")};
-function gex(l,d){let v=0,r=0;const sets=(l.sets||[]).map(s=>{const kg=kgOf(s.kg),rep=num(s.reps);if(!s.w){const o=vol(l.name,kg,rep,1,rep,gx2(l.name),d);v+=o.v;r+=o.r}return{t:(s.w?"Calentamiento: ":"")+(s.kg?s.kg+" × ":"")+rep}});return{n:l.name,m:gm(l),sets,v,r}}
+const TX={};((G.tpl||[]).flatMap(t=>t.ex||[])).forEach(e=>{const k=N(e.name),o=TX[k]||(TX[k]={});if(e.mu&&!o.mu)o.mu=e.mu;if(e.x2!=null&&o.x2==null)o.x2=!!e.x2});
+const TXE={};((E.routines||[]).flatMap(r=>r.ex||[])).forEach(e=>{if(e.x2!=null)TXE[N(e.name)]=!!e.x2});
+const MV=["Pecho","Espalda","Hombro","Bíceps","Tríceps","Antebrazo","Pierna","Abdominal"];
+const gm=(l)=>{const t=TX[N(l.name)]||{},mu=t.mu||l.mu;if(mu&&MV.includes(mu))return mu;const i=l.name.indexOf("-"),m=MU[N(i>0?l.name.slice(0,i):"")];return m||(N(l.tname)==="pierna"?"Pierna":"Otro")};
+const gx=(l)=>{const t=TX[N(l.name)]||{};return t.x2!=null?t.x2:l.x2!=null?!!l.x2:gx2(l.name)};
+function gex(l,d){let v=0,r=0;const sets=(l.sets||[]).map(s=>{const kg=kgOf(s.kg),rep=num(s.reps);if(!s.w){const o=vol(l.name,kg,rep,1,rep,gx(l),d);v+=o.v;r+=o.r}return{t:(s.w?"Calentamiento: ":"")+(s.kg?s.kg+" × ":"")+rep}});return{n:l.name,m:gm(l),sets,v,r}}
 const WO=G.wo||[],LG=G.logs||[];
 WO.filter(w=>w.type==="w").forEach(w=>{const L=LG.filter(l=>l.wid===w.id);if(!L.length)return;
  fin({id:w.id,nm:w.tname,start:w.start,end:w.end,dur:w.dur||(w.end-w.start),cal:w.cal,ex:L.map(l=>gex(l,w.day))},w.day)});
 const lg={};LG.filter(l=>l.wid==="legacy").forEach(l=>(lg[l.day+"|"+l.tname]=lg[l.day+"|"+l.tname]||[]).push(l));
 Object.keys(lg).forEach(k=>{const d=k.split("|")[0];fin({id:k,nm:lg[k][0].tname,cal:null,ex:lg[k].map(l=>gex(l,d))},d)});
-(E.hist||[]).forEach(h=>fin({id:h.id,fb:1,nm:"Full body",start:h.ini,end:h.fin,dur:h.dur*1000,cal:h.kcal,ex:(h.ex||[]).map(e=>{const o=vol(e.n,+e.kg||0,+e.rep||0,e.h,+e.t||0,fx2(e.n,e.g),h.f);
- return{n:e.n,m:MU[N(e.g)]||"Otro",sets:[{t:(e.t?e.t+" s":(e.kg?e.kg+" kg × ":"")+(e.rep||0))+" · "+e.h+"/"+e.s+" series"}],v:o.v,r:o.r}})},h.f));
+(E.hist||[]).forEach(h=>fin({id:h.id,fb:1,nm:"Full body",start:h.ini,end:h.fin,dur:h.dur*1000,cal:h.kcal,ex:(h.ex||[]).map(e=>{const o=vol(e.n,+e.kg||0,+e.rep||0,e.h,+e.t||0,(TXE[N(e.n)]!=null?TXE[N(e.n)]:e.x2!=null?!!e.x2:fx2(e.n,e.g)),h.f);
+ return{n:e.n,m:(e.mu&&MV.includes(e.mu)?e.mu:MU[N(e.g)]||"Otro"),sets:[{t:(e.t?e.t+" s":(e.kg?e.kg+" kg × ":"")+(e.rep||0))+" · "+e.h+"/"+e.s+" series"}],v:o.v,r:o.r}})},h.f));
 WO.filter(w=>w.type==="c").forEach(c=>DY(c.day).c.push(c));
 (G.steps||[]).forEach(z=>DY(z.d).s=z);
 const pace=(d,s)=>{const m=s/60/d;return Math.floor(m)+":"+p2(Math.round((m%1)*60)%60)+" min/km"},kmh=(d,s)=>nf(d/(s/3600),1)+" km/h";
@@ -79,15 +102,17 @@ $("#leg").innerHTML=["Torso","Brazos","Pierna","Full body","Cardio"].map(k=>`<sp
 $(".wd").innerHTML="<span></span>"+["L","M","X","J","V","S","D"].map(x=>`<span>${x}</span>`).join("");
 const wk=d=>{const t=new Date(d.getFullYear(),d.getMonth(),d.getDate());t.setDate(t.getDate()+3-(t.getDay()+6)%7);const w1=new Date(t.getFullYear(),0,4);return 1+Math.round(((t-w1)/864e5-3+(w1.getDay()+6)%7)/7)};
 const now=new Date(),td=dayOf(now);
+const nt=d=>{const x=days[d];return x?x.w.length+x.c.length:0},stars=d=>d<td?Math.min(3,nt(d)):0;
 function cell(d,n){const x=days[d],past=d<td,gm=[],ca=x&&x.c.length,fb=x&&x.w.some(w=>w.fb);
  if(x)x.w.forEach(w=>!w.fb&&w.gr.forEach(g=>gm.includes(g)||gm.push(g)));
  const top=gm.length?gm.map((g,j)=>`<div class="b" style="background:${C[g]}">${j?"":`<u>${n}</u>`}${g}</div>`).join(""):
   fb||ca?`<div class="b" style="background:#f2f2f2"><u>${n}</u>No Gym</div>`:`<div class="b ${past?"r":"f"}"><u>${n}</u>${past?"Descanso":""}</div>`;
- return `<div class="d${d===td?" t":""}" data-d="${d}">${top}${fb?`<div class="a" style="background:${C["Full body"]}">Casa</div>`:""}${ca?`<div class="a" style="background:${C.Cardio}">Cardio</div>`:""}</div>`}
+ return `<div class="d${d===td?" t":""}" data-d="${d}">${top}${fb?`<div class="a" style="background:${C["Full body"]}">Casa</div>`:""}${ca?`<div class="a" style="background:${C.Cardio}">Cardio</div>`:""}${stars(d)?`<div class="st">${"★".repeat(stars(d))}</div>`:""}</div>`}
 const ks=Object.keys(days).sort();let a=ks.length?new Date(ks[0]+"T00:00"):now;a=new Date(Math.min(a,now));
 let y=a.getFullYear(),mo=a.getMonth(),h="";const ty=now.getFullYear(),tm=now.getMonth();
 for(;y<ty||(y===ty&&mo<=tm+1);){const f=new Date(y,mo,1),n=new Date(y,mo+1,0).getDate();let m=new Date(y,mo,1-(f.getDay()+6)%7);
- h+=`<section class="m" ${y===ty&&mo===tm?'id="cur"':""}><h2>${f.toLocaleDateString("es-ES",{month:"long",year:"numeric"})}</h2><div class="g">`;
+ let ms=0;for(let i=1;i<=n;i++)ms+=stars(y+"-"+p2(mo+1)+"-"+p2(i));
+ h+=`<section class="m" ${y===ty&&mo===tm?'id="cur"':""}><h2><span>${f.toLocaleDateString("es-ES",{month:"long",year:"numeric"})}</span><span class="mt">★ ${ms}</span></h2><div class="g">`;
  while(m<=new Date(y,mo,n)){h+=`<div class="w">S${wk(m)}</div>`;for(let k=0;k<7;k++){const dd=new Date(m.getFullYear(),m.getMonth(),m.getDate()+k);h+=dd.getMonth()===mo?cell(dayOf(dd),dd.getDate()):'<div></div>'}m=new Date(m.getFullYear(),m.getMonth(),m.getDate()+7)}
  h+="</div></section>";if(++mo>11){mo=0;y++}}
 $("#ms").innerHTML=h;const cu=$("#cur");if(cu)cu.scrollIntoView();
@@ -97,6 +122,7 @@ const PE='<span class="pe">Pendiente de calorías</span>';
 function open(d){const x=days[d]||{w:[],c:[],s:null},dt=new Date(d+"T00:00");
  let s=`<h3>${dt.toLocaleDateString("es-ES",{weekday:"long"}).replace(/^./,c=>c.toUpperCase())} ${fd(d)}</h3>`;
  if(!x.w.length&&!x.c.length&&!x.s)s+='<p class="mut">Sin actividad este día.</p>';
+ if(d<td){const q=stars(d),n=nt(d);s+=`<div class="sk">${"★".repeat(q)}<i>${"☆".repeat(3-q)}</i></div><p class="mut" style="margin:2px 0 0">${n?n+(n===1?" entreno":" entrenos")+(n>3?" (máximo 3 estrellas)":""):"Sin entrenos"}</p>`}
  const vm={};let tv=0,tr=0;
  x.w.forEach(w=>{tv+=w.v;tr+=w.r;for(const k in w.vm)vm[k]=(vm[k]||0)+w.vm[k];const c=C[w.gr[0]];
   s+=`<div class="bl" style="--c:${c}"><div class="bh"><span>${w.gr.join(" + ")}</span><span>${w.start&&w.end>w.start?hm(w.start)+"–"+hm(w.end)+" · ":""}${w.dur?fdur(w.dur):""}</span></div><div class="bb">`+
@@ -107,7 +133,8 @@ function open(d){const x=days[d]||{w:[],c:[],s:null},dt=new Date(d+"T00:00");
   s+=`<h3 style="margin-top:14px">Volumen del día: ${fv(tv)}</h3>`+Object.keys(vm).sort((p,q)=>vm[q]-vm[p]).map(k=>`<div class="br"><span>${k}</span><i style="width:${vm[k]/mx*100}%"></i><span>${fv(vm[k])}</span></div>`).join("")+(tr?`<p class="mut">Sin peso: ${nf(tr)} reps</p>`:"")}
  const en=[...x.w.map(w=>({n:w.gr.join(" + "),k:w.cal})),...x.c.map(c=>({n:"Cardio",k:c.cal}))];
  if(en.length||x.s){const z=x.s,all=en.every(e=>e.k!=null),sum=en.reduce((q,e)=>q+(e.k||0),0);
-  s+=`<h3 style="margin-top:14px">Pasos y calorías</h3><div class="k">${z?`<div><small>Pasos</small><b>${nf(z.p)}</b></div>`:""}${z&&z.k!=null?`<div><small>Total del día</small><b>${nf(z.k)} kcal</b></div>`:""}${z&&z.k!=null&&all?`<div><small>Fuera del entreno</small><b>${nf(z.k-sum)} kcal</b></div>`:""}</div>`+
+  s+=`<h3 style="margin-top:14px">Pasos y calorías</h3><div class="k">${z?`<div><small>Pasos</small><b>${nf(z.p)}</b></div>`:""}${z&&z.k!=null?`<div><small>Total del día</small><b>${nf(z.k)} kcal</b></div>`:""}${en.length?`<div><small>Calorías de entrenos</small><b>${all?nf(sum)+" kcal":en.some(e=>e.k!=null)?nf(sum)+" kcal +":"—"}</b>${all?"":"<small>Falta algún entreno</small>"}</div>`:""}${z&&z.k!=null&&all?`<div><small>Fuera del entreno</small><b>${nf(z.k-sum)} kcal</b></div>`:""}</div>`+
   en.map(e=>`<p style="margin:8px 0 0"><b>${e.n}</b> · ${e.k==null?PE:nf(e.k)+" kcal"}</p>`).join("")+(z&&z.k!=null&&!all?`<p class="mut">Fuera del entreno: ${PE}</p>`:"")}
  s+='<button class="x" data-x="1">Cerrar</button>';$("#sc").innerHTML=s;$("#sh").classList.add("on")}
+Nube("peso","peso-corporal",()=>[],()=>location.reload()).sync();
 </script></body></html>

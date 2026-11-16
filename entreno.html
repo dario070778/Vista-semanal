@@ -67,6 +67,7 @@ h2{font-size:15px;font-weight:700;color:var(--mut);margin:20px 2px 8px}
 .row .ci b{max-width:100%}
 .row .m em{font-size:15px;padding:2px 8px}
 .dots i{border-color:var(--c)}.dots i.on{background:var(--c)}
+.sheet label.chk{display:flex;align-items:center;gap:10px;font-size:16px;color:var(--ink)}.sheet input[type=checkbox]{width:24px;height:24px;padding:0}
 .sheet select{font:inherit;font-size:17px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:11px 12px;width:100%}
 .lgc{width:100%;max-width:340px;background:var(--card);border-radius:18px;padding:20px;display:grid;gap:10px;box-shadow:0 6px 24px #0003}
 .lgc h3{margin:0;font-size:22px;text-align:center}.lgc p{margin:0;color:var(--mut);font-size:14px;text-align:center}
@@ -97,6 +98,8 @@ const uid=()=>Math.random().toString(36).slice(2,9);
 const esc=t=>String(t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const GR={"Bíceps":"#E8590C","Tríceps":"#C2255C","Hombro":"#7048E8","Antebrazo":"#1C7ED6","Pierna":"#2F9E44","Lumbar":"#0C8599","Abdominal":"#E67700","Pecho":"#E03131","Espalda":"#4263EB","Otro":"#6B7480"};
 const col=e=>GR[e.g]||GR.Otro;
+const nrm=t=>String(t||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim();
+const fx2=(n,g)=>["curl","martillo","superior","press frances","elevacion delantera","elevacion lateral"].includes(nrm(n))||nrm(g)==="antebrazo";
 const mk=(g,n,kg,rp,st)=>({id:uid(),g,name:n,kg,reps:rp,sets:st,done:Array(st).fill(false),pin:false});
 const full=e=>e.done.every(Boolean);
 function defS(){const S={cur:null,routines:[{id:uid(),name:"Full body",ex:[
@@ -125,7 +128,7 @@ function woRender(){const w=S.wo,n=pend(),hb=`<button class="wb" data-a="hist">H
  $("#wo").innerHTML=w?`<span class="wt${w.p?" p":""}" id="wt">${clk(el(w))}${w.p?" ⏸":""}</span><button class="wb" data-a="wtog">${w.p?"Reanudar":"Pausa"}</button><button class="wb fin" data-a="wfin">Terminar</button>`:`<button class="wb pri grow" data-a="wstart">Iniciar entreno</button>${hb}`}
 setInterval(()=>{const t=$("#wt");if(t&&S&&S.wo&&!S.wo.p)t.textContent=clk(el(S.wo))},1000);
 function finWO(){const w=S.wo;if(!w)return;const ex=[],rn=[];
- S.routines.forEach(r=>{let any=false;r.ex.forEach(e=>{const n=e.done.filter(Boolean).length;if(n){any=true;ex.push({r:r.name,g:e.g,n:e.name,kg:e.kg||0,rep:e.reps||0,t:e.time||0,s:e.sets,h:n})}});if(any)rn.push(r.name)});
+ S.routines.forEach(r=>{let any=false;r.ex.forEach(e=>{const n=e.done.filter(Boolean).length;if(n){any=true;ex.push({r:r.name,g:e.g,x2:e.x2==null?null:!!e.x2,n:e.name,kg:e.kg||0,rep:e.reps||0,t:e.time||0,s:e.sets,h:n})}});if(any)rn.push(r.name)});
  if(!ex.length&&!confirm("No has marcado ninguna serie. ¿Guardar el entreno igualmente?"))return;
  const now=Date.now(),d=new Date(w.ini);
  (S.hist=S.hist||[]).push({id:uid(),f:isoD(d),h:hmD(d),ini:w.ini,fin:now,dur:Math.round(el(w)/1000),rut:rn.join(" + "),ex,kcal:null});
@@ -145,7 +148,7 @@ function render(){const r=R();S.cur=r.id;woRender();
 function openSh(h){$("#sh").innerHTML=`<div class="sheet">${h}</div>`;$("#sh").classList.add("on")}
 function closeSh(){$("#sh").classList.remove("on");ED=null}
 let tt;function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("on");clearTimeout(tt);tt=setTimeout(()=>t.classList.remove("on"),1800)}
-function sheetEx(e){ED=e;openSh(`<h3>${e?"Editar ejercicio":"Nuevo ejercicio"}</h3><label>Grupo<select id="f-g">${Object.keys(GR).map(k=>`<option${(e?e.g:"Otro")===k?" selected":""}>${k}</option>`).join("")}</select></label><label>Nombre<input id="f-n" value="${e?esc(e.name):""}" autocomplete="off"></label><div class="g3"><label>Peso (kg)<input id="f-k" type="number" inputmode="decimal" step="0.5" value="${e?e.kg:""}"></label><label>Repeticiones<input id="f-r" type="number" inputmode="numeric" value="${e?e.reps:""}"></label><label>Series<input id="f-s" type="number" inputmode="numeric" min="1" max="10" value="${e?e.sets:3}"></label></div><label>Tiempo (segundos, opcional)<input id="f-t" type="number" inputmode="numeric" value="${e&&e.time?e.time:""}"></label><button class="big pri" data-a="savex">Guardar</button>${e?`<button class="big warn" data-a="delx">Eliminar ejercicio</button>`:""}<button class="big" data-a="close">Cancelar</button>`)}
+function sheetEx(e){ED=e;openSh(`<h3>${e?"Editar ejercicio":"Nuevo ejercicio"}</h3><label>Grupo (músculo para el volumen)<select id="f-g">${e?"":'<option value="">Elegir…</option>'}${Object.keys(GR).map(k=>`<option${e&&e.g===k?" selected":""}>${k}</option>`).join("")}</select></label><label>Nombre<input id="f-n" value="${e?esc(e.name):""}" autocomplete="off"></label><div class="g3"><label>Peso (kg)<input id="f-k" type="number" inputmode="decimal" step="0.5" value="${e?e.kg:""}"></label><label>Repeticiones<input id="f-r" type="number" inputmode="numeric" value="${e?e.reps:""}"></label><label>Series<input id="f-s" type="number" inputmode="numeric" min="1" max="10" value="${e?e.sets:3}"></label></div><label>Tiempo (segundos, opcional)<input id="f-t" type="number" inputmode="numeric" value="${e&&e.time?e.time:""}"></label><label class="chk"><input type="checkbox" id="f-x2"${(e?(e.x2!=null?e.x2:fx2(e.name,e.g)):false)?" checked":""}> Peso por lado (×2 en el volumen)</label><button class="big pri" data-a="savex">Guardar</button>${e?`<button class="big warn" data-a="delx">Eliminar ejercicio</button>`:""}<button class="big" data-a="close">Cancelar</button>`)}
 document.addEventListener("click",ev=>{
  const t=ev.target.closest("[data-a]");if(!t)return;
  if(ev.target.id==="sh"){closeSh();return}
@@ -173,8 +176,9 @@ document.addEventListener("click",ev=>{
  else if(a==="hsave"){const x=(S.hist||[]).find(h=>h.id===t.dataset.id);if(x){const v=$("#f-c").value.trim();x.kcal=v===""?null:Math.max(0,Math.round(+v)||0);sheetHist();toast("Guardado")}}
  else if(a==="hdel"){if(!confirm("¿Eliminar este entreno del historial?"))return;S.hist=(S.hist||[]).filter(h=>h.id!==t.dataset.id);sheetHist()}
  else if(a==="savex"){const n=$("#f-n").value.trim();if(!n){toast("Pon un nombre");return}
-  const g=$("#f-g").value,kg=+$("#f-k").value||0,rp=+$("#f-r").value||0,st=Math.max(1,Math.min(10,Math.round(+$("#f-s").value)||1)),tm=+$("#f-t").value||0;
-  if(ED){ED.g=g;ED.name=n;ED.kg=kg;ED.reps=rp;ED.time=tm;if(st!==ED.sets){ED.done=Array.from({length:st},(_,i)=>!!ED.done[i]);ED.sets=st}}else r.ex.push(Object.assign(mk(g,n,kg,rp,st),{time:tm}));closeSh()}
+  const g=$("#f-g").value,kg=+$("#f-k").value||0,rp=+$("#f-r").value||0,st=Math.max(1,Math.min(10,Math.round(+$("#f-s").value)||1)),tm=+$("#f-t").value||0,x2=$("#f-x2").checked;
+  if(!ED&&!g){toast("Elige el grupo");return}
+  if(ED){ED.g=g||ED.g;ED.x2=x2;ED.name=n;ED.kg=kg;ED.reps=rp;ED.time=tm;if(st!==ED.sets){ED.done=Array.from({length:st},(_,i)=>!!ED.done[i]);ED.sets=st}}else r.ex.push(Object.assign(mk(g,n,kg,rp,st),{time:tm,x2}));closeSh()}
  else if(a==="delx"&&ED){const x=ED;closeSh();if(!confirm("¿Eliminar «"+x.name+"»?"))return;r.ex=r.ex.filter(y=>y!==x)}
  save();render()});
 const SB="https://tdundqjsixqrddszumly.supabase.co",SBK="sb_publishable_KTvtNJcl64iOH4Hee-3L-Q__vSiCgrP",ROW="entreno";
