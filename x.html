@@ -1,0 +1,37 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>X</title>
+<style>*{box-sizing:border-box;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}html,body{margin:0;background:#000;color:#fff;font:700 14px -apple-system,system-ui,sans-serif}
+body{padding:env(safe-area-inset-top,0px) 6px calc(env(safe-area-inset-bottom,0px) + 10px)}
+.top{position:sticky;top:0;background:#000;z-index:3;padding:8px 0;border-bottom:1px solid #222}.wd,.g{display:grid;grid-template-columns:repeat(7,1fr)}.wd span{text-align:center;color:#ccc;font-size:12px}
+.m{min-height:calc(100svh - 60px);display:flex;flex-direction:column;padding:6px 0}.m h2{margin:8px 4px;font-size:19px;text-transform:uppercase;display:flex;justify-content:space-between}
+.g{flex:1;grid-auto-rows:1fr;gap:2px}.d{border-radius:8px;min-height:56px;padding:4px;color:#fff;font-size:14px;display:flex;flex-direction:column;align-items:center;gap:2px}
+.d.on{background:#fff;color:#000}.d.on small{font-size:11px;letter-spacing:-1px;text-align:center;word-break:break-all}.d.t{outline:2px solid #fff}.d.on.t{outline:2px solid #888}
+#sh{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:flex-end;z-index:9}#sh.on{display:flex}
+.sheet{background:#fff;color:#111;width:100%;border-radius:22px 22px 0 0;padding:18px 16px calc(env(safe-area-inset-bottom,0px) + 18px);text-align:center}
+.sheet h3{margin:0 0 6px;font-size:20px}.big{font-size:34px;margin:10px 0}.row{display:flex;gap:10px}.row button,.x{flex:1;font:inherit;border:0;border-radius:12px;padding:14px;background:#111;color:#fff;font-size:22px}.x{width:100%;margin-top:10px;font-size:16px;background:#e9ecef;color:#111}</style></head><body>
+<div class="top"><div class="wd"></div></div><div id="ms"></div>
+<div id="sh"><div class="sheet" id="sc"></div></div>
+<script>
+const K="x-estrellas",p2=n=>String(n).padStart(2,"0"),$=s=>document.querySelector(s);
+let D={};try{D=JSON.parse(localStorage.getItem(K))||{}}catch(e){}
+const sv=()=>{try{localStorage.setItem(K,JSON.stringify(D))}catch(e){}};
+const iso=d=>d.getFullYear()+"-"+p2(d.getMonth()+1)+"-"+p2(d.getDate());
+$(".wd").innerHTML=["L","M","X","J","V","S","D"].map(x=>`<span>${x}</span>`).join("");
+const now=new Date(),td=iso(now);
+function draw(){const ks=Object.keys(D).filter(k=>D[k]>0).sort();let a=ks.length?new Date(ks[0]+"T00:00"):now;a=new Date(Math.min(a,now));
+ let y=a.getFullYear(),mo=a.getMonth(),h="";
+ for(;y<now.getFullYear()||(y===now.getFullYear()&&mo<=now.getMonth()+1);){const f=new Date(y,mo,1),n=new Date(y,mo+1,0).getDate(),pre=y+"-"+p2(mo+1)+"-";
+  const tot=Object.keys(D).filter(k=>k.startsWith(pre)).reduce((s,k)=>s+(D[k]||0),0);
+  h+=`<section class="m" ${y===now.getFullYear()&&mo===now.getMonth()?'id="cur"':""}><h2><span>${f.toLocaleDateString("es-ES",{month:"long",year:"numeric"})}</span><span>★ ${tot}</span></h2><div class="g">`+"<div></div>".repeat((f.getDay()+6)%7);
+  for(let i=1;i<=n;i++){const d=pre+p2(i),c=D[d]||0;h+=`<div class="d${c?" on":""}${d===td?" t":""}" data-d="${d}">${i}${c?`<small>${c>6?"★×"+c:"★".repeat(c)}</small>`:""}</div>`}
+  h+="</div></section>";if(++mo>11){mo=0;y++}}
+ const st=document.scrollingElement.scrollTop;$("#ms").innerHTML=h;if(!draw.o){draw.o=1;const c=$("#cur");if(c)c.scrollIntoView()}else document.scrollingElement.scrollTop=st}
+function sheet(d){const c=D[d]||0,q=d.split("-");$("#sc").innerHTML=`<h3>${q[2]}/${q[1]}/${q[0]}</h3><div class="big">${c?"★".repeat(Math.min(c,10))+(c>10?" ×"+c:""):"Sin estrellas"}</div><div class="row"><button data-m="-1">−</button><button data-m="1">+</button></div><button class="x" data-c="1">Cerrar</button>`;$("#sh").classList.add("on");sheet.d=d}
+$("#sh").addEventListener("click",e=>{const m=e.target.dataset.m;if(m){const d=sheet.d;D[d]=Math.max(0,(D[d]||0)+ +m);if(!D[d])delete D[d];sv();draw();sheet(d)}else if(e.target.id==="sh"||e.target.dataset.c)$("#sh").classList.remove("on")});
+let tm=null,lp=false,sx=0,sy=0;
+$("#ms").addEventListener("pointerdown",e=>{const c=e.target.closest(".d");if(!c)return;lp=false;sx=e.clientX;sy=e.clientY;clearTimeout(tm);tm=setTimeout(()=>{lp=true;sheet(c.dataset.d)},500)});
+$("#ms").addEventListener("pointermove",e=>{if(Math.abs(e.clientX-sx)+Math.abs(e.clientY-sy)>10)clearTimeout(tm)});
+$("#ms").addEventListener("pointercancel",()=>clearTimeout(tm));
+$("#ms").addEventListener("pointerup",e=>{clearTimeout(tm);const c=e.target.closest(".d");if(!c||lp||Math.abs(e.clientX-sx)+Math.abs(e.clientY-sy)>10)return;D[c.dataset.d]=(D[c.dataset.d]||0)+1;sv();draw()});
+$("#ms").addEventListener("contextmenu",e=>e.preventDefault());
+draw();
+</script></body></html>

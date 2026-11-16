@@ -140,7 +140,7 @@ function hlist(){const items=Object.values(groups()).map(g=>({t:g.ts,g})).concat
 function fbl(){try{const h=(JSON.parse(localStorage.getItem("entreno-v2"))||{}).hist||[];const l=h.sort((a,b)=>(b.ini||0)-(a.ini||0))[0];return l?"última vez "+String(l.f).split("-").reverse().join("/"):"sin hacer aún"}catch(e){return "sin hacer aún"}}
 function fbOpen(){try{const K=["gym-session","entreno-session"];let b=null;K.forEach(k=>{const v=JSON.parse(localStorage.getItem(k)||"null");if(v&&v.refresh_token&&(!b||(v.expires_at||0)>(b.expires_at||0)))b=v});if(b){const j=JSON.stringify(b);K.forEach(k=>localStorage.setItem(k,j))}}catch(e){}
  const o=document.createElement("div");o.style.cssText="position:fixed;inset:0;z-index:50;background:var(--bg);display:flex;flex-direction:column";
- o.innerHTML='<div class="bar"><button class="back" id="fbx">\u2039 Volver</button></div><iframe src="entreno.html?v=6" style="flex:1;width:100%;border:0"></iframe>';
+ o.innerHTML='<div class="bar"><button class="back" id="fbx">\u2039 Volver</button></div><iframe src="entreno.html?v=7" style="flex:1;width:100%;border:0"></iframe>';
  document.body.appendChild(o);o.querySelector("#fbx").onclick=()=>{o.remove();try{render()}catch(e){location.reload()}}}
 function home(){const lc=S.wo.filter(w=>w.type==="c").sort((a,b)=>b.ts-a.ts)[0],ls=[...S.steps].sort((a,b)=>b.d.localeCompare(a.d))[0],n=S.wo.filter(w=>w.cal==null&&(!TAB||w.type!=="c")).length;
  $("#app").innerHTML=`<div class="bar"><h1>Entrenamiento</h1><button class="back" data-a="menu">Datos</button></div><main><button class="big" data-a="hview" style="display:block;width:100%;margin:4px 0 8px">Historial${n?" ("+n+")":""}</button><h2>Gym</h2>`+
@@ -169,12 +169,13 @@ function sug(name,before,logs){const nn=s=>String(s||"").toLowerCase().normalize
  const tot=ss.reduce((a,s,i)=>a+(ks[i]===mk?(parseFloat(String(s.reps).replace(",","."))||0):0),0);
  return{lab:r[1],max:r[2],inc:r[3],day:L[0].day,kg:mk,tot,up:tot>=r[2],next:mk+r[3]}}
 function pq(p,e,i){if(!p)return null;const t=e.sets[i];if(t.w)return p.sets.find(s=>s.w)||null;const k=e.sets.slice(0,i).filter(s=>!s.w).length,q=p.sets.filter(s=>!s.w)[k];return q&&(q.kg||q.reps)?q:null}
+const newKg=(o,v)=>/\+/.test(o||"")||!/\d/.test(o||"")?fk(v)+" kg":o.replace(/\d+(?:[.,]\d+)?/,fk(v));
 function exBlock(T,x,D){const e=dx(T,x);
  if(e.fin)return `<div class="ex fin" style="--c:${T.color}" data-a="reopen" data-x="${x.id}"><span class="ok">✓</span><div class="t"><b>${esc(x.name)}</b><small>${e.sets.filter(t=>!t.w&&(t.kg||t.reps)).length} series guardadas · toca para editar</small></div></div>`;
- const p=S.cmp?prevOf(x,D.day):null,first=e.sets.some(t=>!t.w&&(t.kg||t.reps));
+ const p=S.cmp?prevOf(x,D.day):null,first=e.sets.some(t=>!t.w&&(t.kg||t.reps)),sg0=sug(x.name,D.day,S.logs),auto=!!(sg0&&sg0.up);if(auto&&!first)x.kg=newKg(x.kg,sg0.next);
  return `<div class="ex"><div class="eh"><b>${esc(x.name)}</b><button class="fl" data-a="flag" data-x="${x.id}" aria-label="Peso nuevo">${x.flag?FLAG:FLAGOFF}</button><button class="x" data-a="edit" data-x="${x.id}" aria-label="Editar ejercicio">✎</button></div>`+
  `<div class="m">${x.kg?`<em>${esc(x.kg)}</em>`:""}${x.reps?`<em>${esc(x.reps)}<small> rep</small></em>`:""}${x.rest?`<em><small>desc. </small>${esc(x.rest)}<small> min</small></em>`:""}${(x.info||[]).map((f,i)=>`<em data-a="info" data-x="${x.id}" data-i="${i}"><small>${esc(f.k)}: </small>${esc(f.v)}</em>`).join("")}<button class="plus" data-a="info" data-x="${x.id}" data-i="-1">+ Info</button></div>`+
- (x.flag&&!first?`<div class="flag">${FLAG}<span><b>Peso nuevo</b>${x.kg?": "+esc(x.kg):""}. Revisa antes de la 1.ª serie.</span></div>`:"")+
+ ((x.flag||auto)&&!first?`<div class="flag">${FLAG}<span><b>Peso nuevo</b>${x.kg?": "+esc(x.kg):""}. Revisa antes de la 1.ª serie.</span></div>`:"")+
  (p?`<div class="last">Última vez: ${sdate(p.ts)}</div>`:"")+(q=>q?`<div class="last" style="color:#2F9E44;font-weight:700">${q.up?"Sugerido: "+fk(q.next)+" kg (+"+fk(q.inc)+")":"Mantén "+fk(q.kg)+" kg · "+fk(q.tot)+"/"+q.max+" reps"}</div>`:"")(sug(x.name,D.day,S.logs))+
  `<div class="th"><span></span><span>Peso kg</span><span>Reps</span><span>RIR</span><span></span></div>`+
  e.sets.map((t,i)=>{const q=pq(p,e,i);
@@ -222,7 +223,7 @@ document.addEventListener("click",ev=>{
  else if(a==="cp"&&e){const p=prevOf(x,draft(T).day),q=p&&pq(p,e,+t.dataset.i);if(q)Object.assign(e.sets[+t.dataset.i],{kg:q.kg,reps:q.reps,rir:q.rir})}
  else if(a==="fin"&&e){const sets=e.sets.filter(s=>s.kg||s.reps||s.rir);if(!sets.some(s=>!s.w)){toast("Anota al menos una serie");return}
   const rec={id:e.logId||uid(),ts:Date.now(),day:draft(T).day,tid:T.id,tname:T.name,name:x.name,kg:x.kg||"",reps:x.reps||"",sets:JSON.parse(JSON.stringify(sets))};
-  const k=S.logs.findIndex(l=>l.id===rec.id);if(k>=0)S.logs[k]=rec;else S.logs.push(rec);e.logId=rec.id;e.fin=true;const sg=sug(x.name,"9999-99-99",S.logs);if(sg&&sg.up){x.kg=/\+/.test(x.kg||"")||!/\d/.test(x.kg||"")?fk(sg.next)+" kg":x.kg.replace(/\d+(?:[.,]\d+)?/,fk(sg.next));x.flag=true;toast("Guardado · peso nuevo: "+x.kg)}else toast("Guardado")}
+  const k=S.logs.findIndex(l=>l.id===rec.id);if(k>=0)S.logs[k]=rec;else S.logs.push(rec);e.logId=rec.id;e.fin=true;toast("Guardado")}
  else if(a==="reopen"&&e){e.fin=false}
  else if(a==="reset"){if(!confirm("Se vaciarán los datos de hoy de esta sesión, también los ya guardados. ¿Continuar?"))return;const d=draft(T).day;S.logs=S.logs.filter(l=>!(l.tid===T.id&&l.day===d));delete S.draft[T.id]}
  else if(a==="hist"){const g=groups()[t.dataset.k];if(!g)return;const wo=S.wo.find(w=>w.id===g.wid);

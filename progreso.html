@@ -2,7 +2,7 @@
 <style>*{box-sizing:border-box}body{margin:0;background:#f1f3f5;color:#111;font:600 15px -apple-system,system-ui,sans-serif;padding:env(safe-area-inset-top,0px) 10px calc(env(safe-area-inset-bottom,0px) + 30px)}
 h1{font-size:24px;margin:14px 4px 4px}.mut{color:#666;font-size:13px;font-weight:500}.cd{background:#fff;border-radius:14px;padding:12px;margin:8px 0;border-left:6px solid #adb5bd}.cd.up{border-color:#2F9E44}
 .r{display:flex;justify-content:space-between;gap:8px;align-items:baseline}.big{font-size:19px}.up .big{color:#2F9E44}
-.bar{height:8px;border-radius:4px;background:#e9ecef;margin:8px 0 4px;overflow:hidden}.bar i{display:block;height:100%;background:#4263EB}.up .bar i{background:#2F9E44}</style></head><body>
+.bar{height:8px;border-radius:4px;background:#e9ecef;margin:8px 0 4px;overflow:hidden}.bar i{display:block;height:100%;background:#4263EB}.up .bar i{background:#2F9E44}h2{font-size:17px;margin:20px 4px 6px;padding-left:8px}</style></head><body>
 <h1>Progreso</h1><p class="mut" style="margin:0 4px">Última sesión de cada ejercicio. Si llegas al total de repeticiones máximo con tu peso más alto, toca subir.</p><div id="v"></div>
 <script>
 let G={};try{G=JSON.parse(localStorage.getItem("gym-v3"))||{}}catch(e){}
@@ -15,7 +15,11 @@ function sug(name,before,logs){const nn=s=>String(s||"").toLowerCase().normalize
  const tot=ss.reduce((a,s,i)=>a+(ks[i]===mk?(parseFloat(String(s.reps).replace(",","."))||0):0),0);
  return{lab:r[1],max:r[2],inc:r[3],day:L[0].day,kg:mk,tot,up:tot>=r[2],next:mk+r[3]}}
 const fk=v=>String(v).replace(".",","),dm=d=>d.split("-").reverse().join("/");
-const out=[];const seen=new Set();LG.forEach(l=>{const r=REF.find(x=>x[0].test(String(l.name||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim()));if(r&&!seen.has(r)){seen.add(r);const s=sug(l.name,null,LG);if(s)out.push(s)}});
-out.sort((a,b)=>(b.up-a.up)||a.lab.localeCompare(b.lab));
-document.getElementById("v").innerHTML=out.map(s=>`<div class="cd ${s.up?"up":""}"><div class="r"><b>${s.lab}</b><span class="mut">${dm(s.day)}</span></div><div class="r"><span class="big">${s.up?"Sube a "+fk(s.next)+" kg":"Mantén "+fk(s.kg)+" kg"}</span><span class="mut">${s.up?"+"+fk(s.inc)+" kg":"faltan "+fk(Math.max(0,s.max-s.tot))+" reps"}</span></div><div class="bar"><i style="width:${Math.min(100,s.tot/s.max*100)}%"></i></div><div class="mut">${fk(s.tot)} / ${s.max} reps con ${fk(s.kg)} kg</div></div>`).join("")||'<p class="mut">Aún no hay entrenos de Gym con ejercicios de la tabla.</p>';
+const secs=[];(Array.isArray(G.tpl)?G.tpl:[]).forEach(t=>{const cards=[];(t.ex||[]).forEach(x=>{const s=sug(x.name,null,LG);if(s)cards.push(s)});if(!cards.length)return;
+ const w=(G.wo||[]).filter(o=>o.type==="w"&&o.tname===t.name).map(o=>o.day).sort().pop()||cards.map(c=>c.day).sort().pop();secs.push({n:t.name,c:t.color||"#4263EB",d:w,cards})});
+secs.sort((a,b)=>a.d<b.d?1:a.d>b.d?-1:0);
+const ups=[];secs.forEach(s=>s.cards.forEach(c=>{if(c.up)ups.push(c.lab+" "+fk(c.next)+" kg")}));
+const card=s=>`<div class="cd ${s.up?"up":""}"><div class="r"><b>${s.lab}</b><span class="mut">${dm(s.day)}</span></div><div class="r"><span class="big">${s.up?"Sube a "+fk(s.next)+" kg":"Mantén "+fk(s.kg)+" kg"}</span><span class="mut">${s.up?"+"+fk(s.inc)+" kg":"faltan "+fk(Math.max(0,s.max-s.tot))+" reps"}</span></div><div class="bar"><i style="width:${Math.min(100,s.tot/s.max*100)}%"></i></div><div class="mut">${fk(s.tot)} / ${s.max} reps con ${fk(s.kg)} kg</div></div>`;
+document.getElementById("v").innerHTML=(secs.length?`<div class="cd ${ups.length?"up":""}"><b>${ups.length?"Toca subir: "+ups.join(" · "):"Ningún ejercicio llega todavía al máximo"}</b></div>`:"")+
+ secs.map(s=>`<h2 style="border-left:6px solid ${s.c}">${s.n}<span class="mut"> · última vez ${dm(s.d)}</span></h2>`+s.cards.map(card).join("")).join("")||'<p class="mut">Aún no hay entrenos de Gym con ejercicios de la tabla.</p>';
 </script></body></html>
