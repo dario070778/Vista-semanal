@@ -393,7 +393,9 @@ PALETTE.forEach(c=>{const b=document.createElement("button");b.className="sw";b.
 for(let m=0;m<1440;m+=15){const a=document.createElement("option");a.value=m;a.textContent=formatTime(m);eventStart.appendChild(a);const c=a.cloneNode(true);cellStart.appendChild(c)}for(let m=15;m<=1440;m+=15){const b=document.createElement("option");b.value=m;b.textContent=formatTime(m);eventEnd.appendChild(b);const c=b.cloneNode(true);cellEnd.appendChild(c)}
 DAYS.forEach((d,i)=>{const b=document.createElement("button");b.type="button";b.className="daytoggle";b.textContent=d;b.dataset.day=i;b.onclick=()=>{b.classList.toggle("on");if(eventEdit.mode==="edit"){const ev=state.events.find(x=>x.id===eventEdit.eventId);if(ev?.repeat&&ev.repeat!=="none")setEventScope("series")}};weekdayPicker.appendChild(b)});
 
-function render(){cleanupPast();renderMonth();renderHeader();renderGrid();renderWords();renderCurrentPreview();renderTools()}
+// Si la página es más alta que la pantalla, se recorta solo el cuadro grande de abajo (nunca las celdas), con un mínimo.
+function fitPreview(){previewCard.style.minHeight="";if(!previewCard.classList.contains("show"))return;const over=document.documentElement.scrollHeight-window.innerHeight;if(over>1)previewCard.style.minHeight=Math.max(56,previewCard.offsetHeight-Math.ceil(over))+"px"}
+function render(){cleanupPast();renderMonth();renderHeader();renderGrid();renderWords();renderCurrentPreview();renderTools();fitPreview()}
 function renderMonth(){const n=new Date();monthTitle.textContent=navOffset===0?MONTHS[n.getMonth()]+" "+n.getFullYear():navTitle();todayBtn.classList.toggle("show",navOffset!==0);prevWeek.disabled=navOffset<=NAV_MIN;nextWeek.disabled=navOffset>=NAV_MAX}
 function renderHeader(){dayRow.innerHTML="<th>Notas</th>";const dates=viewDates(),today=isoDate(new Date());dates.forEach((s,i)=>{const th=document.createElement("th"),d=parseISO(s);th.innerHTML=DAYS[i]+"<span class='daynum'>"+d.getDate()+"</span>";if(s===today)th.classList.add("todayHead");dayRow.appendChild(th)})}
 function applyManualBackground(td,v,h){
@@ -447,6 +449,7 @@ document.getElementById("saveBtn").onclick=()=>{const text=textInput.value.trim(
 document.getElementById("deleteBtn").onclick=()=>{snap();if(editTarget?.type==="cell")deleteAt(editTarget.date,editTarget.h);if(editTarget?.type==="word"){words[editTarget.i]={text:"",color:"#ffffff",textColor:"#111111"};saveWords()}cellNoteField.style.display="block";cellTimeField.style.display="grid";modal.classList.remove("show");render()};
 document.getElementById("cancelBtn").onclick=()=>{cellNoteField.style.display="block";cellTimeField.style.display="grid";modal.classList.remove("show")};modal.onclick=e=>{if(e.target===modal){cellNoteField.style.display="block";cellTimeField.style.display="grid";modal.classList.remove("show")}};
 undoBtn.onclick=undo;
+window.addEventListener("resize",fitPreview);window.addEventListener("orientationchange",()=>setTimeout(fitPreview,300));
 prevWeek.onclick=()=>setNav(navOffset-1);
 nextWeek.onclick=()=>setNav(navOffset+1);
 todayBtn.onclick=()=>setNav(0);
