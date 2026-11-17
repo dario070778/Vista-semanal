@@ -16,6 +16,12 @@
 html,body{margin:0;padding:0;background:var(--page);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;overscroll-behavior:none}
 body{padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
 header{background:#fff;padding:5px 4px 3px;border-bottom:1px solid var(--grid)}
+.navbar{display:flex;align-items:center;gap:4px}
+.navbar .month-title{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.navbtn{height:25px;min-width:36px;border:1px solid var(--ui-border);border-radius:7px;background:#fff;color:#000;font:inherit;font-size:20px;line-height:1;padding:0 8px}
+.navbtn:disabled{opacity:.35}
+.todayBtn{display:none;font-size:13px;font-weight:600}
+.todayBtn.show{display:inline-block}
 .month-title{height:25px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:#000}
 .gridwrap{width:100vw;overflow:hidden}
 table{border-collapse:collapse;width:100%;table-layout:fixed}
@@ -88,7 +94,7 @@ input[type=color]{width:54px;height:38px;border:1px solid var(--ui-border);borde
 </style>
 </head>
 <body>
-<header><div class="month-title" id="monthTitle"></div></header>
+<header><div class="navbar"><button id="prevWeek" class="navbtn" type="button" aria-label="Semana anterior">‹</button><div class="month-title" id="monthTitle"></div><button id="todayBtn" class="navbtn todayBtn" type="button">Hoy</button><button id="nextWeek" class="navbtn" type="button" aria-label="Semana siguiente">›</button></div></header>
 <div class="gridwrap"><table><thead><tr id="dayRow"><th>Notas</th></tr></thead><tbody id="grid"></tbody></table></div>
 <div class="bottom-panel">
   <div class="wordbar" id="wordbar"></div>
@@ -176,6 +182,13 @@ function mondayOf(d=new Date()){const x=new Date(d.getFullYear(),d.getMonth(),d.
 // Las columnas siguen siendo L-M-X-J-V-S-D, pero cada una muestra la próxima fecha de ese día.
 // Ejemplo: si hoy es martes 11, L=17, M=11, X=12, J=13...
 function weekDates(){const n=new Date(),base=new Date(n.getFullYear(),n.getMonth(),n.getDate()),todayIdx=(base.getDay()+6)%7;return Array.from({length:7},(_,i)=>{const d=new Date(base);d.setDate(base.getDate()+((i-todayIdx+7)%7));return isoDate(d)})}
+// Navegación por semanas naturales (lunes a domingo). navOffset=0 es la vista de siempre (desde hoy).
+let navOffset=0;const NAV_MIN=-52,NAV_MAX=104;
+function navDates(){if(navOffset===0)return [];const m=mondayOf();m.setDate(m.getDate()+7*navOffset);return Array.from({length:7},(_,i)=>{const d=new Date(m);d.setDate(m.getDate()+i);return isoDate(d)})}
+function inNav(date){return navOffset!==0&&navDates().includes(date)}
+function viewDates(){return navOffset===0?weekDates():navDates()}
+function setNav(k){navOffset=Math.max(NAV_MIN,Math.min(NAV_MAX,k));selectedCell=null;render()}
+function navTitle(){const a=parseISO(navDates()[0]),b=parseISO(navDates()[6]),ms=x=>MONTHS[x.getMonth()].slice(0,3).toLowerCase();if(a.getFullYear()!==b.getFullYear())return `${a.getDate()} ${ms(a)} ${a.getFullYear()} – ${b.getDate()} ${ms(b)} ${b.getFullYear()}`;if(a.getMonth()!==b.getMonth())return `${a.getDate()} ${ms(a)} – ${b.getDate()} ${ms(b)} ${b.getFullYear()}`;return `${a.getDate()}–${b.getDate()} ${ms(b)} ${b.getFullYear()}`}
 function dayIndexFromISO(s){return (parseISO(s).getDay()+6)%7}
 function formatTime(min){min=Math.max(0,Math.min(1440,+min||0));const h=Math.floor(min/60),m=min%60;return `${h}:${pad(m)}`}
 function eventStartMin(e){return Number.isFinite(+e?.startMin)?+e.startMin:(+e?.startHour||0)*60}
@@ -301,10 +314,12 @@ function snap(){undoStack=[{state:JSON.stringify(state),words:JSON.stringify(wor
 function undo(){if(!undoStack.length)return;const s=undoStack.pop();state=JSON.parse(s.state);words=JSON.parse(s.words);saveState();saveWords();undoBtn.disabled=true;render()}
 function cellKey(date,h){return `${date}-${pad(h)}`}
 function slotEnd(date,h){const d=parseISO(date);d.setHours(h+1,0,0,0);return d}
-function effectiveDate(displayDate,h){return slotEnd(displayDate,h)<=new Date()?addDays(displayDate,7):displayDate}
+function effectiveDate(displayDate,h){if(inNav(displayDate))return displayDate;return slotEnd(displayDate,h)<=new Date()?addDays(displayDate,7):displayDate}
 // Para una franja ya terminada, la celda queda vacía salvo que el usuario la haya editado manualmente para la próxima semana.
 // Los eventos planificados/repetitivos futuros NO se muestran antes de que su fecha llegue a la cabecera.
+function navResolved(date,h){const v=resolved(date,h);if(!v)return null;if(v.source==="event"){const segs=eventSegs(date,h);if(!segs.length)return null;return {...segs[0],segs,activeNow:true,visibleStartMin:segs[0].segStart,visibleEndMin:segs[0].segEnd}}return v}
 function visibleResolved(displayDate,h){
+ if(inNav(displayDate))return navResolved(displayDate,h);
  const now=new Date();
  if(slotEnd(displayDate,h)<=now){
    const nextDate=addDays(displayDate,7),manual=state.cells[cellKey(nextDate,h)];
@@ -330,7 +345,9 @@ function visibleResolved(displayDate,h){
  }
  return v
 }
-function cleanupPast(){const now=new Date();let changed=false;for(const k of Object.keys(state.cells)){const m=k.match(/^(\d{4}-\d{2}-\d{2})-(\d{2})$/);if(!m)continue;const date=m[1],h=+m[2];if(slotEnd(date,h)<=now){delete state.cells[k];changed=true}}
+function cleanupPast(){const cut=new Date();cut.setDate(cut.getDate()-365);let changed=false;for(const k of Object.keys(state.cells)){const m=k.match(/^(\d{4}-\d{2}-\d{2})-(\d{2})$/);if(!m)continue;const date=m[1],h=+m[2];if(slotEnd(date,h)<=cut){delete state.cells[k];changed=true}}
+// Historial: se conserva un año; después se borran las franjas manuales y los eventos de fecha concreta más antiguos.
+const cutISO=isoDate(cut),nEv=state.events.length;state.events=state.events.filter(e=>(e.repeat&&e.repeat!=="none")||!e.date||e.date>=cutISO);if(state.events.length!==nEv)changed=true;
 // Los eventos planificados no se borran automáticamente al finalizar.
 // Si ya han pasado, dejan de mostrarse; los datos permanecen guardados.
 if(changed)saveState()}
@@ -377,8 +394,8 @@ for(let m=0;m<1440;m+=15){const a=document.createElement("option");a.value=m;a.t
 DAYS.forEach((d,i)=>{const b=document.createElement("button");b.type="button";b.className="daytoggle";b.textContent=d;b.dataset.day=i;b.onclick=()=>{b.classList.toggle("on");if(eventEdit.mode==="edit"){const ev=state.events.find(x=>x.id===eventEdit.eventId);if(ev?.repeat&&ev.repeat!=="none")setEventScope("series")}};weekdayPicker.appendChild(b)});
 
 function render(){cleanupPast();renderMonth();renderHeader();renderGrid();renderWords();renderCurrentPreview();renderTools()}
-function renderMonth(){const n=new Date();monthTitle.textContent=MONTHS[n.getMonth()]+" "+n.getFullYear()}
-function renderHeader(){dayRow.innerHTML="<th>Notas</th>";const dates=weekDates(),today=isoDate(new Date());dates.forEach((s,i)=>{const th=document.createElement("th"),d=parseISO(s);th.innerHTML=DAYS[i]+"<span class='daynum'>"+d.getDate()+"</span>";if(s===today)th.classList.add("todayHead");dayRow.appendChild(th)})}
+function renderMonth(){const n=new Date();monthTitle.textContent=navOffset===0?MONTHS[n.getMonth()]+" "+n.getFullYear():navTitle();todayBtn.classList.toggle("show",navOffset!==0);prevWeek.disabled=navOffset<=NAV_MIN;nextWeek.disabled=navOffset>=NAV_MAX}
+function renderHeader(){dayRow.innerHTML="<th>Notas</th>";const dates=viewDates(),today=isoDate(new Date());dates.forEach((s,i)=>{const th=document.createElement("th"),d=parseISO(s);th.innerHTML=DAYS[i]+"<span class='daynum'>"+d.getDate()+"</span>";if(s===today)th.classList.add("todayHead");dayRow.appendChild(th)})}
 function applyManualBackground(td,v,h){
  const c=norm(v.color),hourStart=h*60,hourEnd=hourStart+60,start=Math.max(hourStart,v.visibleStartMin??v.startMin??hourStart),end=Math.min(hourEnd,v.visibleEndMin??v.endMin??hourEnd);
  const from=Math.max(0,Math.min(100,(start-hourStart)/60*100)),to=Math.max(from,Math.min(100,(end-hourStart)/60*100));
@@ -386,7 +403,7 @@ function applyManualBackground(td,v,h){
  td.classList.add("partialEvent");td.style.backgroundColor="var(--cell)";td.style.backgroundImage=`linear-gradient(to right, var(--cell) 0%, var(--cell) ${from}%, ${c} ${from}%, ${c} ${to}%, var(--cell) ${to}%, var(--cell) 100%)`;
 }
 function renderGrid(){
- grid.innerHTML="";const now=new Date(),today=isoDate(now),hr=now.getHours(),dates=weekDates();
+ grid.innerHTML="";const now=new Date(),today=isoDate(now),hr=now.getHours(),dates=viewDates();
  for(let h=0;h<24;h++){
   const tr=document.createElement("tr"),th=document.createElement("th");th.textContent=h;if(h===hr)th.classList.add("currentHour");tr.appendChild(th);
   for(let d=0;d<7;d++){
@@ -430,6 +447,9 @@ document.getElementById("saveBtn").onclick=()=>{const text=textInput.value.trim(
 document.getElementById("deleteBtn").onclick=()=>{snap();if(editTarget?.type==="cell")deleteAt(editTarget.date,editTarget.h);if(editTarget?.type==="word"){words[editTarget.i]={text:"",color:"#ffffff",textColor:"#111111"};saveWords()}cellNoteField.style.display="block";cellTimeField.style.display="grid";modal.classList.remove("show");render()};
 document.getElementById("cancelBtn").onclick=()=>{cellNoteField.style.display="block";cellTimeField.style.display="grid";modal.classList.remove("show")};modal.onclick=e=>{if(e.target===modal){cellNoteField.style.display="block";cellTimeField.style.display="grid";modal.classList.remove("show")}};
 undoBtn.onclick=undo;
+prevWeek.onclick=()=>setNav(navOffset-1);
+nextWeek.onclick=()=>setNav(navOffset+1);
+todayBtn.onclick=()=>setNav(0);
 importantBtn.onclick=()=>{if(!selectedCell)return;const v=visibleResolved(selectedCell.displayDate||selectedCell.date,selectedCell.h);if(!v)return;snap();if(v.source==="cell"){const k=cellKey(v.date||selectedCell.date,selectedCell.h),cur=state.cells[k],next=!cur?.important;if(cur?.manualId){for(const x of Object.values(state.cells))if(x?.manualId===cur.manualId)x.important=next}else if(cur)cur.important=next}else{const e=state.events.find(x=>x.id===v.sourceId);if(e){if(e.repeat&&e.repeat!=="none"){e.exceptions=e.exceptions||{};const base=e.exceptions[v.date]||{};e.exceptions[v.date]={...base,important:!v.important}}else e.important=!e.important}}saveState();render()};
 planBtn.onclick=()=>openEventNew();
 
