@@ -3,19 +3,20 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#0b0b0f">
+<meta name="theme-color" content="#ffffff">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Vista semanal">
 <meta name="mobile-web-app-capable" content="yes">
 <link rel="manifest" href="manifest.json?v=460">
 <link rel="icon" href="icon.svg?v=460" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icono-vista.png?v=1">
 <title>Vista semanal</title>
 <style>
 :root{--grid:#f4f4f6;--ui-border:#b9b9bd;--page:#d1d1d3;--cell:#d9d9dc;--head:#0b0b0d;--red:#e2465b;--gold:#d4af37;--text:#111}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;padding:0;background:var(--page);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;overscroll-behavior:none}
-body{padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
-header{background:#fff;padding:5px 4px 3px;border-bottom:1px solid var(--grid)}
+html,body{margin:0;padding:0;height:100%;overflow:hidden;background:var(--page);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;overscroll-behavior:none}
+body{position:fixed;inset:0;display:flex;flex-direction:column;padding:0}
+header{flex:none;background:#fff;padding:calc(env(safe-area-inset-top,0px) + 5px) 4px 3px;border-bottom:1px solid var(--grid)}
 .navbar{display:flex;align-items:center;gap:4px}
 .navbar .month-title{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .navbtn{height:25px;min-width:36px;border:1px solid var(--ui-border);border-radius:7px;background:#fff;color:#000;font:inherit;font-size:20px;line-height:1;padding:0 8px}
@@ -23,10 +24,10 @@ header{background:#fff;padding:5px 4px 3px;border-bottom:1px solid var(--grid)}
 .todayBtn{display:none;font-size:13px;font-weight:600}
 .todayBtn.show{display:inline-block}
 .month-title{height:25px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:#000}
-.gridwrap{width:100vw;overflow:hidden}
+.gridwrap{flex:1 1 auto;min-height:0;width:100%;overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain}
 table{border-collapse:collapse;width:100%;table-layout:fixed}
 th,td{border:1px solid var(--grid);text-align:center;vertical-align:middle;padding:0}
-thead th{height:25px;background:var(--head);color:#fff;font-size:16px;font-weight:650}
+thead th{height:25px;background:var(--head);color:#fff;font-size:16px;font-weight:650;position:sticky;top:0;z-index:6}
 thead th:first-child{width:39px;font-size:13px;font-weight:500;color:#fff}
 tbody th{width:39px;background:var(--head);color:#fff;font-size:16px;font-weight:600}
 td{height:26px;background:var(--cell);font-size:12px;line-height:1.05;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;position:relative}
@@ -39,7 +40,7 @@ td{height:26px;background:var(--cell);font-size:12px;line-height:1.05;overflow:h
 td.importantRange::after{content:"";position:absolute;inset:-1px;z-index:3;pointer-events:none;border-left:3px solid var(--gold);border-right:3px solid var(--gold)}
 td.importantStart::after{border-top:3px solid var(--gold)}
 td.importantEnd::after{border-bottom:3px solid var(--gold)}
-.bottom-panel{border-top:1px solid var(--grid);background:var(--page);padding:5px 4px 8px}
+.bottom-panel{flex:none;border-top:1px solid var(--grid);background:var(--page);padding:5px 4px calc(8px + env(safe-area-inset-bottom,0px))}
 .wordbar{display:grid;grid-template-columns:repeat(4,1fr);gap:3px}
 .chip,.toolbtn{min-height:25px;border:1px solid var(--ui-border);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:1px 4px;user-select:none;font-weight:500;background:#fff}
 .chip.active{outline:2px solid var(--red);outline-offset:-2px;font-weight:700}
@@ -91,6 +92,12 @@ input[type=color]{width:54px;height:38px;border:1px solid var(--ui-border);borde
 .eventItemMeta{font-size:12px;color:#666;margin-top:3px}
 .eventDot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:-1px;border:1px solid rgba(0,0,0,.15)}
 .emptyList{padding:18px 6px;text-align:center;color:#777;font-size:14px}
+.ruleBox .eventGrid{margin:0 0 8px}
+.ruleBox .miniLabel{margin:2px 0 4px}
+.ruleBox .weekdays{margin:0 0 8px}
+.ruleBox .rMonths{grid-template-columns:repeat(4,1fr)}
+.ruleBox .checkline{margin:0 0 8px}
+.ruleBox .rEndVal input{margin-bottom:0}
 </style>
 </head>
 <body>
@@ -125,7 +132,7 @@ input[type=color]{width:54px;height:38px;border:1px solid var(--ui-border);borde
   <div class="field noteField"><label>Nota (opcional)</label><textarea id="eventNote" autocomplete="off" placeholder="Se mostrará abajo en lugar del texto del evento"></textarea></div>
   <div class="eventGrid">
     <div class="field"><label>Fecha</label><input id="eventDate" type="date"></div>
-    <div class="field"><label>Repetición</label><select id="eventRepeat"><option value="none">No repetir</option><option value="weekdays">Lunes a viernes</option><option value="daily">Cada día</option><option value="weekly">Cada semana</option><option value="custom">Días concretos</option></select></div>
+    <div class="field"><label>Repetición</label><select id="eventRepeat"><option value="none">No repetir</option><option value="weekdays">Lunes a viernes</option><option value="daily">Cada día</option><option value="weekly">Cada semana</option><option value="custom">Días concretos</option><option value="rule">Personalizada…</option></select></div>
     <div class="field"><label>Desde</label><select id="eventStart"></select></div>
     <div class="field"><label>Hasta</label><select id="eventEnd"></select></div>
   </div>
@@ -155,6 +162,8 @@ input[type=color]{width:54px;height:38px;border:1px solid var(--ui-border);borde
 (() => {
 const DAYS=["L","M","X","J","V","S","D"];
 const MONTHS=["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+const NTH_OPTS=[[1,"Primer"],[2,"Segundo"],[3,"Tercer"],[4,"Cuarto"],[5,"Quinto"],[-1,"Último"]];
+const DOW_FULL=["lunes","martes","miércoles","jueves","viernes","sábado","domingo"];
 const STATE_KEY="vista-semanal-state-v3";
 const WORDS_KEY="vista-semanal-words"; // clave estable: no cambia entre versiones
 const LEGACY_WORD_KEYS=["vista-semanal-words-v2","vista-semanal-words-v1"];
@@ -306,9 +315,14 @@ let undoStack=[];
 let selectedWord=null,selectedCell=null,editTarget=null,drag=false,dragValue=null,longTimer=null,suppressClick=false;
 let eventEdit={mode:"new",eventId:null,date:null,scope:"day"};
 const monthTitle=document.getElementById("monthTitle"),dayRow=document.getElementById("dayRow"),grid=document.getElementById("grid"),wordbar=document.getElementById("wordbar"),modal=document.getElementById("modal"),textInput=document.getElementById("textInput"),noteInput=document.getElementById("noteInput"),cellNoteField=document.getElementById("cellNoteField"),cellTimeField=document.getElementById("cellTimeField"),cellStart=document.getElementById("cellStart"),cellEnd=document.getElementById("cellEnd"),colorInput=document.getElementById("colorInput"),textColorInput=document.getElementById("textColorInput"),modalTitle=document.getElementById("modalTitle"),palette=document.getElementById("palette"),previewCard=document.getElementById("previewCard"),undoBtn=document.getElementById("undoBtn"),importantBtn=document.getElementById("importantBtn"),planBtn=document.getElementById("planBtn");
-cellTimeField.insertAdjacentHTML("afterend",'<div class="eventGrid" id="cellRepeatField"><div class="field"><label>Repetición</label><select id="cellRepeat"><option value="none">No repetir</option><option value="weekly">Cada semana (mismo día)</option><option value="weekdays">Lunes a viernes</option><option value="daily">Cada día</option></select></div><div class="field"><label>Final (opcional)</label><input id="cellUntil" type="date"></div></div>');
-const cellRepeatField=document.getElementById("cellRepeatField"),cellRepeat=document.getElementById("cellRepeat"),cellUntil=document.getElementById("cellUntil");
+cellTimeField.insertAdjacentHTML("afterend",'<div class="eventGrid" id="cellRepeatField"><div class="field"><label>Repetición</label><select id="cellRepeat"><option value="none">No repetir</option><option value="weekly">Cada semana (mismo día)</option><option value="weekdays">Lunes a viernes</option><option value="daily">Cada día</option><option value="rule">Personalizada…</option></select></div><div class="field" id="cellUntilField"><label>Final (opcional)</label><input id="cellUntil" type="date"></div></div>');
+const cellRepeatField=document.getElementById("cellRepeatField"),cellRepeat=document.getElementById("cellRepeat"),cellUntil=document.getElementById("cellUntil"),cellUntilField=document.getElementById("cellUntilField");
+const cellRuleUI=makeRuleUI();cellRepeatField.insertAdjacentElement("afterend",cellRuleUI.el);
+function updateCellRule(){const isRule=cellRepeat.value==="rule";cellRuleUI.show(isRule&&cellRepeatField.style.display!=="none");cellUntilField.style.display=isRule?"none":"block"}
+cellRepeat.onchange=()=>{if(cellRepeat.value==="rule"&&editTarget?.type==="cell")cellRuleUI.set(null,cellUntil.value||null,editTarget.date);updateCellRule()};
 const eventModal=document.getElementById("eventModal"),eventTitle=document.getElementById("eventTitle"),eventText=document.getElementById("eventText"),eventNote=document.getElementById("eventNote"),eventDate=document.getElementById("eventDate"),eventRepeat=document.getElementById("eventRepeat"),eventStart=document.getElementById("eventStart"),eventEnd=document.getElementById("eventEnd"),eventUntil=document.getElementById("eventUntil"),eventColor=document.getElementById("eventColor"),eventTextColor=document.getElementById("eventTextColor"),eventImportant=document.getElementById("eventImportant"),repeatBox=document.getElementById("repeatBox"),weekdayPicker=document.getElementById("weekdayPicker"),scopeRow=document.getElementById("scopeRow"),eventListModal=document.getElementById("eventListModal"),eventList=document.getElementById("eventList");
+const eventRuleUI=makeRuleUI();repeatBox.parentNode.insertBefore(eventRuleUI.el,repeatBox);
+eventRuleUI.onchange(()=>{if(eventEdit.mode==="edit"){const ev=state.events.find(x=>x.id===eventEdit.eventId);if(ev?.repeat&&ev.repeat!=="none")setEventScope("series")}});
 
 function snap(){undoStack=[{state:JSON.stringify(state),words:JSON.stringify(words)}];undoBtn.disabled=false}
 function undo(){if(!undoStack.length)return;const s=undoStack.pop();state=JSON.parse(s.state);words=JSON.parse(s.words);saveState();saveWords();undoBtn.disabled=true;render()}
@@ -351,11 +365,77 @@ const cutISO=isoDate(cut),nEv=state.events.length;state.events=state.events.filt
 // Los eventos planificados no se borran automáticamente al finalizar.
 // Si ya han pasado, dejan de mostrarse; los datos permanecen guardados.
 if(changed)saveState()}
+function dnum(s){const [y,m,d]=s.split("-").map(Number);return Math.round(Date.UTC(y,m-1,d)/864e5)}
+function dim(y,m){return new Date(y,m,0).getDate()}
+// Repetición personalizada (estilo Apple). Los días que no existen en un mes (p. ej. 31) se saltan; "Último" = fin de mes.
+function ruleOccurs(r,start,date){
+ if(!r||!start||date<start)return false;
+ const n=Math.max(1,+r.n||1),[y,m,d]=date.split("-").map(Number),[y0,m0,d0]=start.split("-").map(Number);
+ const dow=(new Date(y,m-1,d).getDay()+6)%7,dow0=(new Date(y0,m0-1,d0).getDay()+6)%7;
+ const wdOf=v=>(v===undefined||v===null||!Number.isFinite(+v))?dow0:+v;
+ const nthOk=(k,wd)=>dow===wd&&(k===-1?d+7>dim(y,m):Math.ceil(d/7)===k);
+ if(r.freq==="day")return (dnum(date)-dnum(start))%n===0;
+ if(r.freq==="week"){const wd=r.wdays&&r.wdays.length?r.wdays:[dow0];return wd.includes(dow)&&Math.round(((dnum(date)-dow)-(dnum(start)-dow0))/7)%n===0}
+ if(r.freq==="month"){if(((y-y0)*12+(m-m0))%n!==0)return false;if(r.mode==="nth")return nthOk(+r.nth||1,wdOf(r.ndow));const md=r.mdays&&r.mdays.length?r.mdays:[d0];return md.includes(d)||(md.includes(-1)&&d===dim(y,m))}
+ if(r.freq==="year"){if((y-y0)%n!==0)return false;const mo=r.months&&r.months.length?r.months:[m0];if(!mo.includes(m))return false;return r.ynth?nthOk(+r.nth||1,wdOf(r.ndow)):d===d0}
+ return false}
+// "Tras N veces": se calcula una sola vez la fecha de la última repetición y se guarda en caché.
+const RULE_END={};
+function ruleEndDate(e){const r=e.rule;if(e.repeat!=="rule"||!r||!r.count||!e.startDate)return null;const key=e.id+"|"+e.startDate+"|"+JSON.stringify(r);if(key in RULE_END)return RULE_END[key];let c=0,d=e.startDate,res=null;for(let i=0;i<40000;i++){if(ruleOccurs(r,e.startDate,d)&&++c>=r.count){res=d;break}d=addDays(d,1)}if(!res)res=d;RULE_END[key]=res;return res}
+function effUntil(e){const c=ruleEndDate(e);return c&&(!e.until||c<e.until)?c:(e.until||null)}
+function ruleText(r){
+ const n=+r.n||1,U={day:["día","días"],week:["semana","semanas"],month:["mes","meses"],year:["año","años"]}[r.freq];if(!U)return "Repetitivo";
+ let s=n===1?"Cada "+U[0]:"Cada "+n+" "+U[1];
+ const nthT=()=>((NTH_OPTS.find(x=>x[0]===+r.nth)||[0,""])[1]).toLowerCase()+" "+(DOW_FULL[+r.ndow]||"");
+ if(r.freq==="week"&&r.wdays?.length)s+=" ("+[...r.wdays].sort((a,b)=>a-b).map(i=>DAYS[i]).join(" ")+")";
+ else if(r.freq==="month")s+=r.mode==="nth"?" ("+nthT()+")":(r.mdays?.length?" (día "+[...r.mdays].sort((a,b)=>(a<0?99:a)-(b<0?99:b)).map(x=>x<0?"último":x).join(", ")+")":"");
+ else if(r.freq==="year"){const ms=(r.months||[]).map(i=>MONTHS[i-1]?.slice(0,3).toLowerCase()).join(", ");if(ms)s+=" ("+(r.ynth?nthT()+" de ":"")+ms+")"}
+ if(r.count)s+=" · "+r.count+(r.count===1?" vez":" veces");
+ return s}
+function makeRuleUI(){
+ const el=document.createElement("div");el.className="repeatBox ruleBox";el.style.display="none";
+ el.innerHTML='<div class="eventGrid"><div class="field"><label>Frecuencia</label><select class="rFreq"><option value="day">Diaria</option><option value="week">Semanal</option><option value="month">Mensual</option><option value="year">Anual</option></select></div><div class="field"><label>Cada <span class="rUnit"></span></label><input class="rN" type="number" min="1" max="999" inputmode="numeric" value="1"></div></div>'
+ +'<div class="rWeek"><div class="miniLabel">Días de la semana</div><div class="weekdays rWdays"></div></div>'
+ +'<div class="rMonth"><div class="field" style="margin-bottom:8px"><label>Repetir por</label><select class="rMode"><option value="dom">Días del mes</option><option value="nth">Día de la semana</option></select></div><div class="rDom"><div class="weekdays rMdays"></div></div></div>'
+ +'<div class="rYear"><div class="miniLabel">Meses</div><div class="weekdays rMonths"></div><label class="checkline"><input class="rYnth" type="checkbox"> Día de la semana</label></div>'
+ +'<div class="rNthBox eventGrid"><div class="field"><label>Cuál</label><select class="rNth"></select></div><div class="field"><label>Día</label><select class="rNdow"></select></div></div>'
+ +'<div class="eventGrid" style="margin-bottom:0"><div class="field"><label>Final</label><select class="rEnd"><option value="never">Nunca</option><option value="date">Hasta una fecha</option><option value="count">Tras N veces</option></select></div><div class="field rEndVal"><label class="rEndLabel">&nbsp;</label><input class="rUntil" type="date"><input class="rCount" type="number" min="1" max="999" inputmode="numeric" placeholder="Veces"></div></div>';
+ const q=s=>el.querySelector(s);
+ const freq=q(".rFreq"),nIn=q(".rN"),unit=q(".rUnit"),week=q(".rWeek"),wd=q(".rWdays"),month=q(".rMonth"),mode=q(".rMode"),dom=q(".rDom"),md=q(".rMdays"),nthBox=q(".rNthBox"),nth=q(".rNth"),ndow=q(".rNdow"),year=q(".rYear"),mo=q(".rMonths"),ynth=q(".rYnth"),end=q(".rEnd"),until=q(".rUntil"),count=q(".rCount"),endLabel=q(".rEndLabel");
+ let cb=null;const fire=()=>{if(cb)cb()};
+ const tog=(box,items)=>items.forEach(([v,t])=>{const b=document.createElement("button");b.type="button";b.className="daytoggle";b.textContent=t;b.dataset.v=v;b.onclick=()=>{b.classList.toggle("on");fire()};box.appendChild(b);return b});
+ tog(wd,DAYS.map((d,i)=>[i,d]));
+ tog(md,Array.from({length:31},(_,i)=>[i+1,String(i+1)]).concat([[-1,"Último"]]));md.lastChild.style.gridColumn="span 3";
+ tog(mo,MONTHS.map((m,i)=>[i+1,m.slice(0,3)]));
+ NTH_OPTS.forEach(([v,t])=>{const o=document.createElement("option");o.value=v;o.textContent=t;nth.appendChild(o)});
+ DOW_FULL.forEach((t,i)=>{const o=document.createElement("option");o.value=i;o.textContent=t[0].toUpperCase()+t.slice(1);ndow.appendChild(o)});
+ const setOn=(box,vals)=>box.querySelectorAll(".daytoggle").forEach(b=>b.classList.toggle("on",vals.includes(+b.dataset.v)));
+ const getOn=box=>[...box.querySelectorAll(".daytoggle.on")].map(b=>+b.dataset.v).sort((a,b)=>(a<0?99:a)-(b<0?99:b));
+ const sync=()=>{const f=freq.value,e=end.value;
+  unit.textContent={day:"días",week:"semanas",month:"meses",year:"años"}[f];
+  week.style.display=f==="week"?"block":"none";month.style.display=f==="month"?"block":"none";year.style.display=f==="year"?"block":"none";
+  dom.style.display=(f==="month"&&mode.value==="dom")?"block":"none";
+  nthBox.style.display=((f==="month"&&mode.value==="nth")||(f==="year"&&ynth.checked))?"grid":"none";
+  until.style.display=e==="date"?"block":"none";count.style.display=e==="count"?"block":"none";endLabel.innerHTML=e==="date"?"Fecha final":e==="count"?"Número de veces":"&nbsp;"};
+ el.addEventListener("change",()=>{sync();fire()});
+ return {el,show(b){el.style.display=b?"block":"none"},onchange(f){cb=f},
+  set(r,u,date){const d=parseISO(date||isoDate(new Date())),dw=(d.getDay()+6)%7,dd=d.getDate(),k=Math.ceil(dd/7);r=r||{};
+   freq.value=r.freq||"week";nIn.value=r.n||1;setOn(wd,r.wdays&&r.wdays.length?r.wdays:[dw]);
+   mode.value=r.mode||"dom";setOn(md,r.mdays&&r.mdays.length?r.mdays:[dd]);
+   nth.value=String(r.nth||(k>=5?-1:k));ndow.value=String(r.ndow!=null?r.ndow:dw);
+   setOn(mo,r.months&&r.months.length?r.months:[d.getMonth()+1]);ynth.checked=!!r.ynth;
+   end.value=r.count?"count":(u?"date":"never");until.value=u||"";count.value=r.count||"";sync()},
+  get(date){const d=parseISO(date),dw=(d.getDay()+6)%7,f=freq.value,r={freq:f,n:Math.max(1,Math.min(999,parseInt(nIn.value)||1))};
+   if(f==="week"){const w=getOn(wd);r.wdays=w.length?w:[dw]}
+   if(f==="month"){r.mode=mode.value;if(r.mode==="nth"){r.nth=+nth.value;r.ndow=+ndow.value}else{const m=getOn(md);r.mdays=m.length?m:[d.getDate()]}}
+   if(f==="year"){const m=getOn(mo);r.months=m.length?m:[d.getMonth()+1];r.ynth=ynth.checked;if(r.ynth){r.nth=+nth.value;r.ndow=+ndow.value}}
+   let u=null;if(end.value==="date")u=until.value||null;if(end.value==="count")r.count=Math.max(1,Math.min(999,parseInt(count.value)||1));
+   return {rule:r,until:u}}}}
 function eventMatches(e,date,h){if(!e||e.disabled)return false;let spec=e;if(e.repeat&&e.repeat!=="none"){
- if(date<e.startDate)return false;if(e.until&&date>e.until)return false;
+ if(date<e.startDate)return false;const un=effUntil(e);if(un&&date>un)return false;
  const ex=e.exceptions?.[date];if(ex?.cancelled)return false;if(ex)spec={...e,...ex};
  const dow=dayIndexFromISO(date),startDow=dayIndexFromISO(e.startDate);
- if(e.repeat==="daily"){} else if(e.repeat==="weekdays"&&dow>4)return false; else if(e.repeat==="weekly"&&!(Array.isArray(e.days)&&e.days.length?e.days.includes(dow):dow===startDow))return false; else if(e.repeat==="custom"&&!e.days?.includes(dow))return false;
+ if(e.repeat==="daily"){} else if(e.repeat==="weekdays"&&dow>4)return false; else if(e.repeat==="weekly"&&!(Array.isArray(e.days)&&e.days.length?e.days.includes(dow):dow===startDow))return false; else if(e.repeat==="custom"&&!e.days?.includes(dow))return false; else if(e.repeat==="rule"&&!ruleOccurs(e.rule,e.startDate,date))return false;
  }else{if(e.date!==date)return false}
  const sm=eventStartMin(spec),em=eventEndMin(spec),slotS=h*60,slotE=(h+1)*60;return em>slotS&&sm<slotE;
 }
@@ -394,7 +474,7 @@ for(let m=0;m<1440;m+=15){const a=document.createElement("option");a.value=m;a.t
 DAYS.forEach((d,i)=>{const b=document.createElement("button");b.type="button";b.className="daytoggle";b.textContent=d;b.dataset.day=i;b.onclick=()=>{b.classList.toggle("on");if(eventEdit.mode==="edit"){const ev=state.events.find(x=>x.id===eventEdit.eventId);if(ev?.repeat&&ev.repeat!=="none")setEventScope("series")}};weekdayPicker.appendChild(b)});
 
 // Si la página es más alta que la pantalla, se recorta solo el cuadro grande de abajo (nunca las celdas), con un mínimo.
-function fitPreview(){previewCard.style.minHeight="";if(!previewCard.classList.contains("show"))return;const over=document.documentElement.scrollHeight-window.innerHeight;if(over>1)previewCard.style.minHeight=Math.max(56,previewCard.offsetHeight-Math.ceil(over))+"px"}
+function fitPreview(){previewCard.style.minHeight="";if(!previewCard.classList.contains("show"))return;const gw=document.querySelector(".gridwrap"),over=gw.scrollHeight-gw.clientHeight;if(over>1)previewCard.style.minHeight=Math.max(56,previewCard.offsetHeight-Math.ceil(over))+"px"}
 function render(){cleanupPast();renderMonth();renderHeader();renderGrid();renderWords();renderCurrentPreview();renderTools();fitPreview()}
 function renderMonth(){const n=new Date();monthTitle.textContent=navOffset===0?MONTHS[n.getMonth()]+" "+n.getFullYear():navTitle();todayBtn.classList.toggle("show",navOffset!==0);prevWeek.disabled=navOffset<=NAV_MIN;nextWeek.disabled=navOffset>=NAV_MAX}
 function renderHeader(){dayRow.innerHTML="<th>Notas</th>";const dates=viewDates(),today=isoDate(new Date());dates.forEach((s,i)=>{const th=document.createElement("th"),d=parseISO(s);th.innerHTML=DAYS[i]+"<span class='daynum'>"+d.getDate()+"</span>";if(s===today)th.classList.add("todayHead");dayRow.appendChild(th)})}
@@ -442,10 +522,10 @@ function deleteAt(date,h){const v=resolved(date,h);if(v?.source==="event"){const
 function renderCurrentPreview(){const n=new Date(),date=isoDate(n),h=n.getHours(),v=visibleResolved(date,h);if(!v)return hidePreview();if(v.source==="event"&&!v.activeNow)return hidePreview();previewCard.textContent=(v.note&&v.note.trim())?v.note:v.text;previewCard.style.background=norm(v.color);previewCard.style.color=v.textColor||"#111111";previewCard.classList.toggle("importantPreview",!!v.important);previewCard.classList.add("show")}
 function hidePreview(){previewCard.classList.remove("show","importantPreview");previewCard.textContent="";previewCard.style.background="var(--page)"}
 function renderTools(){if(!selectedCell){importantBtn.classList.remove("importantActive");return}const v=visibleResolved(selectedCell.displayDate||selectedCell.date,selectedCell.h);importantBtn.classList.toggle("importantActive",!!v?.important)}
-function openCell(displayDate,date,h,d){selectedCell={displayDate,date,h,d};const raw=state.cells[cellKey(date,h)],v=raw||visibleResolved(displayDate,h)||{text:"",note:"",color:"#ffffff",textColor:"#111111",startMin:h*60,endMin:(h+1)*60};const sm=Number.isFinite(+v.startMin)?+v.startMin:h*60,em=Number.isFinite(+v.endMin)?+v.endMin:(h+1)*60;editTarget={type:"cell",displayDate,date,h,d,manualId:raw?.manualId||null};modalTitle.textContent=`${DAYS[d]} · edición manual`;textInput.value=v.text||"";noteInput.value=v.note||"";cellNoteField.style.display="block";cellTimeField.style.display="grid";cellStart.value=String(sm);cellEnd.value=String(em);cellRepeat.value="none";cellUntil.value="";cellRepeatField.style.display="grid";colorInput.value=norm(v.color);textColorInput.value=norm(v.textColor||"#111111");modal.classList.add("show");renderTools();setTimeout(()=>textInput.focus(),50)}
-function openWord(i){editTarget={type:"word",i};const w=words[i]||{text:"",color:"#ffffff",textColor:"#111111"};modalTitle.textContent="Palabra rápida";textInput.value=w.text||"";noteInput.value="";cellNoteField.style.display="none";cellTimeField.style.display="none";cellRepeatField.style.display="none";colorInput.value=norm(w.color);textColorInput.value=norm(w.textColor||"#111111");modal.classList.add("show");setTimeout(()=>textInput.focus(),50)}
+function openCell(displayDate,date,h,d){selectedCell={displayDate,date,h,d};const raw=state.cells[cellKey(date,h)],v=raw||visibleResolved(displayDate,h)||{text:"",note:"",color:"#ffffff",textColor:"#111111",startMin:h*60,endMin:(h+1)*60};const sm=Number.isFinite(+v.startMin)?+v.startMin:h*60,em=Number.isFinite(+v.endMin)?+v.endMin:(h+1)*60;editTarget={type:"cell",displayDate,date,h,d,manualId:raw?.manualId||null};modalTitle.textContent=`${DAYS[d]} · edición manual`;textInput.value=v.text||"";noteInput.value=v.note||"";cellNoteField.style.display="block";cellTimeField.style.display="grid";cellStart.value=String(sm);cellEnd.value=String(em);cellRepeat.value="none";cellUntil.value="";cellRepeatField.style.display="grid";cellRuleUI.set(null,null,date);updateCellRule();colorInput.value=norm(v.color);textColorInput.value=norm(v.textColor||"#111111");modal.classList.add("show");renderTools();setTimeout(()=>textInput.focus(),50)}
+function openWord(i){editTarget={type:"word",i};const w=words[i]||{text:"",color:"#ffffff",textColor:"#111111"};modalTitle.textContent="Palabra rápida";textInput.value=w.text||"";noteInput.value="";cellNoteField.style.display="none";cellTimeField.style.display="none";cellRepeatField.style.display="none";cellRuleUI.show(false);colorInput.value=norm(w.color);textColorInput.value=norm(w.textColor||"#111111");modal.classList.add("show");setTimeout(()=>textInput.focus(),50)}
 
-document.getElementById("saveBtn").onclick=()=>{const text=textInput.value.trim(),note=noteInput.value.trim(),color=norm(colorInput.value),textColor=norm(textColorInput.value||"#111111");snap();if(editTarget?.type==="cell"){const startMin=+cellStart.value,endMin=+cellEnd.value;if(!text||!Number.isFinite(startMin)||!Number.isFinite(endMin)||endMin<=startMin){alert("Revisa el texto y las horas de inicio y final.");return}const old=state.cells[cellKey(editTarget.date,editTarget.h)],important=!!old?.important,rp=cellRepeat.value,dt=editTarget.date,until=cellUntil.value||null;if(rp!=="none"&&until&&until<dt){alert("El final de la repetición es anterior a la fecha del evento.");return}removeManualRange(editTarget.date,editTarget.h);if(rp!=="none"){state.events.push({id:uid(),text,note,startDate:dt,startMin,endMin,startHour:Math.floor(startMin/60),endHour:Math.ceil(endMin/60),repeat:rp,days:rp==="weekdays"?[0,1,2,3,4]:rp==="daily"?[0,1,2,3,4,5,6]:[dayIndexFromISO(dt)],until,color,textColor,important,exceptions:{}});saveState()}else setManualRange(editTarget.date,startMin,endMin,text,color,textColor,note,important,true)}if(editTarget?.type==="word"){words[editTarget.i]={text,color,textColor};saveWords()}cellNoteField.style.display="block";cellTimeField.style.display="grid";modal.classList.remove("show");render()};
+document.getElementById("saveBtn").onclick=()=>{const text=textInput.value.trim(),note=noteInput.value.trim(),color=norm(colorInput.value),textColor=norm(textColorInput.value||"#111111");snap();if(editTarget?.type==="cell"){const startMin=+cellStart.value,endMin=+cellEnd.value;if(!text||!Number.isFinite(startMin)||!Number.isFinite(endMin)||endMin<=startMin){alert("Revisa el texto y las horas de inicio y final.");return}const old=state.cells[cellKey(editTarget.date,editTarget.h)],important=!!old?.important,rp=cellRepeat.value,dt=editTarget.date;let until=cellUntil.value||null,rule=null;if(rp==="rule"){const g=cellRuleUI.get(dt);rule=g.rule;until=g.until}if(rp!=="none"&&until&&until<dt){alert("El final de la repetición es anterior a la fecha del evento.");return}removeManualRange(editTarget.date,editTarget.h);if(rp!=="none"){state.events.push({id:uid(),text,note,startDate:dt,startMin,endMin,startHour:Math.floor(startMin/60),endHour:Math.ceil(endMin/60),repeat:rp,days:rp==="rule"?[]:rp==="weekdays"?[0,1,2,3,4]:rp==="daily"?[0,1,2,3,4,5,6]:[dayIndexFromISO(dt)],until,rule:rule||undefined,color,textColor,important,exceptions:{}});saveState()}else setManualRange(editTarget.date,startMin,endMin,text,color,textColor,note,important,true)}if(editTarget?.type==="word"){words[editTarget.i]={text,color,textColor};saveWords()}cellNoteField.style.display="block";cellTimeField.style.display="grid";modal.classList.remove("show");render()};
 document.getElementById("deleteBtn").onclick=()=>{snap();if(editTarget?.type==="cell")deleteAt(editTarget.date,editTarget.h);if(editTarget?.type==="word"){words[editTarget.i]={text:"",color:"#ffffff",textColor:"#111111"};saveWords()}cellNoteField.style.display="block";cellTimeField.style.display="grid";modal.classList.remove("show");render()};
 document.getElementById("cancelBtn").onclick=()=>{cellNoteField.style.display="block";cellTimeField.style.display="grid";modal.classList.remove("show")};modal.onclick=e=>{if(e.target===modal){cellNoteField.style.display="block";cellTimeField.style.display="grid";modal.classList.remove("show")}};
 undoBtn.onclick=undo;
@@ -459,17 +539,17 @@ planBtn.onclick=()=>openEventNew();
 function setWeekdayPicker(days=[]){weekdayPicker.querySelectorAll(".daytoggle").forEach(b=>b.classList.toggle("on",days.includes(+b.dataset.day)))}
 function getWeekdayPicker(){return [...weekdayPicker.querySelectorAll(".daytoggle.on")].map(b=>+b.dataset.day)}
 function setEventScope(scope){eventEdit.scope=scope;scopeRow.querySelectorAll(".scopeBtn").forEach(x=>x.classList.toggle("on",x.dataset.scope===scope))}
-function updateRepeatUI(resetDays=false){const r=eventRepeat.value;repeatBox.style.display=r==="none"?"none":"block";if(!resetDays)return;if(r==="weekdays")setWeekdayPicker([0,1,2,3,4]);else if(r==="weekly"){const current=getWeekdayPicker();if(!current.length)setWeekdayPicker([dayIndexFromISO(eventDate.value||isoDate(new Date()))])}else if(r==="daily")setWeekdayPicker([0,1,2,3,4,5,6]);else if(r==="custom")setWeekdayPicker([])}
-eventRepeat.onchange=()=>{updateRepeatUI(true);if(eventEdit.mode==="edit")setEventScope("series")};eventDate.onchange=()=>{};
+function updateRepeatUI(resetDays=false){const r=eventRepeat.value;repeatBox.style.display=(r==="none"||r==="rule")?"none":"block";eventRuleUI.show(r==="rule");if(!resetDays)return;if(r==="weekdays")setWeekdayPicker([0,1,2,3,4]);else if(r==="weekly"){const current=getWeekdayPicker();if(!current.length)setWeekdayPicker([dayIndexFromISO(eventDate.value||isoDate(new Date()))])}else if(r==="daily")setWeekdayPicker([0,1,2,3,4,5,6]);else if(r==="custom")setWeekdayPicker([])}
+eventRepeat.onchange=()=>{if(eventRepeat.value==="rule")eventRuleUI.set(null,eventUntil.value||null,eventDate.value||isoDate(new Date()));updateRepeatUI(true);if(eventEdit.mode==="edit")setEventScope("series")};eventDate.onchange=()=>{};
 scopeRow.querySelectorAll(".scopeBtn").forEach(b=>b.onclick=()=>setEventScope(b.dataset.scope));
 function nextOccurrence(e,from=isoDate(new Date())){
  if(!e)return null;
  if(!e.repeat||e.repeat==="none")return e.date>=from?e.date:null;
  const start=e.startDate||from,begin=start>from?start:from;
- for(let i=0;i<370;i++){const date=addDays(begin,i);if(e.until&&date>e.until)break;const h=eventStartHour(e);if(eventMatches(e,date,h))return date}
+ const span=e.repeat==="rule"?4000:370,un=effUntil(e);for(let i=0;i<span;i++){const date=addDays(begin,i);if(un&&date>un)break;const h=eventStartHour(e);if(eventMatches(e,date,h))return date}
  return null
 }
-function repeatLabel(e){if(!e.repeat||e.repeat==="none")return "Una vez";if(e.repeat==="weekdays")return "L-V";if(e.repeat==="daily")return "Cada día";if(e.repeat==="weekly")return "Semanal";if(e.repeat==="custom")return "Días concretos";return "Repetitivo"}
+function repeatLabel(e){if(!e.repeat||e.repeat==="none")return "Una vez";if(e.repeat==="rule"&&e.rule)return ruleText(e.rule);if(e.repeat==="weekdays")return "L-V";if(e.repeat==="daily")return "Cada día";if(e.repeat==="weekly")return "Semanal";if(e.repeat==="custom")return "Días concretos";return "Repetitivo"}
 function openEventList(){
  eventList.innerHTML="";
  const items=state.events.map(e=>({e,date:nextOccurrence(e)})).filter(x=>x.date).sort((a,b)=>a.date.localeCompare(b.date)||eventStartMin(a.e)-eventStartMin(b.e));
@@ -477,12 +557,12 @@ function openEventList(){
  else items.forEach(({e,date})=>{const b=document.createElement("button");b.type="button";b.className="eventItem";const d=parseISO(date);const dateTxt=`${DAYS[dayIndexFromISO(date)]} ${d.getDate()} ${MONTHS[d.getMonth()]}`;b.innerHTML=`<div class="eventItemTitle"><span class="eventDot" style="background:${esc(norm(e.color))}"></span>${esc(e.text||"(Sin texto)")}</div><div class="eventItemMeta">${dateTxt} · ${formatTime(eventStartMin(e))}–${formatTime(eventEndMin(e))} · ${repeatLabel(e)}</div>`;b.onclick=()=>{eventListModal.classList.remove("show");openEventForExisting(e.id,date)};eventList.appendChild(b)})
  eventModal.classList.remove("show");eventListModal.classList.add("show")
 }
-function fillEventForm(e,dateOverride){const repeat=e?.repeat||"none",date=dateOverride||e?.date||e?.startDate||isoDate(new Date());eventText.value=e?.text||"";eventNote.value=e?.note||"";eventDate.value=date;eventRepeat.value=repeat;eventStart.value=String(e?eventStartMin(e):480);eventEnd.value=String(e?eventEndMin(e):540);eventUntil.value=e?.until||"";eventColor.value=norm(e?.color||"#13bde8");eventTextColor.value=norm(e?.textColor||"#111111");eventImportant.checked=!!e?.important;setWeekdayPicker(e?.days||[]);updateRepeatUI(false)}
+function fillEventForm(e,dateOverride){const repeat=e?.repeat||"none",date=dateOverride||e?.date||e?.startDate||isoDate(new Date());eventText.value=e?.text||"";eventNote.value=e?.note||"";eventDate.value=date;eventRepeat.value=repeat;eventStart.value=String(e?eventStartMin(e):480);eventEnd.value=String(e?eventEndMin(e):540);eventUntil.value=e?.until||"";eventColor.value=norm(e?.color||"#13bde8");eventTextColor.value=norm(e?.textColor||"#111111");eventImportant.checked=!!e?.important;setWeekdayPicker(e?.days||[]);eventRuleUI.set(e?.rule||null,e?.until||null,date);updateRepeatUI(false)}
 function openEventNew(){eventEdit={mode:"new",eventId:null,date:null,scope:"day"};eventTitle.textContent="Planificar evento";scopeRow.classList.remove("show");fillEventForm(null);document.getElementById("eventDelete").style.visibility="hidden";eventModal.classList.add("show")}
 function openEventForExisting(id,date){const e=state.events.find(x=>x.id===id);if(!e)return;eventEdit={mode:"edit",eventId:id,date,scope:(e.repeat&&e.repeat!=="none")?"day":"series"};eventTitle.textContent=(e.repeat&&e.repeat!=="none")?"Editar evento repetitivo":"Editar evento";scopeRow.classList.toggle("show",e.repeat&&e.repeat!=="none");scopeRow.querySelectorAll(".scopeBtn").forEach(b=>b.classList.toggle("on",b.dataset.scope===eventEdit.scope));const ex=e.exceptions?.[date];fillEventForm(ex&&!ex.cancelled?{...e,...ex}:e,date);document.getElementById("eventDelete").style.visibility="visible";eventModal.classList.add("show")}
-function formEvent(){const text=eventText.value.trim(),note=eventNote.value.trim(),date=eventDate.value,startMin=+eventStart.value,endMin=+eventEnd.value,repeat=eventRepeat.value;if(!text||!date||endMin<=startMin)return null;let days=getWeekdayPicker();if(repeat==="weekdays")days=[0,1,2,3,4];if(repeat==="daily")days=[0,1,2,3,4,5,6];if(repeat==="weekly"&&!days.length)days=[dayIndexFromISO(date)];if(repeat==="custom"&&!days.length)days=[dayIndexFromISO(date)];return {text,note,date,startDate:date,startMin,endMin,startHour:Math.floor(startMin/60),endHour:Math.ceil(endMin/60),repeat,days,until:eventUntil.value||null,color:norm(eventColor.value),textColor:norm(eventTextColor.value),important:eventImportant.checked}}
+function formEvent(){const text=eventText.value.trim(),note=eventNote.value.trim(),date=eventDate.value,startMin=+eventStart.value,endMin=+eventEnd.value,repeat=eventRepeat.value;if(!text||!date||endMin<=startMin)return null;let days=getWeekdayPicker();if(repeat==="weekdays")days=[0,1,2,3,4];if(repeat==="daily")days=[0,1,2,3,4,5,6];if(repeat==="weekly"&&!days.length)days=[dayIndexFromISO(date)];if(repeat==="custom"&&!days.length)days=[dayIndexFromISO(date)];let until=eventUntil.value||null,rule;if(repeat==="rule"){const g=eventRuleUI.get(date);rule=g.rule;until=g.until;days=[];if(until&&until<date)return null}return {text,note,date,startDate:date,startMin,endMin,startHour:Math.floor(startMin/60),endHour:Math.ceil(endMin/60),repeat,days,until,rule,color:norm(eventColor.value),textColor:norm(eventTextColor.value),important:eventImportant.checked}}
 function previousDate(s){return addDays(s,-1)}
-document.getElementById("eventSave").onclick=()=>{const f=formEvent();if(!f){alert("Revisa el texto, la fecha y las horas del evento.");return}snap();if(eventEdit.mode==="new"){state.events.push({id:uid(),...f,exceptions:{}})}else{const e=state.events.find(x=>x.id===eventEdit.eventId);if(!e)return;const repeating=e.repeat&&e.repeat!=="none";if(!repeating||eventEdit.scope==="series"){Object.assign(e,f,{date:f.repeat==="none"?f.date:undefined,startDate:f.repeat==="none"?undefined:f.startDate});if(f.repeat==="none"){delete e.startDate;delete e.until;delete e.days}else delete e.date;e.exceptions=e.exceptions||{}}else if(eventEdit.scope==="day"){e.exceptions=e.exceptions||{};e.exceptions[eventEdit.date]={text:f.text,note:f.note,startMin:f.startMin,endMin:f.endMin,startHour:f.startHour,endHour:f.endHour,color:f.color,textColor:f.textColor,important:f.important,holes:e.exceptions[eventEdit.date]?.holes}}else if(eventEdit.scope==="from"){e.until=previousDate(eventEdit.date);state.events.push({id:uid(),...f,startDate:eventEdit.date,date:undefined,exceptions:{}})}}saveState();eventModal.classList.remove("show");render()};
+document.getElementById("eventSave").onclick=()=>{const f=formEvent();if(!f){alert("Revisa el texto, la fecha y las horas del evento.");return}snap();if(eventEdit.mode==="new"){state.events.push({id:uid(),...f,exceptions:{}})}else{const e=state.events.find(x=>x.id===eventEdit.eventId);if(!e)return;const repeating=e.repeat&&e.repeat!=="none";if(!repeating||eventEdit.scope==="series"){const keepStart=f.repeat==="rule"&&e.repeat==="rule"&&eventDate.value===eventEdit.date;Object.assign(e,f,{date:f.repeat==="none"?f.date:undefined,startDate:f.repeat==="none"?undefined:(keepStart?e.startDate:f.startDate)});if(f.repeat==="none"){delete e.startDate;delete e.until;delete e.days}else delete e.date;if(f.repeat!=="rule")delete e.rule;e.exceptions=e.exceptions||{}}else if(eventEdit.scope==="day"){e.exceptions=e.exceptions||{};e.exceptions[eventEdit.date]={text:f.text,note:f.note,startMin:f.startMin,endMin:f.endMin,startHour:f.startHour,endHour:f.endHour,color:f.color,textColor:f.textColor,important:f.important,holes:e.exceptions[eventEdit.date]?.holes}}else if(eventEdit.scope==="from"){e.until=previousDate(eventEdit.date);state.events.push({id:uid(),...f,startDate:eventEdit.date,date:undefined,exceptions:{}})}}saveState();eventModal.classList.remove("show");render()};
 document.getElementById("eventDelete").onclick=()=>{if(eventEdit.mode!=="edit")return;snap();const e=state.events.find(x=>x.id===eventEdit.eventId);if(!e)return;const repeating=e.repeat&&e.repeat!=="none";if(repeating&&eventEdit.scope==="day"){e.exceptions=e.exceptions||{};e.exceptions[eventEdit.date]={cancelled:true}}else if(repeating&&eventEdit.scope==="from"){e.until=previousDate(eventEdit.date)}else state.events=state.events.filter(x=>x.id!==e.id);saveState();eventModal.classList.remove("show");render()};
 document.getElementById("eventCancel").onclick=()=>eventModal.classList.remove("show");eventModal.onclick=e=>{if(e.target===eventModal)eventModal.classList.remove("show")};
 
