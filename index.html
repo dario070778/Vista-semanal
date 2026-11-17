@@ -30,7 +30,7 @@ th,td{border:1px solid var(--grid);text-align:center;vertical-align:middle;paddi
 thead th{height:25px;background:var(--head);color:#fff;font-size:16px;font-weight:650;position:sticky;top:0;z-index:6}
 thead th:first-child{width:39px;font-size:13px;font-weight:500;color:#fff}
 tbody th{width:39px;background:var(--head);color:#fff;font-size:16px;font-weight:600}
-td{height:26px;background:var(--cell);font-size:12px;line-height:1.05;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;position:relative}
+td{height:var(--rowh,26px);background:var(--cell);font-size:12px;line-height:1.05;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;position:relative}
 .daynum{font-size:12px;color:#c7c7cc;font-weight:400;margin-left:2px}
 .todayHead{outline:2px solid var(--red);outline-offset:-2px;color:#fff}
 .currentHour{outline:2px solid var(--red);outline-offset:-2px;color:#fff}
@@ -474,7 +474,9 @@ for(let m=0;m<1440;m+=15){const a=document.createElement("option");a.value=m;a.t
 DAYS.forEach((d,i)=>{const b=document.createElement("button");b.type="button";b.className="daytoggle";b.textContent=d;b.dataset.day=i;b.onclick=()=>{b.classList.toggle("on");if(eventEdit.mode==="edit"){const ev=state.events.find(x=>x.id===eventEdit.eventId);if(ev?.repeat&&ev.repeat!=="none")setEventScope("series")}};weekdayPicker.appendChild(b)});
 
 // Si la página es más alta que la pantalla, se recorta solo el cuadro grande de abajo (nunca las celdas), con un mínimo.
-function fitPreview(){previewCard.style.minHeight="";if(!previewCard.classList.contains("show"))return;const gw=document.querySelector(".gridwrap"),over=gw.scrollHeight-gw.clientHeight;if(over>1)previewCard.style.minHeight=Math.max(56,previewCard.offsetHeight-Math.ceil(over))+"px"}
+function fitPreview(){const root=document.documentElement,gw=document.querySelector(".gridwrap");previewCard.style.minHeight="";root.style.removeProperty("--rowh");if(previewCard.classList.contains("show")){const over=gw.scrollHeight-gw.clientHeight;if(over>1)previewCard.style.minHeight=Math.max(56,previewCard.offsetHeight-Math.ceil(over))+"px"}
+ // Si aun así no caben las 24 horas, las celdas bajan lo justo (mínimo 18 px) para verlas todas sin scroll.
+ for(let i=0;i<3;i++){const over=gw.scrollHeight-gw.clientHeight;if(over<=0)break;const cur=parseFloat(getComputedStyle(root).getPropertyValue("--rowh"))||26;const next=Math.max(18,Math.floor((cur*24-over)/24*2)/2);if(next>=cur)break;root.style.setProperty("--rowh",next+"px")}}
 function render(){cleanupPast();renderMonth();renderHeader();renderGrid();renderWords();renderCurrentPreview();renderTools();fitPreview()}
 function renderMonth(){const n=new Date();monthTitle.textContent=navOffset===0?MONTHS[n.getMonth()]+" "+n.getFullYear():navTitle();todayBtn.classList.toggle("show",navOffset!==0);prevWeek.disabled=navOffset<=NAV_MIN;nextWeek.disabled=navOffset>=NAV_MAX}
 function renderHeader(){dayRow.innerHTML="<th>Notas</th>";const dates=viewDates(),today=isoDate(new Date());dates.forEach((s,i)=>{const th=document.createElement("th"),d=parseISO(s);th.innerHTML=DAYS[i]+"<span class='daynum'>"+d.getDate()+"</span>";if(s===today)th.classList.add("todayHead");dayRow.appendChild(th)})}
