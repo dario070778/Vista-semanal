@@ -1,0 +1,96 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Calorías</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}html,body{margin:0}
+body{background:#0B0B0C;color:#F4F1EA;font:600 15px -apple-system,system-ui,sans-serif;padding:env(safe-area-inset-top,0px) 10px calc(env(safe-area-inset-bottom,0px) + 30px)}
+h1{font:800 32px 'Barlow Condensed','Arial Narrow',sans-serif;text-transform:uppercase;letter-spacing:.4px;margin:14px 4px 2px}
+.cd{background:#16161A;border-radius:16px;padding:12px;margin:10px 0}
+.cd h2{font:800 20px 'Barlow Condensed','Arial Narrow',sans-serif;text-transform:uppercase;letter-spacing:.4px;margin:0 0 2px}
+.mut{color:#9A9AA3;font-size:12.5px;font-weight:500}
+.r{display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:baseline;padding:9px 0;border-top:1px solid #26262C}.r:first-of-type{border-top:0}
+.r b{font-size:15px}.r .v{font-weight:800;font-size:19px;color:#F2B632;text-align:right}.r .v.no{color:#5b5b63}
+.r .n{font-size:12px;color:#9A9AA3;font-weight:500}.r .n.rt{text-align:right}
+.bar{grid-column:1/3;height:6px;border-radius:3px;background:#26262C;overflow:hidden}.bar i{display:block;height:100%;background:#F2B632}
+.p2{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px}.p2>div{background:#1f1f24;border-radius:12px;padding:9px 10px}.p2 small{display:block;color:#9A9AA3;font-weight:500;font-size:12px}.p2 b{font-size:16px;color:#F2B632}.p2 em{font-style:normal;color:#9A9AA3;font-size:12px;font-weight:500;display:block}
+.dot{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:6px}
+</style></head><body>
+<h1>Calorías</h1>
+<p class="mut" style="margin:0 4px">Total del día (Garmin + kcal extra de entreno). Se cuentan solo días pasados con dato; hoy no entra.</p>
+<div id="v"></div>
+<script>
+const SB="https://tdundqjsixqrddszumly.supabase.co",SBK="sb_publishable_KTvtNJcl64iOH4Hee-3L-Q__vSiCgrP";
+async function tok(){let s=null;try{s=JSON.parse(localStorage.getItem("gym-session"))}catch(e){}if(!s)return null;if(s.expires_at-60>Date.now()/1000)return s.access_token;
+ try{const r=await fetch(SB+"/auth/v1/token?grant_type=refresh_token",{method:"POST",headers:{apikey:SBK,"Content-Type":"application/json"},body:JSON.stringify({refresh_token:s.refresh_token})});const j=await r.json();if(!r.ok)return null;const n=JSON.stringify({access_token:j.access_token,refresh_token:j.refresh_token,expires_at:Math.floor(Date.now()/1000)+(+j.expires_in||3600)});["gym-session","entreno-session"].forEach(k=>localStorage.setItem(k,n));return j.access_token}catch(e){return null}}
+const J=k=>{try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}},$=s=>document.querySelector(s);
+const N=s=>String(s||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").trim();
+const p2=n=>String(n).padStart(2,"0"),esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const nf=(v,n=0)=>v.toLocaleString("es-ES",{maximumFractionDigits:n});
+const dayOf=t=>{const d=new Date(t);return d.getFullYear()+"-"+p2(d.getMonth()+1)+"-"+p2(d.getDate())};
+const fd=d=>d.split("-").reverse().join("/"),fd2=d=>d.slice(8)+"/"+d.slice(5,7);
+const dim=(a,b)=>Math.round((new Date(b+"T12:00")-new Date(a+"T12:00"))/864e5);
+const addD=(d,n)=>{const t=new Date(d+"T12:00");t.setDate(t.getDate()+n);return dayOf(t.getTime())};
+const mon=d=>{const t=new Date(d+"T12:00");t.setDate(t.getDate()-(t.getDay()+6)%7);return dayOf(t.getTime())};
+const kgOf=v=>String(v==null?"":v).split("+").reduce((a,p)=>a+(parseFloat(p.replace(",","."))||0),0);
+const num=v=>parseFloat(String(v==null?"":v).replace(",","."))||0;
+const today=dayOf(Date.now());
+
+let G={},E={},BW=[];
+function loadLocal(){G=J("gym-v3")||{};E=J("entreno-v2")||{};BW=(J("peso-corporal")||[]).slice().sort((a,b)=>a.d<b.d?-1:1)}
+
+const MU={hombro:"Hombro",hombros:"Hombro",biceps:"Bíceps",triceps:"Tríceps",pecho:"Pecho",espalda:"Espalda",lumbar:"Espalda",antebrazo:"Antebrazo",pierna:"Pierna",abdominal:"Abdominal"};
+const CG={Pecho:"Torso",Espalda:"Torso",Bíceps:"Brazos",Tríceps:"Brazos",Hombro:"Brazos",Antebrazo:"Brazos",Pierna:"Pierna"};
+const MV=["Pecho","Espalda","Hombro","Bíceps","Tríceps","Antebrazo","Pierna","Abdominal"];
+const COL={Torso:"#2E7BD0",Brazos:"#EA9363",Pierna:"#C45BD0"};
+let DAYS={};
+function compute(){
+ const TX={};((G.tpl||[]).flatMap(t=>t.ex||[])).forEach(e=>{const k=N(e.name),o=TX[k]||(TX[k]={});if(e.mu&&!o.mu)o.mu=e.mu});
+ const gm=l=>{const t=TX[N(l.name)]||{},mu=t.mu||l.mu;if(mu&&MV.includes(mu))return mu;const i=l.name.indexOf("-"),m=MU[N(i>0?l.name.slice(0,i):"")];return m||(N(l.tname)==="pierna"?"Pierna":"Otro")};
+ const grs=L=>{const g=[...new Set(L.map(l=>CG[gm(l)]).filter(Boolean))];return g.length?g:["Otro"]};
+ DAYS={};const D=d=>DAYS[d]||(DAYS[d]={g:[],fb:0,c:0,k:null});
+ const WO=G.wo||[],LG=G.logs||[];
+ WO.filter(w=>w.type==="w").forEach(w=>{const L=LG.filter(l=>l.wid===w.id);if(L.length)D(w.day).g.push(grs(L))});
+ const lg={};LG.filter(l=>l.wid==="legacy").forEach(l=>(lg[l.day+"|"+l.tname]=lg[l.day+"|"+l.tname]||[]).push(l));
+ Object.keys(lg).forEach(k=>D(k.split("|")[0]).g.push(grs(lg[k])));
+ (E.hist||[]).forEach(h=>{if(h.f)D(h.f).fb++});
+ WO.filter(w=>w.type==="c").forEach(c=>D(c.day).c++);
+ (G.steps||[]).forEach(z=>{const k=+z.k>0?+z.k+(+z.ke||0):0;if(k>0)D(z.d).k=k});
+}
+const avg=a=>a.reduce((s,v)=>s+v,0)/a.length;
+const ST=d=>{const x=DAYS[d];return x?Math.min(3,x.g.length+x.fb+x.c):0};
+function ks(f){const o=[];Object.keys(DAYS).sort().forEach(d=>{const x=DAYS[d];if(d<today&&x.k>0&&f(d,x))o.push(x.k)});return o}
+function ksRange(a,b){return ks(d=>d>=a&&d<=b)}
+function row(l,arr,max,dot){const n=arr.length,m=n?avg(arr):0;
+ return `<div class="r"><b>${dot?`<span class="dot" style="background:${dot}"></span>`:""}${l}</b><span class="v ${n?"":"no"}">${n?nf(m)+" kcal":"—"}</span><span class="n">${n} ${n===1?"día":"días"}</span>${n&&max?`<span class="n rt"></span><div class="bar"><i style="width:${Math.max(3,m/max*100)}%"></i></div>`:""}</div>`}
+function per(t,cur,prv){const a=cur.length?avg(cur):null,b=prv.length?avg(prv):null;
+ return `<div><small>${t}</small><b>${a==null?"—":nf(a)+" kcal"}</b><em>${cur.length} d${b==null?"":" · ant. "+nf(b)}</em></div>`}
+function render(){
+ const t=new Date(today+"T12:00"),mo=mon(today),pmo=addD(mo,-7),pme=addD(mo,-1);
+ const m0=today.slice(0,8)+"01",pm=new Date(t.getFullYear(),t.getMonth()-1,1),pm0=dayOf(pm.getTime()),pm1=dayOf(new Date(t.getFullYear(),t.getMonth(),0).getTime());
+ const y0=t.getFullYear()+"-01-01",py0=(t.getFullYear()-1)+"-01-01",py1=(t.getFullYear()-1)+"-12-31";
+ let h=`<div class="cd"><h2>Media diaria</h2><div class="mut">Periodo actual hasta ayer · "ant." = periodo anterior completo</div><div class="p2">`+
+  per("Semana",ksRange(mo,today),ksRange(pmo,pme))+per("Mes",ksRange(m0,today),ksRange(pm0,pm1))+per("Año",ksRange(y0,today),ksRange(py0,py1))+`</div></div>`;
+ const all=[0,1,2,3].map(n=>ks((d)=>ST(d)===n));
+ const mx=Math.max(1,...all.filter(a=>a.length).map(avg));
+ h+=`<div class="cd"><h2>Por estrellas</h2><div class="mut">Estrellas = entrenos del día (gym, full body y cardio, máx. 3) · todo el histórico</div>`+
+  [0,1,2,3].map(n=>row(n===0?"Descanso (0 ★)":"★".repeat(n)+" "+(n===1?"1 entreno":n+(n===3?"+":"")+" entrenos"),all[n],mx)).join("")+`</div>`;
+ const solo=(d,x)=>x.g.length===1&&!x.fb&&!x.c&&ST(d)===1;
+ const sg=ks(solo),ty=["Torso","Brazos","Pierna"].map(g=>ks((d,x)=>solo(d,x)&&x.g[0].includes(g)));
+ const mx2=Math.max(1,...[sg,...ty].filter(a=>a.length).map(avg));
+ h+=`<div class="cd"><h2>Solo gym · 1 estrella</h2><div class="mut">Días con un único entreno y que es de gym (sin full body ni cardio)</div>`+row("Todos los de gym",sg,mx2)+
+  ["Torso","Brazos","Pierna"].map((g,i)=>row(g,ty[i],mx2,COL[g])).join("")+`</div>`;
+ $("#v").innerHTML=h}
+
+loadLocal();compute();render();
+(async()=>{try{
+ const t=await tok();if(!t)return;
+ const r=await fetch(SB+"/rest/v1/vista_semanal?id=in.(gym,entreno)&select=id,datos",{headers:{apikey:SBK,Authorization:"Bearer "+t}});if(!r.ok)return;
+ let ch=0;
+ (await r.json()).forEach(x=>{const d=x.datos||{},at=+d.updatedAt||0;
+  const lat=k=>+localStorage.getItem(k)||0,dirty=k=>localStorage.getItem(k)==="1";
+  if(x.id==="gym"&&d.state&&at>lat("gym-updated-at")&&!dirty("gym-dirty")){G=d.state;ch=1}
+  if(x.id==="entreno"&&d.state&&at>lat("entreno-updated-at")&&!dirty("entreno-dirty")){E=d.state;ch=1}});
+ if(ch){compute();render()}
+}catch(e){}})();
+</script></body></html>

@@ -161,11 +161,11 @@ function render(){
   h+=card("Peso corporal","Con media de 7 días",kpi([["Último",nf(l,1)+" kg"],["Cambio",(l-f>0?"+":"")+nf(l-f,1)+" kg"]])+lineChart([{c:"#868E96",pts:bp.map(e=>({d:e.d,y:+e.kg,t:fd(e.d)+" · "+nf(+e.kg,1)+" kg"}))},{c:"#FCC419",dash:1,nodots:1,pts:ma}])+legend(["Peso","Media 7 días"],["#868E96","#FCC419"]))}
  /* 6: pasos y calorías */
  const SP=(G.steps||[]).filter(z=>inR(z.d)&&z.d<=today).map(z=>z.ke&&z.k>0?Object.assign({},z,{k:z.k+z.ke}):z);
- if(!SP.some(z=>z.p>0||z.k>0))h+=card("Pasos y calorías","Por día",'<div class="empty">Aún no hay datos en este periodo.</div>');
- else{const sd=SP.filter(z=>z.p>0||z.k>0).map(z=>z.d).sort(),dl=dlist(sd[0],sd[sd.length-1]),M={};SP.forEach(z=>M[z.d]=z);
-  const ps=SP.filter(z=>z.p>0),ks=SP.filter(z=>z.k>0),best=ps.length?ps.reduce((a,b)=>b.p>a.p?b:a):null;
+ if(!SP.some(z=>z.p>0))h+=card("Pasos","Por día",'<div class="empty">Aún no hay datos en este periodo.</div>');
+ else{const sd=SP.filter(z=>z.p>0).map(z=>z.d).sort(),dl=dlist(sd[0],sd[sd.length-1]),M={};SP.forEach(z=>M[z.d]=z);
+  const ps=SP.filter(z=>z.p>0),best=ps.length?ps.reduce((a,b)=>b.p>a.p?b:a):null;
   h+=card("Pasos","Por día",kpi([["Media",nf(avg(ps.map(z=>+z.p)))],["Mejor día",best?nf(+best.p):"–"]])+barChart(dl.map(d=>({l:fd2(d),v:[M[d]&&M[d].p>0?+M[d].p:0],t:fd(d)+" · "+(M[d]&&M[d].p>0?nf(+M[d].p)+" pasos":"sin datos")})),["#40C057"]));
-  h+=card("Calorías","Total del día (activas + reposo)",kpi([["Media",nf(avg(ks.map(z=>+z.k)))+" kcal"],["Máximo",nf(Math.max(...ks.map(z=>+z.k)))+" kcal"]])+barChart(dl.map(d=>({l:fd2(d),v:[M[d]&&M[d].k>0?+M[d].k:0],t:fd(d)+" · "+(M[d]&&M[d].k>0?nf(+M[d].k)+" kcal":"sin datos")})),["#FF922B"]))}
+}
  $("#v").innerHTML=h;
 }
 document.addEventListener("click",e=>{
