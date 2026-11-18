@@ -3,7 +3,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Gym">
-<meta name="theme-color" content="#0B0B0C"><link rel="apple-touch-icon" href="icono-gym.png">
+<meta name="theme-color" content="#0B0B0C"><link rel="apple-touch-icon" href="icono-gym.png?v=2">
 <title>Entrenamiento</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -18,7 +18,7 @@ nav button{font-family:'Barlow Condensed','Arial Narrow',-apple-system,system-ui
 </style></head><body>
 <nav></nav>
 <script>
-const T=[["gym","Entrenamiento","gym.html?v=16"],["pro","Progreso","progreso.html?v=16"],["cal","Calendario","calendario.html?v=16"],["vol","Volumen","volumen.html?v=16"],["gra","Gráficas","graficas.html?v=16"],["x","X","x.html?v=16"]];
+const T=[["gym","Entrenamiento","gym.html?v=17"],["pro","Progreso","progreso.html?v=17"],["cal","Calendario","calendario.html?v=17"],["vol","Volumen","volumen.html?v=17"],["gra","Gráficas","graficas.html?v=17"],["x","X","x.html?v=17"]];
 const nav=document.querySelector("nav");let cur="gym";
 try{cur=localStorage.getItem("app-tab")||"gym"}catch(e){}
 if(!T.some(t=>t[0]===cur))cur="gym";
