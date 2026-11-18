@@ -173,7 +173,7 @@ function pq(p,e,i){if(!p)return null;const t=e.sets[i];if(t.w)return p.sets.find
 const newKg=(o,v)=>/\+/.test(o||"")||!/\d/.test(o||"")?fk(v)+" kg":o.replace(/\d+(?:[.,]\d+)?/,fk(v));
 function exBlock(T,x,D){const e=dx(T,x);
  if(e.fin)return `<div class="ex fin" style="--c:${T.color}" data-a="reopen" data-x="${x.id}"><span class="ok">✓</span><div class="t"><b>${esc(x.name)}</b><small>${e.sets.filter(t=>!t.w&&(t.kg||t.reps)).length} series guardadas · toca para editar</small></div></div>`;
- const p=S.cmp?prevOf(x,D.day):null,first=e.sets.some(t=>!t.w&&(t.kg||t.reps)),sg0=sug(x.name,null,S.logs.filter(l=>l.id!==e.logId)),auto=!!(sg0&&sg0.up);if(auto&&!first)x.kg=newKg(x.kg,sg0.next);
+ const p=S.cmp?prevOf(x,D.day):null,first=e.sets.some(t=>!t.w&&(t.kg||t.reps)),sg0=sug(x.name,null,S.logs.filter(l=>l.id!==e.logId)),auto=!!(sg0&&sg0.up),ak=auto?sg0.day+"|"+sg0.next:"";if(auto&&!first&&x.autoK!==ak){x.kg=newKg(x.kg,sg0.next);x.autoK=ak}
  return `<div class="ex"><div class="eh"><b>${esc(x.name)}</b><button class="fl" data-a="flag" data-x="${x.id}" aria-label="Peso nuevo">${x.flag?FLAG:FLAGOFF}</button><button class="x" data-a="edit" data-x="${x.id}" aria-label="Editar ejercicio">✎</button></div>`+
  `<div class="m">${x.kg?`<em>${esc(x.kg)}</em>`:""}${x.reps?`<em>${esc(x.reps)}<small> rep</small></em>`:""}${x.rest?`<em><small>desc. </small>${esc(x.rest)}<small> min</small></em>`:""}${(x.info||[]).map((f,i)=>`<em data-a="info" data-x="${x.id}" data-i="${i}"><small>${esc(f.k)}: </small>${esc(f.v)}</em>`).join("")}<button class="plus" data-a="info" data-x="${x.id}" data-i="-1">+ Info</button></div>`+
  ((x.flag||auto)&&!first?`<div class="flag">${FLAG}<span><b>Peso nuevo</b>${x.kg?": "+esc(x.kg):""}. Revisa antes de la 1.ª serie.</span></div>`:"")+
