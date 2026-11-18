@@ -3,21 +3,22 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Gym">
-<link rel="apple-touch-icon" href="icono-gym.png">
+<meta name="theme-color" content="#0B0B0C"><link rel="apple-touch-icon" href="icono-gym.png">
 <title>Entrenamiento</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#EEF1F5;--pill:#fff;--ink:#14171A;--on:#14171A;--onink:#fff;color-scheme:light dark}
-@media(prefers-color-scheme:dark){:root{--bg:#0F1114;--pill:#22262B;--ink:#F2F4F6;--on:#F2F4F6;--onink:#14171A}}
+:root{--bg:#0B0B0C;--pill:#16161A;--ink:#F4F1EA;--on:#F2B632;--onink:#111;color-scheme:dark}
 *{box-sizing:border-box}html,body{height:100%;margin:0}
 body{background:var(--bg);color:var(--ink);font:600 17px -apple-system,system-ui,sans-serif;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 nav{display:flex;gap:8px;padding:10px 12px;overflow-x:auto;flex:none}
 nav button{font:inherit;border:0;border-radius:999px;padding:12px 20px;background:var(--pill);color:var(--ink);white-space:nowrap}
 nav button.on{background:var(--on);color:var(--onink)}
 iframe{flex:1;width:100%;border:0;background:var(--bg)}
+nav button{font-family:'Barlow Condensed','Arial Narrow',-apple-system,system-ui,sans-serif;text-transform:uppercase;letter-spacing:.4px;font-weight:700;font-size:17px;padding:10px 18px}nav button.on{font-weight:800}
 </style></head><body>
 <nav></nav>
 <script>
-const T=[["gym","Entrenamiento","gym.html?v=15"],["pro","Progreso","progreso.html?v=15"],["cal","Calendario","calendario.html?v=15"],["vol","Volumen","volumen.html?v=15"],["gra","Gráficas","graficas.html?v=15"],["x","X","x.html?v=15"]];
+const T=[["gym","Entrenamiento","gym.html?v=16"],["pro","Progreso","progreso.html?v=16"],["cal","Calendario","calendario.html?v=16"],["vol","Volumen","volumen.html?v=16"],["gra","Gráficas","graficas.html?v=16"],["x","X","x.html?v=16"]];
 const nav=document.querySelector("nav");let cur="gym";
 try{cur=localStorage.getItem("app-tab")||"gym"}catch(e){}
 if(!T.some(t=>t[0]===cur))cur="gym";

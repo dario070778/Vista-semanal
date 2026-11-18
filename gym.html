@@ -3,12 +3,12 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Gym">
-<meta name="theme-color" content="#EEF1F4">
+<meta name="theme-color" content="#0B0B0C">
 <link rel="apple-touch-icon" href="icono-gym.png">
 <title>Gym</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#EEF1F4;--card:#fff;--ink:#14181F;--mut:#6B7480;--line:#DDE2E8;--acc:#2D5BFF;--ok:#1F9D6B;--bad:#D6453D;--c:#6B7480}
-@media(prefers-color-scheme:dark){:root{--bg:#0F1318;--card:#1A2028;--ink:#EEF1F4;--mut:#8A94A1;--line:#2A323C;--acc:#6E8BFF;--ok:#3CC892;--bad:#FF6B63}}
+:root{--bg:#0B0B0C;--card:#16161A;--ink:#F4F1EA;--mut:#9A9AA3;--line:#26262C;--acc:#F2B632;--ok:#3CC892;--bad:#FF6B63;--c:#6B7480;color-scheme:dark}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0}
 body{background:var(--bg);color:var(--ink);font:16px/1.3 -apple-system,system-ui,sans-serif;padding:env(safe-area-inset-top) 0 calc(env(safe-area-inset-bottom) + 60px)}
@@ -80,6 +80,8 @@ h2{font-size:15px;font-weight:700;color:var(--mut);margin:22px 2px 8px}
 .pend{display:inline-block;margin-top:5px;font-size:12px;font-weight:700;color:#F08C00;background:color-mix(in srgb,#F08C00 18%,var(--card));border:1px solid #F08C00;border-radius:8px;padding:2px 7px}
 .rt{font-size:18px;font-weight:800;text-align:center;color:var(--c);min-height:24px}
 .t .xc{display:none!important}
+h1,h2,h3,.st,.tc b,.bar h1{font-family:'Barlow Condensed','Arial Narrow',-apple-system,system-ui,sans-serif;text-transform:uppercase;letter-spacing:.4px}h2{font-size:17px}.st{font-size:32px}.bar h1{font-size:28px}.tc b{font-size:21px}.sheet h3{font-size:24px}
+.big.p{background:var(--acc);color:#111;font-weight:800}.save{background:var(--acc);color:#111}.tc{background:color-mix(in srgb,var(--c) 14%,var(--card))}
 </style></head>
 <body>
 <div id="app"></div><div id="sh"></div><div id="toast"></div>
