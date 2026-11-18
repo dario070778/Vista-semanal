@@ -67,7 +67,7 @@ function compute(){
  Object.keys(lg).forEach(k=>{const d=k.split("|")[0];fin({fb:0,ex:lg[k].map(l=>gex(l,d))},d)});
  (E.hist||[]).forEach(h=>fin({fb:1,ex:(h.ex||[]).map(e=>{const o=vol(e.n,+e.kg||0,+e.rep||0,e.h,+e.t||0,(TXE[N(e.n)]!=null?TXE[N(e.n)]:e.x2!=null?!!e.x2:fx2(e.n,e.g)),h.f);return{m:(e.mu&&MV.includes(e.mu)?e.mu:MU[N(e.g)]||"Otro"),v:o.v,r:o.r}})},h.f));
  WO.filter(w=>w.type==="c").forEach(c=>DY(c.day).c.push(c));
- (G.steps||[]).forEach(z=>DY(z.d).s=z);
+ (G.steps||[]).forEach(z=>DY(z.d).s=z.ke&&z.k>0?Object.assign({},z,{k:z.k+z.ke}):z);
  ALL=[];Object.keys(days).forEach(d=>days[d].w.forEach(w=>ALL.push(w)));
  /* series por ejercicio */
  SER={};
@@ -158,7 +158,7 @@ function render(){
   const l=+bp[bp.length-1].kg,f=+bp[0].kg;
   h+=card("Peso corporal","Con media de 7 días",kpi([["Último",nf(l,1)+" kg"],["Cambio",(l-f>0?"+":"")+nf(l-f,1)+" kg"]])+lineChart([{c:"#868E96",pts:bp.map(e=>({d:e.d,y:+e.kg,t:fd(e.d)+" · "+nf(+e.kg,1)+" kg"}))},{c:"#FCC419",dash:1,nodots:1,pts:ma}])+legend(["Peso","Media 7 días"],["#868E96","#FCC419"]))}
  /* 6: pasos y calorías */
- const SP=(G.steps||[]).filter(z=>inR(z.d)&&z.d<=today);
+ const SP=(G.steps||[]).filter(z=>inR(z.d)&&z.d<=today).map(z=>z.ke&&z.k>0?Object.assign({},z,{k:z.k+z.ke}):z);
  if(!SP.some(z=>z.p>0||z.k>0))h+=card("Pasos y calorías","Por día",'<div class="empty">Aún no hay datos en este periodo.</div>');
  else{const sd=SP.filter(z=>z.p>0||z.k>0).map(z=>z.d).sort(),dl=dlist(sd[0],sd[sd.length-1]),M={};SP.forEach(z=>M[z.d]=z);
   const ps=SP.filter(z=>z.p>0),ks=SP.filter(z=>z.k>0),best=ps.length?ps.reduce((a,b)=>b.p>a.p?b:a):null;

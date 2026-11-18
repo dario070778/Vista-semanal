@@ -95,7 +95,7 @@ Object.keys(lg).forEach(k=>{const d=k.split("|")[0];fin({id:k,nm:lg[k][0].tname,
 (E.hist||[]).forEach(h=>fin({id:h.id,fb:1,nm:"Full body",start:h.ini,end:h.fin,dur:h.dur*1000,cal:h.kcal,ex:(h.ex||[]).map(e=>{const o=vol(e.n,+e.kg||0,+e.rep||0,e.h,+e.t||0,(TXE[N(e.n)]!=null?TXE[N(e.n)]:e.x2!=null?!!e.x2:fx2(e.n,e.g)),h.f);
  return{n:e.n,m:(e.mu&&MV.includes(e.mu)?e.mu:MU[N(e.g)]||"Otro"),sets:[{t:(e.t?e.t+" s":(e.kg?e.kg+" kg × ":"")+(e.rep||0))+" · "+e.h+"/"+e.s+" series"}],v:o.v,r:o.r}})},h.f));
 WO.filter(w=>w.type==="c").forEach(c=>DY(c.day).c.push(c));
-(G.steps||[]).forEach(z=>DY(z.d).s=z);
+(G.steps||[]).forEach(z=>DY(z.d).s=z.ke&&z.k>0?Object.assign({},z,{k:z.k+z.ke}):z);
 const pace=(d,s)=>{const m=s/60/d;return Math.floor(m)+":"+p2(Math.round((m%1)*60)%60)+" min/km"},kmh=(d,s)=>nf(d/(s/3600),1)+" km/h";
 // calendario
 $("#leg").innerHTML=["Torso","Brazos","Pierna","Full body","Cardio"].map(k=>`<span><i style="background:${C[k]}"></i>${LB[k]||k}</span>`).join("");
