@@ -146,6 +146,7 @@ function ficha(m){CUR=m.id;const e=meta(m);const R=[["IMDb",e&&e.ir!=null?f1(e.i
  <h4>Acciones</h4>
  ${s?`<button class="big p" data-a="seen" ${id}>✅ Marcar como vista</button><div class="g2"><button class="big" data-a="prio" ${id}>${m.pr?"🔥 Quitar prioridad":"🔥 Prioridad"}</button><button class="big" data-a="rec" ${id}>👤 ${m.rec!=null?"Recomendación":"Recomendada"}</button></div>${m.dl?`<button class="big p" data-a="have" ${id}>📥 Ya la tengo</button>`:`<button class="big" data-a="todl" ${id}>⬇️ Pasar a Descargar</button>`}`
  :`<div class="g2"><button class="big" data-a="favt" ${id}>${m.fav?"⭐ Quitar favorita":"☆ Favorita"}</button><button class="big" data-a="unseen" ${id}>↩︎ Volver a Sin ver</button></div>`}
+ <button class="big" data-a="mv" ${id}>📂 Mover a…</button>
  <button class="big" data-a="fa" ${id}>🎬 Ver en FilmAffinity</button>
  <div class="g2"><button class="big" data-a="fix" ${id}>🔄 Cambiar coincidencia</button><button class="big" data-a="ren" ${id}>✏️ Renombrar</button></div>
  <button class="big w" data-a="del" ${id}>Eliminar</button><button class="big" data-a="close">Cerrar</button>`);
@@ -202,6 +203,13 @@ document.addEventListener("click",ev=>{
  else if(a==="have"&&m){delete m.dl;m.a=Date.now();ficha(m);toast("Pasa al listado de Sin ver");ch=true}
  else if(a==="todl"&&m){m.dl=true;ficha(m);ch=true}
  else if(a==="rec"&&m){const r=prompt("Recomendada por (déjalo vacío y Aceptar para quitar la marca)",m.rec||"");if(r===null)return;if(r.trim())m.rec=r.trim();else if(m.rec!=null&&confirm("¿Quitar la marca de recomendada?"))delete m.rec;else if(m.rec==null)m.rec="";ficha(m);ch=true}
+ else if(a==="mv"&&m){const here=m.s==="v"?"v":m.dl?"d":"g";openSh(`<h3>Mover «${esc(m.n)}»</h3>${[["g","📀 Sin ver · Listado"],["d","⬇️ Sin ver · Descargar"],["r","👤 Sin ver · Recomendadas"],["v","✅ Vistas"]].map(([k,l])=>`<button class="big${k===here?"":" p"}" data-a="mvto" data-id="${m.id}" data-k="${k}">${l}${k===here?" (aquí)":""}</button>`).join("")}<button class="big" data-a="close">Cancelar</button>`);return}
+ else if(a==="mvto"&&m){const k=t.dataset.k;
+  if(k==="v"){m.s="v";delete m.rec;delete m.pr;delete m.dl}
+  else{if(m.s==="v"){delete m.fav;m.s="s"}
+   if(k==="g")delete m.dl;else if(k==="d")m.dl=true;
+   else if(k==="r"){const r=prompt("Recomendada por (opcional)",m.rec||"");if(r===null)return;m.rec=r.trim()}}
+  m.a=Date.now();closeSh();T=m.s==="v"?"v":"s";SUB=k==="v"?"t":k;saveUI();toast("Movida");ch=true}
  else if(a==="fa"&&m){const e=meta(m);window.open("https://www.filmaffinity.com/es/search.php?stype=title&stext="+encodeURIComponent((e&&e.t)||m.n),"_blank");return}
  else if(a==="fix"&&m){fixSheet(m);return}
  else if(a==="fixok"){const mm=S.movies.find(y=>y.id===FX);if(!mm||RSEL==null){toast("Elige una");return}const x=RES[RSEL];closeSh();setMatch(mm,x.id,"ok").then(()=>{render();ficha(mm)});return}
