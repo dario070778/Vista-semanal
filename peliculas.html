@@ -160,19 +160,19 @@ function renderE(){const inM=d=>!EMON||(d||"").slice(0,7)===EMON;const mine=list
   if(!UPC){h+='<p class="hint">Cargando…</p>';loadUpc()}else{const u=UPC.filter(x=>inM(x.release_date));h+=u.length?`<div style="display:grid;gap:6px">${u.map(upRow).join("")}</div>`:'<p class="hint">No hay estrenos ese mes.</p>'}}
  $("#ls").innerHTML=h;refreshRel()}
 async function loadUpc(){if(UPCL||!KEYS)return;UPCL=true;
- try{let c;try{c=JSON.parse(localStorage.getItem("pelis-upc2"))}catch(e){}
+ try{let c;try{c=JSON.parse(localStorage.getItem("pelis-upc3"))}catch(e){}
   if(c&&c.d===today()&&Array.isArray(c.r))UPC=c.r;
   else{const t=today(),to=new Date(Date.now()+400*864e5).toISOString().slice(0,10);let r=[];
    for(let pg=1;pg<=5;pg++){const j=await tmdb("/discover/movie",{region:"ES","release_date.gte":t,"release_date.lte":to,with_release_type:"2|3",sort_by:"popularity.desc",page:pg});r=r.concat(j.results||[]);if(pg>=(j.total_pages||1))break}
-   const seen=new Set(),cut=new Date(Date.now()-30*864e5).toISOString().slice(0,10);r=r.filter(x=>x.release_date&&x.release_date>=cut&&!seen.has(x.id)&&seen.add(x.id)).map(x=>({id:x.id,title:x.title,original_title:x.original_title,release_date:x.release_date,poster_path:x.poster_path}));
-   r.sort((a,b)=>(a.release_date||"9999").localeCompare(b.release_date||"9999"));UPC=r;try{localStorage.setItem("pelis-upc2",JSON.stringify({d:today(),r}))}catch(e){}}}
+   const seen=new Set(),cut=new Date(Date.now()-30*864e5).toISOString().slice(0,10);r=r.filter(x=>x.release_date&&x.release_date>=cut&&!seen.has(x.id)&&seen.add(x.id)).map(x=>({id:x.id,title:x.title,original_title:x.original_title,release_date:x.release_date,poster_path:x.poster_path,pop:x.popularity||0}));
+   r.sort((a,b)=>(b.pop||0)-(a.pop||0));UPC=r;try{localStorage.setItem("pelis-upc3",JSON.stringify({d:today(),r}))}catch(e){}}}
  catch(e){UPC=[]}finally{UPCL=false}if(T==="e"&&!$("#sh.on"))render()}
 let est=null;
 function eSearch(){clearTimeout(est);ESR=null;if(!Q.trim())return;const q=Q.trim();est=setTimeout(async()=>{
  try{const nq=nrm(q),loc=(UPC||[]).filter(x=>nrm(x.title).includes(nq)||nrm(x.original_title).includes(nq));
   const r=await tmdb("/search/movie",{query:q});const t=today(),ids=new Set(loc.map(x=>x.id));
   const fut=(r.results||[]).filter(x=>(!x.release_date||x.release_date>=t)&&!ids.has(x.id));
-  if(Q.trim()!==q)return;ESR=loc.concat(fut).slice(0,20)}catch(e){ESR=[]}if(T==="e"&&!$("#sh.on"))render()},400)}
+  if(Q.trim()!==q)return;ESR=loc.concat(fut.map(x=>({...x,pop:x.popularity||0}))).sort((a,b)=>(b.pop||0)-(a.pop||0)).slice(0,20)}catch(e){ESR=[]}if(T==="e"&&!$("#sh.on"))render()},400)}
 function relFrom(d){const out={};const R=(d.release_dates&&d.release_dates.results)||[];const es=R.find(x=>x.iso_3166_1==="ES");
  if(es){const th=es.release_dates.filter(x=>x.type===3||x.type===2).map(x=>x.release_date.slice(0,10)).sort();const dg=es.release_dates.filter(x=>x.type===4).map(x=>x.release_date.slice(0,10)).sort();if(th.length)out.rc=th[0];if(dg.length)out.rd=dg[0]}
  if(!out.rc&&d.release_date&&d.release_date>=today())out.rc=d.release_date,out.rci=1;return out}
