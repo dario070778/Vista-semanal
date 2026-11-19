@@ -94,6 +94,7 @@ function save(){try{localStorage.setItem(K,JSON.stringify(S));localStorage.setIt
 let mdirty=false,mt=null;
 function saveMeta(fast){try{localStorage.setItem(MK,JSON.stringify(M))}catch(e){}mdirty=true;clearTimeout(mt);mt=setTimeout(msync,fast?2000:30000)}
 const meta=m=>M[m.id]||null;
+const disp=m=>{const e=M[m.id];return m.cn||(e&&e.tm>0&&e.t)||m.n};
 /* Notas */
 function rating(m,src){const e=meta(m);if(!e)return null;src=src||F.src;
  if(src==="imdb")return e.ir??null;if(src==="tmdb")return e.tv??null;if(src==="rt")return e.rt!=null?e.rt/10:null;if(src==="mc")return e.mc!=null?e.mc/10:null;
@@ -104,14 +105,14 @@ const fActive=()=>F.min||F.vot||F.g||F.y1||F.y2||F.dir||F.act;
 function inSub(m){if(m.s!==T)return false;if(T==="s")return SUB==="r"?m.rec!=null:SUB==="d"?!!m.dl:!m.dl;return SUB==="f"?!!m.fav:true}
 function list(){const q=nrm(Q),fd=nrm(F.dir),fa=nrm(F.act);
  let a=S.movies.filter(m=>{if(!inSub(m))return false;const e=meta(m);
-  if(q&&!(nrm(m.n).includes(q)||(e&&(nrm(e.t).includes(q)||nrm(e.ot).includes(q)))))return false;
+  if(q&&!(nrm(m.n).includes(q)||(m.cn&&nrm(m.cn).includes(q))||(e&&(nrm(e.t).includes(q)||nrm(e.ot).includes(q)))))return false;
   if(F.min){const r=rating(m);if(r==null||r<F.min)return false}
   if(F.vot&&votes(m)<F.vot)return false;
   if(F.g&&!(e&&e.g&&e.g.includes(F.g)))return false;
   const y=(e&&e.y)||m.y;if(F.y1&&!(y>=+F.y1))return false;if(F.y2&&!(y<=+F.y2))return false;
   if(fd&&!(e&&e.d&&e.d.some(x=>nrm(x).includes(fd))))return false;
   if(fa&&!(e&&e.c&&e.c.some(x=>nrm(x).includes(fa))))return false;return true});
- const abc=(x,y)=>x.n.localeCompare(y.n,"es",{sensitivity:"base",numeric:true});
+ const abc=(x,y)=>disp(x).localeCompare(disp(y),"es",{sensitivity:"base",numeric:true});
  const yr=m=>(meta(m)&&meta(m).y)||m.y||0;
  if(ORD==="n")a.sort(abc);else if(ORD==="y")a.sort((x,y)=>yr(y)-yr(x)||abc(x,y));else if(ORD==="r")a.sort((x,y)=>(rating(y)??-1)-(rating(x)??-1)||votes(y)-votes(x));else a.sort((x,y)=>(y.a||0)-(x.a||0)||abc(x,y));
  if(T==="s")a=a.filter(m=>m.pr).concat(a.filter(m=>!m.pr));return a}
@@ -119,7 +120,7 @@ function row(m){const e=meta(m),r=e&&e.ir,sm=[];
  if(m.rec!=null)sm.push("👤 "+(m.rec?esc(m.rec):"Recomendada"));if(m.dl&&SUB!=="d")sm.push("⬇️ Descargar");
  if(ORD==="r"&&F.src!=="imdb"){const x=rating(m);if(x!=null)sm.push(({tmdb:"TMDB",rt:"Rotten",mc:"Metacritic",media:"Media"})[F.src]+" "+f1(x))}
  if(e&&(e.mq==="dud"||e.mq==="no"))sm.push('<span class="warn">⚠️ revisar datos</span>');
- return `<div class="row" data-a="open" data-id="${m.id}">${m.pr&&m.s==="s"?'<span class="ic">🔥</span>':""}${m.fav&&m.s==="v"?'<span class="ic">⭐</span>':""}<div class="t"><b>${esc(m.n)}</b>${sm.length?`<small>${sm.join(" · ")}</small>`:""}</div>${r!=null?`<span class="nt">${f1(r)}</span>`:""}</div>`}
+ return `<div class="row" data-a="open" data-id="${m.id}">${m.pr&&m.s==="s"?'<span class="ic">🔥</span>':""}${m.fav&&m.s==="v"?'<span class="ic">⭐</span>':""}<div class="t"><b>${esc(disp(m))}</b>${sm.length?`<small>${sm.join(" · ")}</small>`:""}</div>${r!=null?`<span class="nt">${f1(r)}</span>`:""}</div>`}
 function cnt(fnc){return S.movies.filter(fnc).length}
 function renderTop(){$("#tb-s").classList.toggle("on",T==="s");$("#tb-v").classList.toggle("on",T==="v");
  $("#tb-s").textContent=`Sin ver (${cnt(m=>m.s==="s"&&!m.dl)})`;$("#tb-v").textContent=`Vistas (${cnt(m=>m.s==="v")})`;
@@ -135,13 +136,14 @@ function render(){renderTop();const a=list();
 let RV=false,SHT="";
 function openSh(h,ty){SHT=ty||"";$("#sh").innerHTML=`<div class="sheet">${h}</div>`;$("#sh").classList.add("on")}
 function closeSh(){if(RV&&SHT!=="review"){reviewList();return}RV=false;$("#sh").classList.remove("on");CUR=null}
-function reviewList(){CUR=null;const l=S.movies.filter(y=>{const e=meta(y);return e&&(e.mq==="dud"||e.mq==="no")}).sort((x,y)=>x.n.localeCompare(y.n,"es"));
+const abc2=(x,y)=>disp(x).localeCompare(disp(y),"es");
+function reviewList(){CUR=null;const l=S.movies.filter(y=>{const e=meta(y);return e&&(e.mq==="dud"||e.mq==="no")}).sort(abc2);
  openSh(`<h3>Revisar (${l.length})</h3><p class="hint" style="margin:0;text-align:left">${l.length?"Películas no encontradas o con dudas. Toca una y usa «Cambiar coincidencia».":"¡Todo revisado!"}</p>${l.map(y=>row(y)).join("")}<button class="big" data-a="close">Cerrar</button>`,"review")}
 let tt;function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("on");clearTimeout(tt);tt=setTimeout(()=>t.classList.remove("on"),2000)}
 function ficha(m){CUR=m.id;const e=meta(m);const R=[["IMDb",e&&e.ir!=null?f1(e.ir):"–",e&&e.iv?fn(e.iv)+" votos":""],["TMDB",e&&e.tv!=null?f1(e.tv):"–",e&&e.tc?fn(e.tc)+" votos":""],["Rotten",e&&e.rt!=null?e.rt+"%":"–","críticos"],["Metacritic",e&&e.mc!=null?e.mc:"–","críticos"],["Media",rating(m,"media")!=null?f1(rating(m,"media")):"–","de todas"]];
- const ttl=(e&&e.t)||m.n,info=[(e&&e.y)||m.y,e&&e.r?e.r+" min":"",e&&e.g?e.g.join(", "):""].filter(Boolean).join(" · ");
+ const ttl=disp(m),info=[(e&&e.y)||m.y,e&&e.r?e.r+" min":"",e&&e.g?e.g.join(", "):""].filter(Boolean).join(" · ");
  const s=m.s==="s",id=`data-id="${m.id}"`;
- openSh(`<div class="fi">${e&&e.p?`<img src="${IMG}w342${e.p}" alt="">`:""}<div><h3>${esc(ttl)}</h3>${e&&e.ot&&e.ot!==ttl?`<p><i>${esc(e.ot)}</i></p>`:""}<p>${esc(info)}</p>${ttl!==m.n?`<p>Archivo: ${esc(m.n)}</p>`:""}${m.rec!=null?`<p>👤 Recomendada${m.rec?" por "+esc(m.rec):""}</p>`:""}${e&&e.mq==="dud"?'<p class="warn">⚠️ Puede que no sea esta película: revisa la coincidencia.</p>':""}${e&&e.mq==="no"?'<p class="warn">⚠️ No se encontró en TMDB.</p>':""}${!e?'<p class="warn">Buscando datos…</p>':""}</div></div>
+ openSh(`<div class="fi">${e&&e.p?`<img src="${IMG}w342${e.p}" alt="">`:""}<div><h3>${esc(ttl)}</h3>${e&&e.ot&&e.ot!==ttl?`<p><i>${esc(e.ot)}</i></p>`:""}<p>${esc(info)}</p>${nrm(ttl)!==nrm(m.n)?`<p>Archivo: ${esc(m.n)}</p>`:""}${m.rec!=null?`<p>👤 Recomendada${m.rec?" por "+esc(m.rec):""}</p>`:""}${e&&e.mq==="dud"?'<p class="warn">⚠️ Puede que no sea esta película: revisa la coincidencia.</p>':""}${e&&e.mq==="no"?'<p class="warn">⚠️ No se encontró en TMDB.</p>':""}${!e?'<p class="warn">Buscando datos…</p>':""}</div></div>
  ${e&&e.tm>0?`<div class="rt">${R.map(([a,b,c])=>`<div><b>${b}</b><span>${a}${c?"<br>"+c:""}</span></div>`).join("")}</div>`:""}
  ${e&&e.d&&e.d.length?`<h4>Dirección</h4><div>${e.d.map(x=>`<button class="pp" data-a="fdir" data-k="${esc(x)}">${esc(x)}</button>`).join("")}</div>`:""}
  ${e&&e.c&&e.c.length?`<h4>Reparto</h4><div>${e.c.map(x=>`<button class="pp" data-a="fact" data-k="${esc(x)}">${esc(x)}</button>`).join("")}</div>`:""}
@@ -206,7 +208,7 @@ document.addEventListener("click",ev=>{
  else if(a==="have"&&m){delete m.dl;m.a=Date.now();ficha(m);toast("Pasa al listado de Sin ver");ch=true}
  else if(a==="todl"&&m){m.dl=true;ficha(m);ch=true}
  else if(a==="rec"&&m){const r=prompt("Recomendada por (déjalo vacío y Aceptar para quitar la marca)",m.rec||"");if(r===null)return;if(r.trim())m.rec=r.trim();else if(m.rec!=null&&confirm("¿Quitar la marca de recomendada?"))delete m.rec;else if(m.rec==null)m.rec="";ficha(m);ch=true}
- else if(a==="mv"&&m){const here=m.s==="v"?"v":m.dl?"d":"g";openSh(`<h3>Mover «${esc(m.n)}»</h3>${[["g","📀 Sin ver · Listado"],["d","⬇️ Sin ver · Descargar"],["r","👤 Sin ver · Recomendadas"],["v","✅ Vistas"]].map(([k,l])=>`<button class="big${k===here?"":" p"}" data-a="mvto" data-id="${m.id}" data-k="${k}">${l}${k===here?" (aquí)":""}</button>`).join("")}<button class="big" data-a="close">Cancelar</button>`);return}
+ else if(a==="mv"&&m){const here=m.s==="v"?"v":m.dl?"d":"g";openSh(`<h3>Mover «${esc(disp(m))}»</h3>${[["g","📀 Sin ver · Listado"],["d","⬇️ Sin ver · Descargar"],["r","👤 Sin ver · Recomendadas"],["v","✅ Vistas"]].map(([k,l])=>`<button class="big${k===here?"":" p"}" data-a="mvto" data-id="${m.id}" data-k="${k}">${l}${k===here?" (aquí)":""}</button>`).join("")}<button class="big" data-a="close">Cancelar</button>`);return}
  else if(a==="mvto"&&m){const k=t.dataset.k;
   if(k==="v"){m.s="v";delete m.rec;delete m.pr;delete m.dl}
   else{if(m.s==="v"){delete m.fav;m.s="s"}
@@ -217,8 +219,8 @@ document.addEventListener("click",ev=>{
  else if(a==="fix"&&m){fixSheet(m);return}
  else if(a==="fixok"){const mm=S.movies.find(y=>y.id===FX);if(!mm||RSEL==null){toast("Elige una");return}const x=RES[RSEL];closeSh();setMatch(mm,x.id,"ok").then(()=>{render();if(RV)reviewList();else ficha(mm)});return}
  else if(a==="fixnone"){const mm=S.movies.find(y=>y.id===FX);if(mm){M[mm.id]={tm:-1,mq:"ok",man:1,mv:MV,v:Date.now()};saveMeta(true)}closeSh();render();return}
- else if(a==="ren"&&m){const n=prompt("Nombre",m.n);if(!n||!n.trim())return;m.n=n.trim();ficha(m);ch=true}
- else if(a==="del"&&m){if(!confirm("¿Eliminar «"+m.n+"»?"))return;S.movies=S.movies.filter(y=>y!==m);delete M[m.id];saveMeta();closeSh();ch=true}
+ else if(a==="ren"&&m){const n=prompt("Nombre que quieres ver",disp(m));if(n===null)return;if(n.trim())m.cn=n.trim();else delete m.cn;ficha(m);ch=true}
+ else if(a==="del"&&m){if(!confirm("¿Eliminar «"+disp(m)+"»?"))return;S.movies=S.movies.filter(y=>y!==m);delete M[m.id];saveMeta();closeSh();ch=true}
  else if(a==="menu"){menu();return}
  else if(a==="login"){closeSh();showLogin();return}
  else if(a==="syncnow"){closeSh();sync().then(()=>{msync();toast("Sincronizado")});return}
