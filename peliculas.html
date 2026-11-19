@@ -132,8 +132,11 @@ function render(){renderTop();const a=list();
   a.slice(0,LIM).map(row).join("")+(a.length>LIM?`<button class="more" data-a="more">Mostrar más (${a.length-LIM})</button>`:"")+
   (!a.length?`<p class="hint">${S.movies.length?"No hay películas aquí.":gs()?"Cargando tus películas…":"Inicia sesión para cargar tus películas."}</p>`:"");prog()}
 /* Hojas */
-function openSh(h){$("#sh").innerHTML=`<div class="sheet">${h}</div>`;$("#sh").classList.add("on")}
-function closeSh(){$("#sh").classList.remove("on");CUR=null}
+let RV=false,SHT="";
+function openSh(h,ty){SHT=ty||"";$("#sh").innerHTML=`<div class="sheet">${h}</div>`;$("#sh").classList.add("on")}
+function closeSh(){if(RV&&SHT!=="review"){reviewList();return}RV=false;$("#sh").classList.remove("on");CUR=null}
+function reviewList(){CUR=null;const l=S.movies.filter(y=>{const e=meta(y);return e&&(e.mq==="dud"||e.mq==="no")}).sort((x,y)=>x.n.localeCompare(y.n,"es"));
+ openSh(`<h3>Revisar (${l.length})</h3><p class="hint" style="margin:0;text-align:left">${l.length?"Películas no encontradas o con dudas. Toca una y usa «Cambiar coincidencia».":"¡Todo revisado!"}</p>${l.map(y=>row(y)).join("")}<button class="big" data-a="close">Cerrar</button>`,"review")}
 let tt;function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("on");clearTimeout(tt);tt=setTimeout(()=>t.classList.remove("on"),2000)}
 function ficha(m){CUR=m.id;const e=meta(m);const R=[["IMDb",e&&e.ir!=null?f1(e.ir):"–",e&&e.iv?fn(e.iv)+" votos":""],["TMDB",e&&e.tv!=null?f1(e.tv):"–",e&&e.tc?fn(e.tc)+" votos":""],["Rotten",e&&e.rt!=null?e.rt+"%":"–","críticos"],["Metacritic",e&&e.mc!=null?e.mc:"–","críticos"],["Media",rating(m,"media")!=null?f1(rating(m,"media")):"–","de todas"]];
  const ttl=(e&&e.t)||m.n,info=[(e&&e.y)||m.y,e&&e.r?e.r+" min":"",e&&e.g?e.g.join(", "):""].filter(Boolean).join(" · ");
@@ -212,15 +215,14 @@ document.addEventListener("click",ev=>{
   m.a=Date.now();closeSh();T=m.s==="v"?"v":"s";SUB=k==="v"?"t":k;saveUI();toast("Movida");ch=true}
  else if(a==="fa"&&m){const e=meta(m);window.open("https://www.filmaffinity.com/es/search.php?stype=title&stext="+encodeURIComponent((e&&e.t)||m.n),"_blank");return}
  else if(a==="fix"&&m){fixSheet(m);return}
- else if(a==="fixok"){const mm=S.movies.find(y=>y.id===FX);if(!mm||RSEL==null){toast("Elige una");return}const x=RES[RSEL];closeSh();setMatch(mm,x.id,"ok").then(()=>{render();ficha(mm)});return}
+ else if(a==="fixok"){const mm=S.movies.find(y=>y.id===FX);if(!mm||RSEL==null){toast("Elige una");return}const x=RES[RSEL];closeSh();setMatch(mm,x.id,"ok").then(()=>{render();if(RV)reviewList();else ficha(mm)});return}
  else if(a==="fixnone"){const mm=S.movies.find(y=>y.id===FX);if(mm){M[mm.id]={tm:-1,mq:"ok",v:Date.now()};saveMeta(true)}closeSh();render();return}
  else if(a==="ren"&&m){const n=prompt("Nombre",m.n);if(!n||!n.trim())return;m.n=n.trim();ficha(m);ch=true}
  else if(a==="del"&&m){if(!confirm("¿Eliminar «"+m.n+"»?"))return;S.movies=S.movies.filter(y=>y!==m);delete M[m.id];saveMeta();closeSh();ch=true}
  else if(a==="menu"){menu();return}
  else if(a==="login"){closeSh();showLogin();return}
  else if(a==="syncnow"){closeSh();sync().then(()=>{msync();toast("Sincronizado")});return}
- else if(a==="review"){const l=S.movies.filter(y=>{const e=meta(y);return e&&(e.mq==="dud"||e.mq==="no")}).sort((x,y)=>x.n.localeCompare(y.n,"es"));
-  openSh(`<h3>Revisar (${l.length})</h3><p class="hint" style="margin:0;text-align:left">Películas que no se encontraron o con dudas. Toca una y usa «Cambiar coincidencia».</p>${l.map(y=>row(y)).join("")}<button class="big" data-a="close">Cerrar</button>`);return}
+ else if(a==="review"){RV=true;reviewList();return}
  else if(a==="retry"){for(const y of S.movies){const e=meta(y);if(e&&e.mq==="no"&&e.tm===-1)delete M[y.id]}saveMeta();closeSh();worker();toast("Reintentando");return}
  else if(a==="exp"){const j=JSON.stringify(S);(navigator.clipboard?navigator.clipboard.writeText(j):Promise.reject()).then(()=>toast("Copiado. Pégalo en Notas"),()=>prompt("Copia este texto",j));closeSh();return}
  else if(a==="imp"){closeSh();const j=prompt("Pega aquí la copia de seguridad");if(!j)return;try{const d=JSON.parse(j);if(!Array.isArray(d.movies))throw 0;if(!confirm("Se sustituirán los datos actuales. ¿Continuar?"))return;S=d}catch(z){toast("La copia no es válida");return}ch=true}
