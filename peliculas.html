@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Películas">
+<meta name="theme-color" content="#EEF1F4">
+<link rel="apple-touch-icon" href="icono-peliculas.png">
+<link rel="icon" href="icono-peliculas.png">
+<title>Películas</title>
+<style>
+:root{--bg:#EEF1F4;--card:#fff;--ink:#14181F;--mut:#6B7480;--line:#DDE2E8;--acc:#2D5BFF;--ok:#1F9D6B;--bad:#D6453D;--amb:#F08C00;--imdb:#F5C518}
+@media(prefers-color-scheme:dark){:root{--bg:#0F1318;--card:#1A2028;--ink:#EEF1F4;--mut:#8A94A1;--line:#2A323C;--acc:#6E8BFF;--ok:#3CC892;--bad:#FF6B63;--amb:#FFB020}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.3 -apple-system,system-ui,sans-serif;padding:env(safe-area-inset-top) 0 calc(env(safe-area-inset-bottom) + 40px)}
+button,select{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+.top{position:sticky;top:0;z-index:5;background:var(--bg);padding:10px 14px 8px;border-bottom:1px solid var(--line)}
+.hd{display:flex;align-items:center;gap:10px}.hd h1{flex:1;margin:0;font-size:26px}
+.lnkb{color:var(--acc);font-weight:600;font-size:16px;padding:6px 4px}
+.tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px;background:var(--card);border-radius:14px;padding:4px}
+.tabs button{padding:10px;border-radius:11px;font-weight:700;font-size:16px;color:var(--mut)}
+.tabs button.on{background:var(--acc);color:#fff}
+.subs{display:flex;gap:6px;margin-top:8px;overflow-x:auto}
+.subs button{flex:none;padding:7px 12px;border-radius:99px;background:var(--card);font-weight:600;font-size:14px;color:var(--mut)}
+.subs button.on{background:var(--ink);color:var(--bg)}
+.tool{display:flex;gap:6px;margin-top:8px}
+.tool input{flex:1;min-width:0;font:inherit;font-size:16px;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 11px}
+.tool select,.tool .fb{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:0 9px;font-size:14px;font-weight:600;color:var(--ink)}
+.fb.on{background:var(--acc);color:#fff;border-color:var(--acc)}
+.prog{font-size:12px;color:var(--mut);margin-top:6px}
+main{padding:4px 14px}
+.row{display:flex;align-items:center;gap:8px;background:var(--card);border-radius:12px;padding:11px 12px;margin:6px 0;cursor:pointer}
+.row .t{flex:1;min-width:0}
+.row b{display:block;font-weight:600;font-size:16px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row small{display:block;color:var(--mut);font-size:12.5px;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nt{flex:none;font-weight:800;font-size:14px;padding:3px 7px;border-radius:7px;background:var(--imdb);color:#000;font-variant-numeric:tabular-nums}
+.ic{flex:none;font-size:15px}
+.more{display:block;width:100%;margin:10px 0;padding:12px;border-radius:12px;border:2px dashed var(--line);color:var(--mut);font-weight:600}
+.add{display:block;width:100%;margin:10px 0 4px;padding:11px;border-radius:12px;background:var(--acc);color:#fff;font-weight:700}
+.hint{color:var(--mut);font-size:14px;margin:14px 2px;text-align:center}
+#sh{position:fixed;inset:0;z-index:20;display:none;background:rgba(0,0,0,.45);align-items:flex-end}
+#sh.on{display:flex}
+.sheet{width:100%;max-height:92vh;overflow:auto;background:var(--card);border-radius:22px 22px 0 0;padding:18px 16px calc(env(safe-area-inset-bottom) + 16px);display:grid;gap:10px}
+.sheet h3{margin:0;font-size:20px}.sheet h4{margin:6px 0 0;font-size:13px;color:var(--mut);font-weight:600;text-transform:uppercase;letter-spacing:.03em}
+.sheet label{display:grid;gap:4px;font-size:13px;color:var(--mut)}
+.sheet input,.lgc input{font:inherit;font-size:17px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:10px 12px;width:100%}
+.big{padding:13px;border-radius:14px;background:var(--bg);font-weight:600}
+.big.p{background:var(--acc);color:#fff}.big.w{color:var(--bad)}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.chips{display:flex;flex-wrap:wrap;gap:7px}.chips button{padding:8px 12px;border-radius:99px;background:var(--bg);font-weight:600;font-size:14px}.chips button.on{background:var(--acc);color:#fff}
+.fi{display:flex;gap:12px;align-items:flex-start}.fi img{width:110px;border-radius:10px;flex:none;background:var(--bg);min-height:160px}
+.fi h3{font-size:21px}.fi p{margin:4px 0 0;color:var(--mut);font-size:14px}
+.rt{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:6px}
+.rt div{background:var(--bg);border-radius:10px;padding:7px 8px;text-align:center}.rt b{display:block;font-size:18px}.rt span{font-size:11px;color:var(--mut)}
+.ov{font-size:15px;line-height:1.4;margin:0}
+.pp{display:inline-block;margin:0 6px 6px 0;padding:5px 10px;border-radius:99px;background:var(--bg);font-size:14px;font-weight:600}
+.res{display:flex;gap:10px;align-items:center;padding:8px;border-radius:12px;background:var(--bg);text-align:left;width:100%}
+.res img{width:40px;height:60px;object-fit:cover;border-radius:6px;background:var(--line);flex:none}
+.res.on{outline:3px solid var(--acc)}
+.res small{display:block;color:var(--mut);font-size:13px}
+.warn{color:var(--amb);font-size:13px}
+.lgc{width:100%;max-width:340px;background:var(--card);border-radius:18px;padding:20px;display:grid;gap:10px;box-shadow:0 6px 24px #0003}
+.lgc h3{margin:0;font-size:22px;text-align:center}.lgc p{margin:0;color:var(--mut);font-size:14px;text-align:center}
+#toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 24px);transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:99px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:30;white-space:nowrap}
+#toast.on{opacity:1}
+</style></head>
+<body>
+<div class="top">
+ <div class="hd"><h1>Películas</h1><button class="lnkb" data-a="menu">Datos</button></div>
+ <div class="tabs"><button data-a="tab" data-k="s" id="tb-s">Sin ver</button><button data-a="tab" data-k="v" id="tb-v">Vistas</button></div>
+ <div class="subs" id="subs"></div>
+ <div class="tool"><input id="q" type="search" placeholder="Buscar título…" autocomplete="off"><select id="ord"><option value="a">Últimas</option><option value="n">A-Z</option><option value="y">Año</option><option value="r">Nota</option></select><button class="fb" data-a="filt" id="fb">Filtros</button></div>
+ <div class="prog" id="prog"></div>
+</div>
+<main><button class="add" data-a="addm">+ Añadir película</button><div id="ls"></div></main>
+<div id="sh"></div><div id="toast"></div>
+<script>
+const K="pelis-v1",MK="pelis-meta",KK="pelis-keys",UI="pelis-ui",OK_="pelis-omdb",$=s=>document.querySelector(s);
+const IMG="https://image.tmdb.org/t/p/";
+let S,M,KEYS=null,T="s",SUB="g",ORD="a",Q="",LIM=200,CUR=null,RES=[],RSEL=null,FX=null;
+let F={src:"imdb",min:0,vot:0,g:"",y1:"",y2:"",dir:"",act:""};
+const uid=()=>Math.random().toString(36).slice(2,10);
+const esc=t=>String(t==null?"":t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const nrm=t=>String(t||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^a-z0-9ñ ]+/g," ").replace(/\s+/g," ").trim();
+const f1=x=>x==null?"":(+x).toLocaleString("es-ES",{minimumFractionDigits:1,maximumFractionDigits:1});
+const fn=x=>x==null?"":(+x).toLocaleString("es-ES");
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+function load(){try{S=JSON.parse(localStorage.getItem(K))}catch(e){}if(!S||!Array.isArray(S.movies))S={movies:[]};
+ try{M=JSON.parse(localStorage.getItem(MK))}catch(e){}if(!M||typeof M!=="object")M={};
+ try{KEYS=JSON.parse(localStorage.getItem(KK))}catch(e){}
+ try{const u=JSON.parse(localStorage.getItem(UI));if(u){T=u.T||T;SUB=u.SUB||SUB;ORD=u.ORD||ORD;Object.assign(F,u.F||{})}}catch(e){}}
+function saveUI(){try{localStorage.setItem(UI,JSON.stringify({T,SUB,ORD,F}))}catch(e){}}
+function save(){try{localStorage.setItem(K,JSON.stringify(S));localStorage.setItem(UPD,String(Date.now()));localStorage.setItem(DRT,"1")}catch(e){}queueCloud()}
+let mdirty=false,mt=null;
+function saveMeta(fast){try{localStorage.setItem(MK,JSON.stringify(M))}catch(e){}mdirty=true;clearTimeout(mt);mt=setTimeout(msync,fast?2000:30000)}
+const meta=m=>M[m.id]||null;
+/* Notas */
+function rating(m,src){const e=meta(m);if(!e)return null;src=src||F.src;
+ if(src==="imdb")return e.ir??null;if(src==="tmdb")return e.tv??null;if(src==="rt")return e.rt!=null?e.rt/10:null;if(src==="mc")return e.mc!=null?e.mc/10:null;
+ const a=[e.ir,e.tv,e.rt!=null?e.rt/10:null,e.mc!=null?e.mc/10:null].filter(x=>x!=null);return a.length?Math.round(a.reduce((p,c)=>p+c,0)/a.length*10)/10:null}
+function votes(m,src){const e=meta(m);if(!e)return 0;src=src||F.src;if(src==="imdb")return e.iv||0;if(src==="tmdb")return e.tc||0;return Math.max(e.iv||0,e.tc||0)}
+const fActive=()=>F.min||F.vot||F.g||F.y1||F.y2||F.dir||F.act;
+/* Listas */
+function inSub(m){if(m.s!==T)return false;if(T==="s")return SUB==="r"?m.rec!=null:SUB==="d"?!!m.dl:!m.dl;return SUB==="f"?!!m.fav:true}
+function list(){const q=nrm(Q),fd=nrm(F.dir),fa=nrm(F.act);
+ let a=S.movies.filter(m=>{if(!inSub(m))return false;const e=meta(m);
+  if(q&&!(nrm(m.n).includes(q)||(e&&(nrm(e.t).includes(q)||nrm(e.ot).includes(q)))))return false;
+  if(F.min){const r=rating(m);if(r==null||r<F.min)return false}
+  if(F.vot&&votes(m)<F.vot)return false;
+  if(F.g&&!(e&&e.g&&e.g.includes(F.g)))return false;
+  const y=(e&&e.y)||m.y;if(F.y1&&!(y>=+F.y1))return false;if(F.y2&&!(y<=+F.y2))return false;
+  if(fd&&!(e&&e.d&&e.d.some(x=>nrm(x).includes(fd))))return false;
+  if(fa&&!(e&&e.c&&e.c.some(x=>nrm(x).includes(fa))))return false;return true});
+ const abc=(x,y)=>x.n.localeCompare(y.n,"es",{sensitivity:"base",numeric:true});
+ const yr=m=>(meta(m)&&meta(m).y)||m.y||0;
+ if(ORD==="n")a.sort(abc);else if(ORD==="y")a.sort((x,y)=>yr(y)-yr(x)||abc(x,y));else if(ORD==="r")a.sort((x,y)=>(rating(y)??-1)-(rating(x)??-1)||votes(y)-votes(x));else a.sort((x,y)=>(y.a||0)-(x.a||0)||abc(x,y));
+ if(T==="s")a=a.filter(m=>m.pr).concat(a.filter(m=>!m.pr));return a}
+function row(m){const e=meta(m),r=e&&e.ir,sm=[];
+ if(m.rec!=null)sm.push("👤 "+(m.rec?esc(m.rec):"Recomendada"));if(m.dl&&SUB!=="d")sm.push("⬇️ Descargar");
+ if(ORD==="r"&&F.src!=="imdb"){const x=rating(m);if(x!=null)sm.push(({tmdb:"TMDB",rt:"Rotten",mc:"Metacritic",media:"Media"})[F.src]+" "+f1(x))}
+ if(e&&(e.mq==="dud"||e.mq==="no"))sm.push('<span class="warn">⚠️ revisar datos</span>');
+ return `<div class="row" data-a="open" data-id="${m.id}">${m.pr&&m.s==="s"?'<span class="ic">🔥</span>':""}${m.fav&&m.s==="v"?'<span class="ic">⭐</span>':""}<div class="t"><b>${esc(m.n)}</b>${sm.length?`<small>${sm.join(" · ")}</small>`:""}</div>${r!=null?`<span class="nt">${f1(r)}</span>`:""}</div>`}
+function cnt(fnc){return S.movies.filter(fnc).length}
+function renderTop(){$("#tb-s").classList.toggle("on",T==="s");$("#tb-v").classList.toggle("on",T==="v");
+ $("#tb-s").textContent=`Sin ver (${cnt(m=>m.s==="s"&&!m.dl)})`;$("#tb-v").textContent=`Vistas (${cnt(m=>m.s==="v")})`;
+ const sb=T==="s"?[["g","Listado",cnt(m=>m.s==="s"&&!m.dl)],["r","Recomendadas",cnt(m=>m.s==="s"&&m.rec!=null)],["d","Descargar",cnt(m=>m.s==="s"&&m.dl)]]:[["t","Todas",cnt(m=>m.s==="v")],["f","Favoritas",cnt(m=>m.s==="v"&&m.fav)]];
+ if(!sb.some(x=>x[0]===SUB))SUB=sb[0][0];
+ $("#subs").innerHTML=sb.map(([k,l,n])=>`<button class="${SUB===k?"on":""}" data-a="sub" data-k="${k}">${l} · ${n}</button>`).join("");
+ $("#ord").value=ORD;const fa=fActive();$("#fb").classList.toggle("on",!!fa);$("#fb").textContent=fa?"Filtros ✓":"Filtros"}
+function render(){renderTop();const a=list();
+ $("#ls").innerHTML=(fActive()||Q?`<p class="hint" style="margin:6px 2px">${a.length} película${a.length===1?"":"s"}${fActive()?` · <button class="lnkb" data-a="fclr" style="font-size:14px">Quitar filtros</button>`:""}</p>`:"")+
+  a.slice(0,LIM).map(row).join("")+(a.length>LIM?`<button class="more" data-a="more">Mostrar más (${a.length-LIM})</button>`:"")+
+  (!a.length?`<p class="hint">${S.movies.length?"No hay películas aquí.":gs()?"Cargando tus películas…":"Inicia sesión para cargar tus películas."}</p>`:"");prog()}
+/* Hojas */
+function openSh(h){$("#sh").innerHTML=`<div class="sheet">${h}</div>`;$("#sh").classList.add("on")}
+function closeSh(){$("#sh").classList.remove("on");CUR=null}
+let tt;function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("on");clearTimeout(tt);tt=setTimeout(()=>t.classList.remove("on"),2000)}
+function ficha(m){CUR=m.id;const e=meta(m);const R=[["IMDb",e&&e.ir!=null?f1(e.ir):"–",e&&e.iv?fn(e.iv)+" votos":""],["TMDB",e&&e.tv!=null?f1(e.tv):"–",e&&e.tc?fn(e.tc)+" votos":""],["Rotten",e&&e.rt!=null?e.rt+"%":"–","críticos"],["Metacritic",e&&e.mc!=null?e.mc:"–","críticos"],["Media",rating(m,"media")!=null?f1(rating(m,"media")):"–","de todas"]];
+ const ttl=(e&&e.t)||m.n,info=[(e&&e.y)||m.y,e&&e.r?e.r+" min":"",e&&e.g?e.g.join(", "):""].filter(Boolean).join(" · ");
+ const s=m.s==="s",id=`data-id="${m.id}"`;
+ openSh(`<div class="fi">${e&&e.p?`<img src="${IMG}w342${e.p}" alt="">`:""}<div><h3>${esc(ttl)}</h3>${e&&e.ot&&e.ot!==ttl?`<p><i>${esc(e.ot)}</i></p>`:""}<p>${esc(info)}</p>${ttl!==m.n?`<p>Archivo: ${esc(m.n)}</p>`:""}${m.rec!=null?`<p>👤 Recomendada${m.rec?" por "+esc(m.rec):""}</p>`:""}${e&&e.mq==="dud"?'<p class="warn">⚠️ Puede que no sea esta película: revisa la coincidencia.</p>':""}${e&&e.mq==="no"?'<p class="warn">⚠️ No se encontró en TMDB.</p>':""}${!e?'<p class="warn">Buscando datos…</p>':""}</div></div>
+ ${e&&e.tm>0?`<div class="rt">${R.map(([a,b,c])=>`<div><b>${b}</b><span>${a}${c?"<br>"+c:""}</span></div>`).join("")}</div>`:""}
+ ${e&&e.d&&e.d.length?`<h4>Dirección</h4><div>${e.d.map(x=>`<button class="pp" data-a="fdir" data-k="${esc(x)}">${esc(x)}</button>`).join("")}</div>`:""}
+ ${e&&e.c&&e.c.length?`<h4>Reparto</h4><div>${e.c.map(x=>`<button class="pp" data-a="fact" data-k="${esc(x)}">${esc(x)}</button>`).join("")}</div>`:""}
+ ${e&&e.tm>0?`<h4>Sinopsis</h4><p class="ov" id="ov">Cargando…</p>`:""}
+ <h4>Acciones</h4>
+ ${s?`<button class="big p" data-a="seen" ${id}>✅ Marcar como vista</button><div class="g2"><button class="big" data-a="prio" ${id}>${m.pr?"🔥 Quitar prioridad":"🔥 Prioridad"}</button><button class="big" data-a="rec" ${id}>👤 ${m.rec!=null?"Recomendación":"Recomendada"}</button></div>${m.dl?`<button class="big p" data-a="have" ${id}>📥 Ya la tengo</button>`:`<button class="big" data-a="todl" ${id}>⬇️ Pasar a Descargar</button>`}`
+ :`<div class="g2"><button class="big" data-a="favt" ${id}>${m.fav?"⭐ Quitar favorita":"☆ Favorita"}</button><button class="big" data-a="unseen" ${id}>↩︎ Volver a Sin ver</button></div>`}
+ <button class="big" data-a="fa" ${id}>🎬 Ver en FilmAffinity</button>
+ <div class="g2"><button class="big" data-a="fix" ${id}>🔄 Cambiar coincidencia</button><button class="big" data-a="ren" ${id}>✏️ Renombrar</button></div>
+ <button class="big w" data-a="del" ${id}>Eliminar</button><button class="big" data-a="close">Cerrar</button>`);
+ if(e&&e.tm>0&&KEYS)tmdb("/movie/"+e.tm).then(d=>{const o=$("#ov");if(o&&CUR===m.id)o.textContent=d.overview||"Sin sinopsis en español."}).catch(()=>{const o=$("#ov");if(o)o.textContent="No se pudo cargar."})}
+function filtSheet(){const G=[...new Set(Object.values(M).flatMap(e=>e.g||[]))].sort((a,b)=>a.localeCompare(b,"es"));
+ const ch=(k,arr)=>`<div class="chips">${arr.map(([v,l])=>`<button class="${F[k]==v?"on":""}" data-a="fset" data-f="${k}" data-k="${esc(v)}">${esc(l)}</button>`).join("")}</div>`;
+ openSh(`<h3>Filtros</h3><h4>Valoración según</h4>${ch("src",[["imdb","IMDb"],["tmdb","TMDB"],["rt","Rotten"],["mc","Metacritic"],["media","Media"]])}
+ <h4>Nota mínima</h4>${ch("min",[[0,"Todas"],[6,"6+"],[7,"7+"],[8,"8+"]])}
+ <h4>Votos mínimos</h4>${ch("vot",[[0,"Cualquiera"],[100,"100+"],[500,"500+"],[1000,"1.000+"]])}
+ <h4>Género</h4>${ch("g",[["","Todos"]].concat(G.map(g=>[g,g])))}
+ <h4>Año</h4><div class="g2"><input id="f-y1" type="number" inputmode="numeric" placeholder="Desde" value="${esc(F.y1)}"><input id="f-y2" type="number" inputmode="numeric" placeholder="Hasta" value="${esc(F.y2)}"></div>
+ <label>Director<input id="f-dir" autocomplete="off" placeholder="Ej. Nolan" value="${esc(F.dir)}"></label>
+ <label>Actor / actriz<input id="f-act" autocomplete="off" placeholder="Ej. Penélope Cruz" value="${esc(F.act)}"></label>
+ <p class="hint" style="margin:0;text-align:left">Rotten y Metacritic son notas de críticos (sin votos): los votos mínimos usan IMDb o TMDB.</p>
+ <button class="big p" data-a="fapply">Aplicar</button><button class="big" data-a="fclr">Quitar filtros</button>`)}
+function readF(){const g=id=>{const x=$(id);return x?x.value.trim():""};if($("#f-y1")){F.y1=g("#f-y1");F.y2=g("#f-y2");F.dir=g("#f-dir");F.act=g("#f-act")}}
+/* Buscar en TMDB (añadir / cambiar coincidencia) */
+function resHtml(){return RES.length?RES.map((x,i)=>`<button class="res${RSEL===i?" on":""}" data-a="rsel" data-i="${i}"><img src="${x.poster_path?IMG+"w92"+x.poster_path:""}" alt=""><span><b>${esc(x.title)}</b><small>${esc((x.release_date||"").slice(0,4))}${x.original_title&&x.original_title!==x.title?" · "+esc(x.original_title):""}</small></span></button>`).join(""):""}
+function addSheet(){RES=[];RSEL=null;FX=null;openSh(`<h3>Añadir película</h3><label>Título<div style="display:flex;gap:6px"><input id="f-s" autocomplete="off" placeholder="Ej. Oppenheimer"><button class="big p" data-a="srch" style="padding:0 14px">Buscar</button></div></label><div id="rs" style="display:grid;gap:6px"></div>
+ <label>Recomendada por (opcional)<input id="f-rec" autocomplete="off" placeholder="Ej. Juan"></label>
+ <h4>¿Dónde la pongo?</h4><div class="g2"><button class="big p" data-a="addto" data-k="s">📀 Sin ver (la tengo)</button><button class="big p" data-a="addto" data-k="d">⬇️ Descargar</button></div><button class="big" data-a="addto" data-k="v">✅ Ya la he visto</button><button class="big" data-a="close">Cancelar</button>`);
+ setTimeout(()=>{const i=$("#f-s");if(i){i.focus();i.onkeydown=ev=>{if(ev.key==="Enter")doSearch()}}},50)}
+function fixSheet(m){RES=[];RSEL=null;FX=m.id;openSh(`<h3>Cambiar coincidencia</h3><p class="hint" style="margin:0;text-align:left">${esc(m.n)}</p><label>Buscar<div style="display:flex;gap:6px"><input id="f-s" autocomplete="off" value="${esc(m.n)}"><button class="big p" data-a="srch" style="padding:0 14px">Buscar</button></div></label><div id="rs" style="display:grid;gap:6px"></div><button class="big p" data-a="fixok">Usar la seleccionada</button><button class="big" data-a="fixnone">No es ninguna (sin datos)</button><button class="big" data-a="close">Cancelar</button>`);
+ setTimeout(()=>{const i=$("#f-s");if(i)i.onkeydown=ev=>{if(ev.key==="Enter")doSearch()}},50);doSearch()}
+async function doSearch(){const q=($("#f-s")||{}).value;if(!q||!q.trim())return;if(!KEYS){toast("Inicia sesión primero");return}$("#rs").innerHTML='<p class="hint">Buscando…</p>';
+ try{const r=await tmdb("/search/movie",{query:q.trim()});RES=(r.results||[]).slice(0,10);RSEL=RES.length?0:null;$("#rs").innerHTML=resHtml()||'<p class="hint">Sin resultados.</p>'}catch(e){$("#rs").innerHTML='<p class="hint">No se pudo buscar.</p>'}}
+async function setMatch(m,tid,mq){try{const d=await details(tid);d.mq=mq;d.v=Date.now();M[m.id]=d;saveMeta(true);omdbQueue()}catch(e){toast("No se pudieron cargar los datos")}}
+/* Clics */
+document.addEventListener("click",ev=>{
+ if(ev.target.id==="sh"){closeSh();return}
+ const t=ev.target.closest("[data-a]");if(!t)return;
+ const a=t.dataset.a,m=S.movies.find(y=>y.id===(t.dataset.id||CUR));let ch=false;
+ if(a==="tab"){T=t.dataset.k;SUB=T==="s"?"g":"t";LIM=200;saveUI();render();scrollTo(0,0);return}
+ if(a==="sub"){SUB=t.dataset.k;LIM=200;saveUI();render();scrollTo(0,0);return}
+ if(a==="more"){LIM+=300;render();return}
+ if(a==="open"&&m){ficha(m);return}
+ if(a==="close"){closeSh();return}
+ if(a==="filt"){filtSheet();return}
+ if(a==="fset"){readF();const k=t.dataset.f,v=t.dataset.k;F[k]=(k==="min"||k==="vot")?+v:v;filtSheet();return}
+ if(a==="fapply"){readF();closeSh();saveUI();LIM=200;render();return}
+ if(a==="fclr"){F={src:F.src,min:0,vot:0,g:"",y1:"",y2:"",dir:"",act:""};closeSh();saveUI();render();return}
+ if(a==="fdir"||a==="fact"){F={src:F.src,min:0,vot:0,g:"",y1:"",y2:"",dir:a==="fdir"?t.dataset.k:"",act:a==="fact"?t.dataset.k:""};Q="";$("#q").value="";closeSh();saveUI();render();toast("Filtrando: "+t.dataset.k);return}
+ if(a==="addm"){addSheet();return}
+ if(a==="srch"){doSearch();return}
+ if(a==="rsel"){RSEL=+t.dataset.i;$("#rs").innerHTML=resHtml();return}
+ if(a==="addto"){const typed=(($("#f-s")||{}).value||"").trim(),x=RSEL!=null?RES[RSEL]:null;if(!x&&!typed){toast("Escribe un título");return}
+  const k=t.dataset.k,rec=$("#f-rec").value.trim(),o={id:uid(),n:x?x.title:typed,s:k==="v"?"v":"s",a:Date.now()};
+  if(x&&x.release_date)o.y=+x.release_date.slice(0,4);if(k==="d")o.dl=true;if(rec&&k!=="v")o.rec=rec;
+  S.movies.push(o);if(x)setMatch(o,x.id,"ok");closeSh();T=o.s;SUB=k==="d"?"d":o.rec!=null?"r":T==="s"?"g":"t";saveUI();toast("Añadida");ch=true}
+ else if(a==="seen"&&m){m.s="v";delete m.rec;delete m.pr;delete m.dl;m.a=Date.now();closeSh();toast("Pasa a Vistas");ch=true}
+ else if(a==="unseen"&&m){m.s="s";delete m.fav;m.a=Date.now();closeSh();toast("Vuelve a Sin ver");ch=true}
+ else if(a==="prio"&&m){if(m.pr)delete m.pr;else m.pr=true;ficha(m);ch=true}
+ else if(a==="favt"&&m){if(m.fav)delete m.fav;else m.fav=true;ficha(m);ch=true}
+ else if(a==="have"&&m){delete m.dl;m.a=Date.now();ficha(m);toast("Pasa al listado de Sin ver");ch=true}
+ else if(a==="todl"&&m){m.dl=true;ficha(m);ch=true}
+ else if(a==="rec"&&m){const r=prompt("Recomendada por (déjalo vacío y Aceptar para quitar la marca)",m.rec||"");if(r===null)return;if(r.trim())m.rec=r.trim();else if(m.rec!=null&&confirm("¿Quitar la marca de recomendada?"))delete m.rec;else if(m.rec==null)m.rec="";ficha(m);ch=true}
+ else if(a==="fa"&&m){const e=meta(m);window.open("https://www.filmaffinity.com/es/search.php?stype=title&stext="+encodeURIComponent((e&&e.t)||m.n),"_blank");return}
+ else if(a==="fix"&&m){fixSheet(m);return}
+ else if(a==="fixok"){const mm=S.movies.find(y=>y.id===FX);if(!mm||RSEL==null){toast("Elige una");return}const x=RES[RSEL];closeSh();setMatch(mm,x.id,"ok").then(()=>{render();ficha(mm)});return}
+ else if(a==="fixnone"){const mm=S.movies.find(y=>y.id===FX);if(mm){M[mm.id]={tm:-1,mq:"ok",v:Date.now()};saveMeta(true)}closeSh();render();return}
+ else if(a==="ren"&&m){const n=prompt("Nombre",m.n);if(!n||!n.trim())return;m.n=n.trim();ficha(m);ch=true}
+ else if(a==="del"&&m){if(!confirm("¿Eliminar «"+m.n+"»?"))return;S.movies=S.movies.filter(y=>y!==m);delete M[m.id];saveMeta();closeSh();ch=true}
+ else if(a==="menu"){menu();return}
+ else if(a==="login"){closeSh();showLogin();return}
+ else if(a==="syncnow"){closeSh();sync().then(()=>{msync();toast("Sincronizado")});return}
+ else if(a==="review"){const l=S.movies.filter(y=>{const e=meta(y);return e&&(e.mq==="dud"||e.mq==="no")}).sort((x,y)=>x.n.localeCompare(y.n,"es"));
+  openSh(`<h3>Revisar (${l.length})</h3><p class="hint" style="margin:0;text-align:left">Películas que no se encontraron o con dudas. Toca una y usa «Cambiar coincidencia».</p>${l.map(y=>row(y)).join("")}<button class="big" data-a="close">Cerrar</button>`);return}
+ else if(a==="retry"){for(const y of S.movies){const e=meta(y);if(e&&e.mq==="no"&&e.tm===-1)delete M[y.id]}saveMeta();closeSh();worker();toast("Reintentando");return}
+ else if(a==="exp"){const j=JSON.stringify(S);(navigator.clipboard?navigator.clipboard.writeText(j):Promise.reject()).then(()=>toast("Copiado. Pégalo en Notas"),()=>prompt("Copia este texto",j));closeSh();return}
+ else if(a==="imp"){closeSh();const j=prompt("Pega aquí la copia de seguridad");if(!j)return;try{const d=JSON.parse(j);if(!Array.isArray(d.movies))throw 0;if(!confirm("Se sustituirán los datos actuales. ¿Continuar?"))return;S=d}catch(z){toast("La copia no es válida");return}ch=true}
+ if(ch){save();render()}});
+$("#q").addEventListener("input",e=>{Q=e.target.value;LIM=200;render()});
+$("#ord").addEventListener("change",e=>{ORD=e.target.value;saveUI();render()});
+function menu(){const lg=!!gs(),rv=S.movies.filter(y=>{const e=meta(y);return e&&(e.mq==="dud"||e.mq==="no")}).length;
+ openSh(`<h3>Datos</h3><p class="hint" style="margin:0;text-align:left">${lg?"Tus películas se guardan en la nube. Punto verde arriba a la derecha = sincronizado.":"Sin iniciar sesión."}</p>${lg?`<button class="big p" data-a="syncnow">Sincronizar ahora</button>`:`<button class="big p" data-a="login">Iniciar sesión</button>`}
+ <button class="big" data-a="review">⚠️ Revisar coincidencias (${rv})</button><button class="big" data-a="retry">Reintentar las no encontradas</button>
+ <p class="hint" style="margin:0;text-align:left">${progTxt()||"Datos de TMDB y notas al día."}</p>
+ <button class="big" data-a="exp">Copiar datos (copia manual)</button><button class="big" data-a="imp">Restaurar desde una copia</button><button class="big" data-a="close">Cerrar</button>`)}
+/* TMDB / OMDb */
+async function tmdb(path,params={}){const u=new URL("https://api.themoviedb.org/3"+path);u.searchParams.set("api_key",KEYS.tmdb);u.searchParams.set("language","es-ES");for(const[a,b]of Object.entries(params))u.searchParams.set(a,b);
+ for(let i=0;i<4;i++){const r=await fetch(u);if(r.status===429){await sleep(1500*(i+1));continue}if(!r.ok)throw new Error("tmdb "+r.status);return r.json()}throw new Error("tmdb 429")}
+async function details(id){const d=await tmdb("/movie/"+id,{append_to_response:"credits"});
+ return{tm:id,t:d.title,ot:d.original_title,y:+(d.release_date||"").slice(0,4)||null,g:(d.genres||[]).map(x=>x.name),d:((d.credits&&d.credits.crew)||[]).filter(c=>c.job==="Director").map(c=>c.name).slice(0,3),c:((d.credits&&d.credits.cast)||[]).slice(0,8).map(c=>c.name),r:d.runtime||null,tv:d.vote_count?Math.round(d.vote_average*10)/10:null,tc:d.vote_count||0,p:d.poster_path||null,im:d.imdb_id||null}}
+function bg(s){s=nrm(s).replace(/ /g,"");const b=[];for(let i=0;i<s.length-1;i++)b.push(s.slice(i,i+2));return b}
+function sim(a,b){if(nrm(a)===nrm(b))return 1;const x=bg(a),y=bg(b);if(!x.length||!y.length)return 0;const m=new Map();x.forEach(k=>m.set(k,(m.get(k)||0)+1));let n=0;y.forEach(k=>{const c=m.get(k);if(c){n++;m.set(k,c-1)}});return 2*n/(x.length+y.length)}
+function queries(n){const q=[n],p=n.match(/^(.*?)\s*\((.*?)\)\s*(.*)$/);if(p)q.push((p[1]+" "+p[3]).trim(),p[2]);
+ if(n.includes(" - ")){const[a,...b]=n.split(" - ");q.push(b.join(" "),a,n.replace(/ - /g," "))}
+ const s=n.replace(/^(.*?)\s+\d+\s*$/,"$1");if(s!==n)q.push(s);return[...new Set(q.map(x=>x.trim()).filter(x=>x.length>1))]}
+async function match(m){let best=null;
+ for(const q of queries(m.n)){let res=(await tmdb("/search/movie",m.y?{query:q,year:m.y}:{query:q})).results||[];if(!res.length&&m.y)res=(await tmdb("/search/movie",{query:q})).results||[];
+  for(const x of res.slice(0,8)){const s=Math.max(sim(q,x.title),sim(q,x.original_title||""),sim(m.n,x.title));const yr=+(x.release_date||"").slice(0,4);
+   const sc=s+(m.y&&yr===m.y?.3:0)+Math.min(.15,Math.log10((x.vote_count||0)+1)*.04);if(!best||sc>best.sc)best={sc,s,x}}
+  if(best&&best.s>=.95)break}return best}
+let wRun=false,FAILED=new Set(),PG={t:0,d:0};
+async function worker(){if(wRun||!gs()||!KEYS)return;wRun=true;
+ try{const todo=S.movies.filter(m=>!M[m.id]&&!FAILED.has(m.id)).sort((a,b)=>(a.s==="s"?0:1)-(b.s==="s"?0:1));let i=0,k=0;
+  const one=async m=>{try{const b=await match(m);let d;if(b){d=await details(b.x.id);d.mq=b.s>=.8?"ok":"dud"}else d={tm:-1,mq:"no"};d.v=Date.now();M[m.id]=d}catch(e){FAILED.add(m.id)}
+   if(++k%15===0){saveMeta();prog();if(!$("#sh.on"))render()}};
+  await Promise.all([0,1,2,3].map(async()=>{while(i<todo.length){const m=todo[i++];await one(m)}}));
+  saveMeta(true);render()}finally{wRun=false}omdbQueue()}
+/* OMDb: máximo ~1000 consultas/día */
+const today=()=>new Date().toISOString().slice(0,10);
+function oc(){let o;try{o=JSON.parse(localStorage.getItem(OK_))}catch(e){}if(!o||o.d!==today())o={d:today(),n:0,blk:false};return o}
+function ocs(o){try{localStorage.setItem(OK_,JSON.stringify(o))}catch(e){}}
+let oRun=false;
+async function omdbQueue(){if(oRun||!gs()||!KEYS||!KEYS.omdb)return;oRun=true;
+ try{const todo=S.movies.filter(m=>{const e=M[m.id];return e&&e.im&&!e.od}).sort((a,b)=>(a.s==="s"?0:1)-(b.s==="s"?0:1));let k=0;
+  for(const m of todo){const o=oc();if(o.blk||o.n>=980)break;const e=M[m.id];
+   try{const r=await fetch(`https://www.omdbapi.com/?i=${e.im}&apikey=${KEYS.omdb}`);o.n++;ocs(o);const j=await r.json();
+    if(j.Response==="False"){if(/limit/i.test(j.Error||"")){o.blk=true;ocs(o);break}if(/invalid api key/i.test(j.Error||"")){o.blk=true;ocs(o);toast("Clave de OMDb sin activar");break}e.od=Date.now()}
+    else{e.ir=parseFloat(j.imdbRating)||null;e.iv=parseInt(String(j.imdbVotes||"").replace(/\D/g,""))||null;for(const x of j.Ratings||[]){if(x.Source==="Rotten Tomatoes")e.rt=parseInt(x.Value);if(x.Source==="Metacritic")e.mc=parseInt(x.Value)}e.od=Date.now()}
+    e.v=Date.now()}catch(z){await sleep(3000)}
+   if(++k%20===0){saveMeta();prog();if(!$("#sh.on"))render()}await sleep(120)}
+  saveMeta();render()}finally{oRun=false}}
+function progTxt(){const n=S.movies.length;if(!n)return"";const d=S.movies.filter(m=>M[m.id]).length,im=S.movies.filter(m=>M[m.id]&&M[m.id].im).length,od=S.movies.filter(m=>M[m.id]&&M[m.id].od).length,o=oc();
+ const a=[];if(d<n)a.push(`Buscando datos en TMDB: ${d}/${n}`);if(od<im)a.push(`Notas IMDb: ${od}/${im}`+(o.blk||o.n>=980?" (límite diario, sigue mañana)":""));return a.join(" · ")}
+function prog(){const p=$("#prog");if(p)p.textContent=progTxt()}
+/* Nube (Supabase) */
+const SB="https://tdundqjsixqrddszumly.supabase.co",SBK="sb_publishable_KTvtNJcl64iOH4Hee-3L-Q__vSiCgrP",ROW="peliculas",MROW="peliculas-meta";
+const SES="pelis-session",UPD="pelis-updated-at",DRT="pelis-dirty";
+let cbusy=false,ctimer=null;
+const gs=()=>{try{return JSON.parse(localStorage.getItem(SES))}catch(e){return null}};
+const lupd=()=>+localStorage.getItem(UPD)||0,dirty=()=>localStorage.getItem(DRT)==="1";
+async function areq(path,body){const r=await fetch(`${SB}/auth/v1/${path}`,{method:"POST",headers:{apikey:SBK,"Content-Type":"application/json"},body:JSON.stringify(body)});const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error_description||j.msg||j.message||("Error "+r.status));return j}
+function ssave(j){const s={access_token:j.access_token,refresh_token:j.refresh_token,expires_at:Math.floor(Date.now()/1000)+(+j.expires_in||3600)};localStorage.setItem(SES,JSON.stringify(s));return s}
+async function atoken(){let s=gs();if(!s)return null;if(s.expires_at-60>Date.now()/1000)return s.access_token;try{s=ssave(await areq("token?grant_type=refresh_token",{refresh_token:s.refresh_token}));return s.access_token}catch(e){if(/invalid|expired|not found|already used/i.test(e.message))localStorage.removeItem(SES);return null}}
+async function hd(json){const t=await atoken();if(!t)throw new Error("nologin");const h={apikey:SBK,Authorization:"Bearer "+t};if(json){h["Content-Type"]="application/json";h.Prefer="return=minimal"}return h}
+function dot(st){let d=$("#dot");if(!d){d=document.createElement("div");d.id="dot";d.style.cssText="position:fixed;top:calc(env(safe-area-inset-top,0px) + 4px);right:6px;width:9px;height:9px;border-radius:50%;z-index:6;pointer-events:none";document.body.appendChild(d)}d.style.background={ok:"#2e9e4f",pending:"#e0a100",off:"#d33",none:"#999"}[st]||"#999"}
+function queueCloud(){if(!gs()){dot("none");return}dot("pending");clearTimeout(ctimer);ctimer=setTimeout(()=>{ctimer=null;sync()},1200)}
+async function getRow(id){const r=await fetch(`${SB}/rest/v1/vista_semanal?id=eq.${encodeURIComponent(id)}&select=datos`,{headers:await hd(false)});if(!r.ok)throw new Error("sb "+r.status);const rows=await r.json();return rows.length?rows[0].datos:null}
+async function putRow(id,datos){const h=await hd(true);h.Prefer="resolution=merge-duplicates,return=minimal";const p=await fetch(`${SB}/rest/v1/vista_semanal`,{method:"POST",headers:h,body:JSON.stringify({id,datos,actualizado_en:new Date().toISOString()})});if(!p.ok)throw new Error("sb "+p.status)}
+async function loadKeys(){if(KEYS)return KEYS;const k=await getRow("peliculas-keys");if(k){KEYS=k;localStorage.setItem(KK,JSON.stringify(k))}return KEYS}
+async function seed(){const k=await loadKeys();const r=await fetch("peliculas-seed.bin?v=1");if(!r.ok)throw new Error("seed");const buf=new Uint8Array(await r.arrayBuffer());
+ const key=await crypto.subtle.importKey("raw",Uint8Array.from(atob(k.seed),c=>c.charCodeAt(0)),"AES-GCM",false,["decrypt"]);
+ const plain=await crypto.subtle.decrypt({name:"AES-GCM",iv:buf.slice(0,12)},key,buf.slice(12));
+ const txt=await new Response(new Blob([plain]).stream().pipeThrough(new DecompressionStream("gzip"))).text();return JSON.parse(txt)}
+async function sync(){if(cbusy||ctimer)return;if(!gs()){dot("none");return}cbusy=true;
+ try{await loadKeys();const rem=await getRow(ROW),remAt=+(rem&&rem.updatedAt)||0;let locAt=lupd();
+  if(!locAt&&S.movies.length){locAt=Date.now();localStorage.setItem(UPD,String(locAt));localStorage.setItem(DRT,"1")}
+  if(!rem||!rem.state){if(!S.movies.length){toast("Cargando tus películas…");S=await seed();localStorage.setItem(K,JSON.stringify(S));localStorage.setItem(UPD,String(Date.now()))}
+   await putRow(ROW,{state:S,updatedAt:lupd()||Date.now()});localStorage.setItem(DRT,"0");render()}
+  else if(dirty()||locAt>remAt){const sent=lupd();await putRow(ROW,{state:S,updatedAt:sent});if(lupd()===sent)localStorage.setItem(DRT,"0")}
+  else if(remAt>locAt){S=rem.state;if(!Array.isArray(S.movies))S={movies:[]};localStorage.setItem(K,JSON.stringify(S));localStorage.setItem(UPD,String(remAt));localStorage.setItem(DRT,"0");if(!$("#sh.on"))render()}
+  dot(dirty()?"pending":"ok")}
+ catch(e){dot(gs()?"off":"none");if(e.message==="nologin"&&!gs())showLogin()}
+ finally{cbusy=false}}
+let mbusy=false;
+async function msync(){if(mbusy||!gs())return;mbusy=true;
+ try{const rem=(await getRow(MROW))||{};let up=mdirty,down=false;
+  for(const[k,e]of Object.entries(rem)){const l=M[k];if(!l||(e.v||0)>(l.v||0)){M[k]=e;down=true}}
+  for(const[k,e]of Object.entries(M)){const r=rem[k];if(!r||(e.v||0)>(r.v||0)){up=true;break}}
+  const ids=new Set(S.movies.map(m=>m.id));for(const k of Object.keys(M))if(!ids.has(k)&&S.movies.length)delete M[k];
+  if(down){try{localStorage.setItem(MK,JSON.stringify(M))}catch(e){}}
+  if(up){mdirty=false;await putRow(MROW,M)}
+  if(down&&!$("#sh.on"))render()}
+ catch(e){}finally{mbusy=false}}
+function showLogin(){if($("#lg"))return;const d=document.createElement("div");d.id="lg";d.style.cssText="position:fixed;inset:0;z-index:50;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:24px";
+ d.innerHTML='<div class="lgc"><h3>🎬 Películas</h3><p>Inicia sesión (la misma cuenta que en Series).</p><input id="lg-e" type="email" autocomplete="username" placeholder="Correo"><input id="lg-p" type="password" autocomplete="current-password" placeholder="Contraseña"><button class="big p" id="lg-b" type="button">Entrar</button><p id="lg-m" style="color:var(--bad);min-height:18px"></p></div>';
+ document.body.appendChild(d);
+ const go=async()=>{const m=$("#lg-m");m.textContent="Entrando…";try{ssave(await areq("token?grant_type=password",{email:$("#lg-e").value.trim(),password:$("#lg-p").value}));d.remove();dot("pending");await start()}catch(e){m.textContent="No se pudo entrar: revisa el correo y la contraseña."}};
+ $("#lg-b").onclick=go;$("#lg-p").addEventListener("keydown",e=>{if(e.key==="Enter")go()})}
+async function start(){await sync();await msync();worker();omdbQueue()}
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&gs()){sync();msync();worker();omdbQueue()}});
+setInterval(()=>{if(mdirty)msync()},20000);
+load();render();
+if(!gs())showLogin();else start();
+</script></body></html>
