@@ -176,7 +176,7 @@ function fixSheet(m){RES=[];RSEL=null;FX=m.id;openSh(`<h3>Cambiar coincidencia</
  setTimeout(()=>{const i=$("#f-s");if(i)i.onkeydown=ev=>{if(ev.key==="Enter")doSearch()}},50);doSearch()}
 async function doSearch(){const q=($("#f-s")||{}).value;if(!q||!q.trim())return;if(!KEYS){toast("Inicia sesión primero");return}$("#rs").innerHTML='<p class="hint">Buscando…</p>';
  try{const r=await tmdb("/search/movie",{query:q.trim()});RES=(r.results||[]).slice(0,10);RSEL=RES.length?0:null;$("#rs").innerHTML=resHtml()||'<p class="hint">Sin resultados.</p>'}catch(e){$("#rs").innerHTML='<p class="hint">No se pudo buscar.</p>'}}
-async function setMatch(m,tid,mq){try{const d=await details(tid);d.mq=mq;d.v=Date.now();M[m.id]=d;saveMeta(true);omdbQueue()}catch(e){toast("No se pudieron cargar los datos")}}
+async function setMatch(m,tid,mq){try{const d=await details(tid);d.mq=mq;d.man=1;d.mv=MV;d.v=Date.now();M[m.id]=d;saveMeta(true);omdbQueue()}catch(e){toast("No se pudieron cargar los datos")}}
 /* Clics */
 document.addEventListener("click",ev=>{
  if(ev.target.id==="sh"){closeSh();return}
@@ -216,7 +216,7 @@ document.addEventListener("click",ev=>{
  else if(a==="fa"&&m){const e=meta(m);window.open("https://www.filmaffinity.com/es/search.php?stype=title&stext="+encodeURIComponent((e&&e.t)||m.n),"_blank");return}
  else if(a==="fix"&&m){fixSheet(m);return}
  else if(a==="fixok"){const mm=S.movies.find(y=>y.id===FX);if(!mm||RSEL==null){toast("Elige una");return}const x=RES[RSEL];closeSh();setMatch(mm,x.id,"ok").then(()=>{render();if(RV)reviewList();else ficha(mm)});return}
- else if(a==="fixnone"){const mm=S.movies.find(y=>y.id===FX);if(mm){M[mm.id]={tm:-1,mq:"ok",v:Date.now()};saveMeta(true)}closeSh();render();return}
+ else if(a==="fixnone"){const mm=S.movies.find(y=>y.id===FX);if(mm){M[mm.id]={tm:-1,mq:"ok",man:1,mv:MV,v:Date.now()};saveMeta(true)}closeSh();render();return}
  else if(a==="ren"&&m){const n=prompt("Nombre",m.n);if(!n||!n.trim())return;m.n=n.trim();ficha(m);ch=true}
  else if(a==="del"&&m){if(!confirm("¿Eliminar «"+m.n+"»?"))return;S.movies=S.movies.filter(y=>y!==m);delete M[m.id];saveMeta();closeSh();ch=true}
  else if(a==="menu"){menu();return}
@@ -241,18 +241,28 @@ async function details(id){const d=await tmdb("/movie/"+id,{append_to_response:"
  return{tm:id,t:d.title,ot:d.original_title,y:+(d.release_date||"").slice(0,4)||null,g:(d.genres||[]).map(x=>x.name),d:((d.credits&&d.credits.crew)||[]).filter(c=>c.job==="Director").map(c=>c.name).slice(0,3),c:((d.credits&&d.credits.cast)||[]).slice(0,8).map(c=>c.name),r:d.runtime||null,tv:d.vote_count?Math.round(d.vote_average*10)/10:null,tc:d.vote_count||0,p:d.poster_path||null,im:d.imdb_id||null}}
 function bg(s){s=nrm(s).replace(/ /g,"");const b=[];for(let i=0;i<s.length-1;i++)b.push(s.slice(i,i+2));return b}
 function sim(a,b){if(nrm(a)===nrm(b))return 1;const x=bg(a),y=bg(b);if(!x.length||!y.length)return 0;const m=new Map();x.forEach(k=>m.set(k,(m.get(k)||0)+1));let n=0;y.forEach(k=>{const c=m.get(k);if(c){n++;m.set(k,c-1)}});return 2*n/(x.length+y.length)}
-function queries(n){const q=[n],p=n.match(/^(.*?)\s*\((.*?)\)\s*(.*)$/);if(p)q.push((p[1]+" "+p[3]).trim(),p[2]);
- if(n.includes(" - ")){const[a,...b]=n.split(" - ");q.push(b.join(" "),a,n.replace(/ - /g," "))}
- const s=n.replace(/^(.*?)\s+\d+\s*$/,"$1");if(s!==n)q.push(s);return[...new Set(q.map(x=>x.trim()).filter(x=>x.length>1))]}
-async function match(m){let best=null;
- for(const q of queries(m.n)){let res=(await tmdb("/search/movie",m.y?{query:q,year:m.y}:{query:q})).results||[];if(!res.length&&m.y)res=(await tmdb("/search/movie",{query:q})).results||[];
-  for(const x of res.slice(0,8)){const s=Math.max(sim(q,x.title),sim(q,x.original_title||""),sim(m.n,x.title));const yr=+(x.release_date||"").slice(0,4);
-   const sc=s+(m.y&&yr===m.y?.3:0)+Math.min(.15,Math.log10((x.vote_count||0)+1)*.04);if(!best||sc>best.sc)best={sc,s,x}}
+const MV=2,YR=/^(19|20)\d\d$/;
+function prep(n){n=n.replace(/\bStars? ?Wars\b/i,"Star Wars").replace(/\((lat|vose|v\.?o\.?s?e?)\)/ig,"").replace(/\s+/g," ").trim();
+ const segs=n.split(/\s*-\s*/).map(x=>x.trim()).filter(Boolean),ys=segs.filter(x=>YR.test(x));return{n,segs:segs.filter(x=>!YR.test(x)),y:ys.length?+ys[0]:null}}
+function queries(raw){const P=prep(raw),n=P.n,q=[n],p=n.match(/^(.*?)\s*\((.*?)\)\s*(.*)$/);if(p)q.push((p[1]+" "+p[3]).trim(),p[2]);
+ const sg=P.segs;if(sg.length>1){q.push(sg[sg.length-1],sg.slice(1).join(" "),sg[0],sg.join(" "))}
+ q.push(n.replace(/[-,.:;¡!¿?]+/g," "));
+ for(const x of q.slice()){const t=x.replace(/^(.*?)\s+\d+\s*$/,"$1");if(t!==x)q.push(t)}
+ return[...new Set(q.map(x=>x.replace(/\s+/g," ").trim()).filter(x=>x.length>1&&!YR.test(x)))]}
+async function match(m,hint){let best=null;const P=prep(m.n),Y=(hint&&hint.y)||m.y||P.y;
+ const qs=hint&&hint.q?[hint.q]:queries(m.n);
+ for(const q of qs){let res=(await tmdb("/search/movie",Y?{query:q,year:Y}:{query:q})).results||[];if(!res.length&&Y)res=(await tmdb("/search/movie",{query:q})).results||[];
+  const nq=nrm(q),wq=nq.split(" ").length;
+  for(const x of res.slice(0,10)){const nt=nrm(x.title),no=nrm(x.original_title);const yr=+(x.release_date||"").slice(0,4),ym=!!(Y&&yr===Y);
+   let s=Math.max(sim(q,x.title),sim(q,x.original_title||""),sim(P.n,x.title));
+   const cont=(" "+nt+" ").includes(" "+nq+" ")||(" "+no+" ").includes(" "+nq+" ");
+   if(cont&&(ym||wq>=2))s=Math.max(s,.85);if(hint&&hint.q)s=Math.max(s,ym||!Y?.9:.8);
+   const sc=s+(ym?.3:0)+Math.min(.3,Math.log10((x.vote_count||0)+1)*.08);if(!best||sc>best.sc)best={sc,s,x}}
   if(best&&best.s>=.95)break}return best}
 let wRun=false,FAILED=new Set(),PG={t:0,d:0};
 async function worker(){if(wRun||!gs()||!KEYS)return;wRun=true;
- try{const todo=S.movies.filter(m=>!M[m.id]&&!FAILED.has(m.id)).sort((a,b)=>(a.s==="s"?0:1)-(b.s==="s"?0:1));let i=0,k=0;
-  const one=async m=>{try{const b=await match(m);let d;if(b){d=await details(b.x.id);d.mq=b.s>=.8?"ok":"dud"}else d={tm:-1,mq:"no"};d.v=Date.now();M[m.id]=d}catch(e){FAILED.add(m.id)}
+ try{const need=m=>{const e=M[m.id];return !e||(e.hint&&!e.tm)||((e.mq==="dud"||e.mq==="no")&&(e.mv||1)<MV&&!e.man)};const todo=S.movies.filter(m=>need(m)&&!FAILED.has(m.id)).sort((a,b)=>(a.s==="s"?0:1)-(b.s==="s"?0:1));let i=0,k=0;
+  const one=async m=>{try{const old=M[m.id],h=old&&old.hint;const b=await match(m,h);let d;if(b){d=await details(b.x.id);d.mq=b.s>=.8?"ok":"dud"}else d={tm:-1,mq:"no"};if(h&&!b)d.hint=h,d.tm=-1;d.mv=MV;d.v=Date.now();M[m.id]=d}catch(e){FAILED.add(m.id)}
    if(++k%15===0){saveMeta();prog();if(!$("#sh.on"))render()}};
   await Promise.all([0,1,2,3].map(async()=>{while(i<todo.length){const m=todo[i++];await one(m)}}));
   saveMeta(true);render()}finally{wRun=false}omdbQueue()}
@@ -270,7 +280,7 @@ async function omdbQueue(){if(oRun||!gs()||!KEYS||!KEYS.omdb)return;oRun=true;
     e.v=Date.now()}catch(z){await sleep(3000)}
    if(++k%20===0){saveMeta();prog();if(!$("#sh.on"))render()}await sleep(120)}
   saveMeta();render()}finally{oRun=false}}
-function progTxt(){const n=S.movies.length;if(!n)return"";const d=S.movies.filter(m=>M[m.id]).length,im=S.movies.filter(m=>M[m.id]&&M[m.id].im).length,od=S.movies.filter(m=>M[m.id]&&M[m.id].od).length,o=oc();
+function progTxt(){const n=S.movies.length;if(!n)return"";const d=S.movies.filter(m=>M[m.id]&&!(M[m.id].hint&&!M[m.id].tm)).length,im=S.movies.filter(m=>M[m.id]&&M[m.id].im).length,od=S.movies.filter(m=>M[m.id]&&M[m.id].od).length,o=oc();
  const a=[];if(d<n)a.push(`Buscando datos en TMDB: ${d}/${n}`);if(od<im)a.push(`Notas IMDb: ${od}/${im}`+(o.blk||o.n>=980?" (límite diario, sigue mañana)":""));return a.join(" · ")}
 function prog(){const p=$("#prog");if(p)p.textContent=progTxt()}
 /* Nube (Supabase) */
