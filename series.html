@@ -4,7 +4,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Series">
 <meta name="theme-color" content="#EEF1F4">
-<link rel="apple-touch-icon" href="icono-series-3.png">
+<link rel="apple-touch-icon" href="icono-series-4.png">
 <title>Series</title>
 <style>
 :root{--bg:#EEF1F4;--card:#fff;--ink:#14181F;--mut:#6B7480;--line:#DDE2E8;--acc:#2D5BFF;--ok:#1F9D6B;--bad:#D6453D;--amb:#F08C00}
@@ -18,10 +18,8 @@ main{padding:0 14px}
 .bar h1{flex:1;margin:0;font-size:26px}
 .bar .back{color:var(--acc);font-weight:600;font-size:17px}
 h2{font-size:15px;font-weight:700;color:var(--amb);margin:24px 2px 8px}
-.si{background:var(--card);border-radius:16px;padding:10px 12px;margin:10px 0;border-left:8px solid var(--acc);position:relative}
-.si.wait{border-left-color:var(--amb);opacity:.9}
-.si.stop{border-left-color:var(--mut);opacity:.9}
-.si.nxt{border-left-color:#8B5CF6}
+.si{background:var(--card);border-radius:16px;padding:10px 12px;margin:10px 0;border-left:8px solid var(--c,var(--acc));background:color-mix(in srgb,var(--c,var(--acc)) 13%,var(--card));position:relative}
+.si.wait,.si.stop{opacity:.92}
 .fav{flex:none;width:40px;height:44px;font-size:25px;color:var(--mut)}.fav.on{color:var(--amb)}
 .si.drag{z-index:10;box-shadow:0 10px 28px #0005;opacity:.95}
 .si.tgt{box-shadow:0 -4px 0 var(--acc)}.si.tgtend{box-shadow:0 4px 0 var(--acc)}
@@ -70,6 +68,8 @@ h2{font-size:15px;font-weight:700;color:var(--amb);margin:24px 2px 8px}
 const K="series-v1",$=s=>document.querySelector(s);
 let S,X=null,XS=null,SE=null,DR=null;
 const PL=["Netflix","HBO Max","Disney+","Prime Video","Plex","Apple TV+","Movistar+","SkyShowtime","Filmin","RTVE Play","Atresplayer"];
+const COL=["#2D5BFF","#E5484D","#12A594","#F08C00","#8E4EC6","#D6409F","#3E9B4F","#0E9EC9","#B7791F","#6E56CF"];
+const colr=s=>{let h=0;for(const c of s.name.toLowerCase())h=(h*31+c.charCodeAt(0))>>>0;return COL[h%COL.length]};
 const uid=()=>Math.random().toString(36).slice(2,9);
 const esc=t=>String(t==null?"":t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 function load(){try{S=JSON.parse(localStorage.getItem(K))}catch(e){}if(!S||!Array.isArray(S.series))S={series:[]}}
@@ -85,7 +85,7 @@ const abc=(a,b)=>a.name.localeCompare(b.name,"es",{sensitivity:"base",numeric:tr
 const favF=a=>a.filter(s=>s.fav).concat(a.filter(s=>!s.fav));
 const lst=st=>{let a=S.series.filter(s=>ds(s)===st);if(st!=="v")a=a.slice().sort(abc);return favF(a)};
 function card(s){const d=ds(s),v=d==="v";
- return `<div class="si${v?"":d==="x"?" nxt":d==="p"?" stop":" wait"}" data-id="${s.id}"><div class="sh2">${v?`<span class="hd" data-drag="${s.id}">≡</span>`:""}<div class="t" data-a="tog" data-id="${s.id}"><b>${esc(s.name)}</b><small>${label(s)}${s.where?`<span class="wh">${esc(s.where)}</span>`:""}</small></div><button class="fav${s.fav?" on":""}" data-a="fav" data-id="${s.id}" aria-label="Favorita">${s.fav?"★":"☆"}</button></div>${X===s.id?body(s):""}</div>`}
+ return `<div class="si${v?"":d==="x"?" nxt":d==="p"?" stop":" wait"}" data-id="${s.id}" style="--c:${colr(s)}"><div class="sh2">${v?`<span class="hd" data-drag="${s.id}">≡</span>`:""}<div class="t" data-a="tog" data-id="${s.id}"><b>${esc(s.name)}</b><small>${label(s)}${s.where?`<span class="wh">${esc(s.where)}</span>`:""}</small></div><button class="fav${s.fav?" on":""}" data-a="fav" data-id="${s.id}" aria-label="Favorita">${s.fav?"★":"☆"}</button></div>${X===s.id?body(s):""}</div>`}
 function render(){const v=lst("v"),nx=lst("x"),pa=lst("p"),e=lst("e"),t=lst("t");
  $("#app").innerHTML=`<div class="bar"><h1>Series</h1><button class="back" data-a="menu">Datos</button></div><main><button class="add" data-a="addser" style="margin-top:14px">+ Añadir serie</button><div id="vl">${v.map(card).join("")}</div>${!v.length?`<p class="hint">${S.series.length?"No tienes series en Viendo.":"Añade las series que estás viendo."}</p>`:""}`+
  (pa.length?`<h2 style="color:var(--mut)">Paradas</h2>`+pa.map(card).join(""):"")+
