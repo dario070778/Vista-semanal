@@ -159,12 +159,12 @@ function renderE(){const mine=list();let h="";
   if(!UPC){h+='<p class="hint">Cargando…</p>';loadUpc()}else h+=`<div style="display:grid;gap:6px">${UPC.map(upRow).join("")}</div>`}
  $("#ls").innerHTML=h;refreshRel()}
 async function loadUpc(){if(UPCL||!KEYS)return;UPCL=true;
- try{let c;try{c=JSON.parse(localStorage.getItem("pelis-upc"))}catch(e){}
+ try{let c;try{c=JSON.parse(localStorage.getItem("pelis-upc2"))}catch(e){}
   if(c&&c.d===today()&&Array.isArray(c.r))UPC=c.r;
   else{const t=today(),to=new Date(Date.now()+400*864e5).toISOString().slice(0,10);let r=[];
    for(let pg=1;pg<=5;pg++){const j=await tmdb("/discover/movie",{region:"ES","release_date.gte":t,"release_date.lte":to,with_release_type:"2|3",sort_by:"popularity.desc",page:pg});r=r.concat(j.results||[]);if(pg>=(j.total_pages||1))break}
-   const seen=new Set();r=r.filter(x=>!seen.has(x.id)&&seen.add(x.id)).map(x=>({id:x.id,title:x.title,original_title:x.original_title,release_date:x.release_date,poster_path:x.poster_path}));
-   r.sort((a,b)=>(a.release_date||"9999").localeCompare(b.release_date||"9999"));UPC=r;try{localStorage.setItem("pelis-upc",JSON.stringify({d:today(),r}))}catch(e){}}}
+   const seen=new Set(),cut=new Date(Date.now()-30*864e5).toISOString().slice(0,10);r=r.filter(x=>x.release_date&&x.release_date>=cut&&!seen.has(x.id)&&seen.add(x.id)).map(x=>({id:x.id,title:x.title,original_title:x.original_title,release_date:x.release_date,poster_path:x.poster_path}));
+   r.sort((a,b)=>(a.release_date||"9999").localeCompare(b.release_date||"9999"));UPC=r;try{localStorage.setItem("pelis-upc2",JSON.stringify({d:today(),r}))}catch(e){}}}
  catch(e){UPC=[]}finally{UPCL=false}if(T==="e"&&!$("#sh.on"))render()}
 let est=null;
 function eSearch(){clearTimeout(est);ESR=null;if(!Q.trim())return;const q=Q.trim();est=setTimeout(async()=>{
