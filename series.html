@@ -46,6 +46,9 @@ h2{font-size:15px;font-weight:700;color:var(--amb);margin:24px 2px 8px}
 .ctl .w{color:var(--bad)}
 .wh{display:inline-block;margin-left:6px;padding:1px 8px;border-radius:99px;background:color-mix(in srgb,var(--acc) 14%,var(--card));color:var(--acc);font-size:12px;font-weight:700;vertical-align:1px}
 .chips{display:flex;flex-wrap:wrap;gap:8px}.chips button{padding:9px 14px;border-radius:99px;background:var(--bg);font-weight:600;font-size:15px}.chips button.on{background:var(--acc);color:#fff}
+.dlr{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--line)}.dlr b{flex:1;min-width:0;font-size:17px;overflow-wrap:anywhere}.dlr.ok b{text-decoration:line-through;color:var(--mut);font-weight:500}
+.dlr .ck{flex:none;width:34px;height:34px;border-radius:50%;border:2px solid var(--line);color:#fff;font-weight:800}.dlr.ok .ck{background:var(--ok);border-color:var(--ok)}.dlr .x{flex:none;width:34px;height:34px;color:var(--bad);font-size:18px}
+.dla{display:flex;gap:8px}.dla input{flex:1}.dla button{flex:none;padding:0 18px;border-radius:12px;background:var(--acc);color:#fff;font-weight:700}
 .lnk{display:block;margin:26px auto 0;color:var(--mut);font-weight:600;padding:8px 14px}
 .hint{color:var(--mut);font-size:14px;margin:14px 2px}
 #sh{position:fixed;inset:0;z-index:20;display:none;background:rgba(0,0,0,.45);align-items:flex-end}
@@ -70,6 +73,9 @@ let S,X=null,XS=null,SE=null,DR=null;
 const PL=["Netflix","HBO Max","Disney+","Prime Video","Plex","Apple TV+","Movistar+","SkyShowtime","Filmin","RTVE Play","Atresplayer"];
 const COL=["#2D5BFF","#E5484D","#12A594","#F08C00","#8E4EC6","#D6409F","#3E9B4F","#0E9EC9","#B7791F","#6E56CF"];
 const colr=s=>{let h=0;for(const c of s.name.toLowerCase())h=(h*31+c.charCodeAt(0))>>>0;return COL[h%COL.length]};
+const dl=()=>S.dl||(S.dl=[]);
+function dlSheet(){const l=dl().slice().sort((a,b)=>(a.done-b.done)||abc(a,b));
+ openSh(`<h3>Descargar</h3><div class="dla"><input id="f-d" autocomplete="off" placeholder="Título de la serie"><button data-a="dladd">Añadir</button></div>`+(l.length?l.map(y=>`<div class="dlr${y.done?" ok":""}"><button class="ck" data-a="dltog" data-id="${y.id}" aria-label="Descargada">${y.done?"✓":""}</button><b>${esc(y.name)}</b><button class="x" data-a="dldel" data-id="${y.id}" aria-label="Borrar">✕</button></div>`).join(""):`<p class="hint">Aún no hay series en la lista.</p>`)+`<button class="big" data-a="close">Cerrar</button>`)}
 const uid=()=>Math.random().toString(36).slice(2,9);
 const esc=t=>String(t==null?"":t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 function load(){try{S=JSON.parse(localStorage.getItem(K))}catch(e){}if(!S||!Array.isArray(S.series))S={series:[]}}
@@ -90,7 +96,7 @@ function render(){const v=lst("v"),nx=lst("x"),pa=lst("p"),e=lst("e"),t=lst("t")
  $("#app").innerHTML=`<div class="bar"><h1>Series</h1><button class="back" data-a="menu">Datos</button></div><main><button class="add" data-a="addser" style="margin-top:14px">+ Añadir serie</button><div id="vl">${v.map(card).join("")}</div>${!v.length?`<p class="hint">${S.series.length?"No tienes series en Viendo.":"Añade las series que estás viendo."}</p>`:""}`+
  (pa.length?`<h2 style="color:var(--mut)">Paradas</h2>`+pa.map(card).join(""):"")+
  (e.length?`<h2>Esperando</h2>`+e.map(card).join(""):"")+
- (nx.length?`<h2 style="color:#8B5CF6">Próximas</h2>`+nx.map(card).join(""):"")+(t.length?`<button class="lnk" data-a="done">Terminadas (${t.length})</button>`:"")+`</main>`}
+ (nx.length?`<h2 style="color:#8B5CF6">Próximas</h2>`+nx.map(card).join(""):"")+`<button class="lnk" data-a="dl">Descargar (${dl().filter(y=>!y.done).length})</button>`+(t.length?`<button class="lnk" style="margin-top:6px" data-a="done">Terminadas (${t.length})</button>`:"")+`</main>`}
 function openSh(h){$("#sh").innerHTML=`<div class="sheet">${h}</div>`;$("#sh").classList.add("on")}
 function closeSh(){$("#sh").classList.remove("on")}
 let tt;function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("on");clearTimeout(tt);tt=setTimeout(()=>t.classList.remove("on"),1800)}
@@ -130,6 +136,10 @@ document.addEventListener("click",ev=>{
  else if(a==="del"&&s){closeSh();if(!confirm("¿Eliminar «"+s.name+"»?"))return;S.series=S.series.filter(y=>y!==s);if(X===s.id)X=null}
  else if(a==="addser"){openSh(`<h3>Nueva serie</h3><label>Nombre<input id="f-n" autocomplete="off" placeholder="Ej. Breaking Bad"></label>${nIn("Capítulos de la temporada 1",8)}<button class="big p" data-a="saveser">Añadir</button><button class="big" data-a="close">Cancelar</button>`);return}
  else if(a==="saveser"){const n=$("#f-n").value.trim();if(!n){toast("Pon un nombre");return}const c=Math.max(1,Math.min(99,Math.round(+$("#f-c").value)||1));const o={id:uid(),name:n,state:"v",def:c,seasons:[{w:Array(c).fill(false)}]};S.series.push(o);X=o.id;XS="v";closeSh()}
+ else if(a==="dl"){dlSheet();return}
+ else if(a==="dladd"){const n=$("#f-d").value.trim();if(!n){toast("Pon un título");return}if(dl().some(y=>y.name.toLowerCase()===n.toLowerCase())){toast("Ya está en la lista");return}dl().push({id:uid(),name:n,done:false});save();dlSheet();render();return}
+ else if(a==="dltog"){const y=dl().find(z=>z.id===t.dataset.id);if(y)y.done=!y.done;save();dlSheet();render();return}
+ else if(a==="dldel"){S.dl=dl().filter(z=>z.id!==t.dataset.id);save();dlSheet();render();return}
  else if(a==="done"){const l=favF(S.series.filter(y=>y.state==="t").sort(abc));openSh(`<h3>Terminadas</h3>`+l.map(y=>`<div class="hl"><b>${esc(y.name)}</b><div class="ctl"><button data-a="st" data-id="${y.id}" data-k="v">Volver a Viendo</button><button class="w" data-a="del" data-id="${y.id}">Eliminar</button></div></div>`).join("")+`<button class="big" data-a="close">Cerrar</button>`);return}
  else if(a==="close"){closeSh();return}
  else if(a==="menu"){const lg=!!gs();openSh(`<h3>Datos</h3><p class="hint">${lg?"Tus datos se guardan en la nube. Punto verde arriba a la derecha = sincronizado.":"Sin iniciar sesión, tus datos solo están en este iPhone."}</p>${lg?`<button class="big p" data-a="syncnow">Sincronizar ahora</button>`:`<button class="big p" data-a="login">Iniciar sesión</button>`}<button class="big" data-a="exp">Copiar datos (copia manual)</button><button class="big" data-a="imp">Restaurar desde una copia</button><button class="big" data-a="close">Cerrar</button>`);return}
@@ -166,6 +176,7 @@ function showLogin(){if($("#lg"))return;const d=document.createElement("div");d.
  document.body.appendChild(d);
  const go=async()=>{const m=$("#lg-m");m.textContent="Entrando…";try{ssave(await areq("token?grant_type=password",{email:$("#lg-e").value.trim(),password:$("#lg-p").value}));d.remove();dot("pending");await sync();toast("Sesión iniciada")}catch(e){m.textContent="No se pudo entrar: revisa el correo y la contraseña."}};
  $("#lg-b").onclick=go;$("#lg-x").onclick=()=>d.remove();$("#lg-p").addEventListener("keydown",e=>{if(e.key==="Enter")go()})}
+document.addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target.id==="f-d"){e.preventDefault();const b=document.querySelector('[data-a="dladd"]');if(b)b.click()}});
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")sync()});
 load();render();
 if(!gs())showLogin();else sync();
