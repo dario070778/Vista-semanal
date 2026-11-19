@@ -138,8 +138,9 @@ function row(m){const e=meta(m),r=e&&e.ir,sm=[];
 function cnt(fnc){return S.movies.filter(fnc).length}
 function renderTop(){for(const k of["s","v","e"])$("#tb-"+k).classList.toggle("on",T===k);
  $("#tb-s").textContent=`Sin ver (${cnt(m=>m.s==="s"&&!m.dl)})`;$("#tb-v").textContent=`Vistas (${cnt(m=>m.s==="v")})`;$("#tb-e").textContent=`Estrenos (${cnt(m=>m.s==="e")})`;
- const E=T==="e";$("#subs").style.display=E?"none":"";$("#ord").style.display=E?"none":"";$("#fb").style.display=E?"none":"";$("#addb").style.display=E?"none":"";$("#q").placeholder=E?"Buscar estrenos para añadir…":"Buscar título…";
- if(E)return;
+ const E=T==="e";$("#subs").style.display="";$("#ord").style.display=E?"none":"";$("#fb").style.display=E?"none":"";$("#addb").style.display=E?"none":"";$("#q").placeholder=E?"Buscar estrenos para añadir…":"Buscar título…";
+ if(E){const ms=[...new Set(S.movies.filter(m=>m.s==="e").map(m=>(relOf(m)||"").slice(0,7)).concat((UPC||[]).map(x=>(x.release_date||"").slice(0,7))).filter(Boolean))].sort();if(EMON&&!ms.includes(EMON))EMON="";
+  $("#subs").innerHTML=[["","Todos"]].concat(ms.map(k=>[k,new Date(k+"-15T12:00:00").toLocaleDateString("es-ES",{month:"short",year:"numeric"})])).map(([k,l])=>`<button class="${EMON===k?"on":""}" data-a="emon" data-k="${k}">${l}</button>`).join("");return}
  const sb=T==="s"?[["g","Listado",cnt(m=>m.s==="s"&&!m.dl)],["r","Recomendadas",cnt(m=>m.s==="s"&&m.rec!=null)],["d","Descargar",cnt(m=>m.s==="s"&&m.dl)]]:[["t","Todas",cnt(m=>m.s==="v")],["f","Favoritas",cnt(m=>m.s==="v"&&m.fav)],["d","Descargar",cnt(m=>m.s==="v"&&m.dl)]];
  if(!sb.some(x=>x[0]===SUB))SUB=sb[0][0];
  $("#subs").innerHTML=sb.map(([k,l,n])=>`<button class="${SUB===k?"on":""}" data-a="sub" data-k="${k}">${l} · ${n}</button>`).join("");
@@ -149,14 +150,14 @@ function render(){renderTop();if(T==="e"){renderE();prog();return}const a=list()
   a.slice(0,LIM).map(row).join("")+(a.length>LIM?`<button class="more" data-a="more">Mostrar más (${a.length-LIM})</button>`:"")+
   (!a.length?`<p class="hint">${S.movies.length?"No hay películas aquí.":gs()?"Cargando tus películas…":"Inicia sesión para cargar tus películas."}</p>`:"");prog()}
 /* Estrenos */
-let UPC=null,UPCL=false,ESR=null,EST=null,ESQ="";
+let EMON="",UPC=null,UPCL=false,ESR=null,EST=null,ESQ="";
 const tmIn=id=>S.movies.find(m=>{const e=M[m.id];return e&&e.tm===id});
 function upRow(x){const h=tmIn(x.id);return `<button class="res" data-a="${h?"open":"eadd"}" ${h?`data-id="${h.id}"`:`data-tm="${x.id}"`}>${x.poster_path?`<img src="${IMG}w92${x.poster_path}" alt="">`:'<i class="np"></i>'}<span><b>${esc(x.title)}</b><small>${x.release_date?fdate(x.release_date):"Sin fecha"}${x.original_title&&x.original_title!==x.title?" · "+esc(x.original_title):""}</small></span>${h?`<span class="ok2">✓ ${esc(where(h))}</span>`:'<span class="ok2" style="color:var(--acc);font-size:22px">+</span>'}</button>`}
-function renderE(){const mine=list();let h="";
+function renderE(){const inM=d=>!EMON||(d||"").slice(0,7)===EMON;const mine=list().filter(m=>inM(relOf(m)));let h="";
  if(Q.trim()){h+=`<div class="sec">Estrenos que coinciden</div>`;h+=ESR==null?'<p class="hint">Buscando…</p>':ESR.length?`<div style="display:grid;gap:6px">${ESR.map(upRow).join("")}</div>`:'<p class="hint">Sin resultados.</p>'}
  else{h+=`<div class="sec">Mis estrenos (${mine.length})</div>`+(mine.length?mine.map(row).join(""):'<p class="hint">Aún no has añadido ninguno. Elige abajo o busca arriba.</p>');
   h+=`<div class="sec">Próximos estrenos en España</div>`;
-  if(!UPC){h+='<p class="hint">Cargando…</p>';loadUpc()}else h+=`<div style="display:grid;gap:6px">${UPC.map(upRow).join("")}</div>`}
+  if(!UPC){h+='<p class="hint">Cargando…</p>';loadUpc()}else{const u=UPC.filter(x=>inM(x.release_date));h+=u.length?`<div style="display:grid;gap:6px">${u.map(upRow).join("")}</div>`:'<p class="hint">No hay estrenos ese mes.</p>'}}
  $("#ls").innerHTML=h;refreshRel()}
 async function loadUpc(){if(UPCL||!KEYS)return;UPCL=true;
  try{let c;try{c=JSON.parse(localStorage.getItem("pelis-upc2"))}catch(e){}
@@ -241,6 +242,7 @@ document.addEventListener("click",ev=>{
  const t=ev.target.closest("[data-a]");if(!t)return;
  const a=t.dataset.a,m=S.movies.find(y=>y.id===(t.dataset.id||CUR));let ch=false;
  if(a==="tab"){T=t.dataset.k;SUB=T==="s"?"g":"t";LIM=200;Q="";$("#q").value="";ESR=null;saveUI();render();scrollTo(0,0);return}
+ if(a==="emon"){EMON=t.dataset.k;render();scrollTo(0,0);return}
  if(a==="sub"){SUB=t.dataset.k;LIM=200;saveUI();render();scrollTo(0,0);return}
  if(a==="more"){LIM+=300;render();return}
  if(a==="open"&&m){ficha(m);return}
