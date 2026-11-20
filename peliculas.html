@@ -131,7 +131,7 @@ function list(){const q=nrm(Q),fd=nrm(F.dir),fa=nrm(F.act);
  if(T==="e")a.sort((x,y)=>(relOf(x)||"9999").localeCompare(relOf(y)||"9999"));
  if(T==="s")a=a.filter(m=>m.pr).concat(a.filter(m=>!m.pr));return a}
 function row(m){const e=meta(m),r=e&&e.ir,sm=[];
- if(m.s==="e"){const rc=e&&e.rc,rd=e&&e.rd;sm.push(rc?`🎬 Cine ${fdate(rc)} · ${left(rc)}`:"🎬 Cine: sin fecha");if(rd)sm.push(`📺 ${fdate(rd)}`)}
+ if(m.s==="e"){const rc=e&&e.rc,rd=e&&e.rd;sm.push(rc?(rc<=today()?`🎬 En cines desde el ${fdate(rc)} · a Descargar el ${fdate(plus30(rc))}`:`🎬 Cine ${fdate(rc)} · ${left(rc)}`):"🎬 Cine: sin fecha");if(rd)sm.push(`📺 ${fdate(rd)}`)}
  if(m.rec!=null&&m.s!=="e")sm.push("👤 "+(m.rec?esc(m.rec):"Recomendada"));if(m.dl&&SUB!=="d")sm.push("⬇️ Descargar");
  if(ORD==="r"&&F.src!=="imdb"){const x=rating(m);if(x!=null)sm.push(({tmdb:"TMDB",rt:"Rotten",mc:"Metacritic",media:"Media"})[F.src]+" "+f1(x))}
  if(e&&(e.mq==="dud"||e.mq==="no"))sm.push('<span class="warn">⚠️ revisar datos</span>');
@@ -156,7 +156,9 @@ const tmIn=id=>S.movies.find(m=>{const e=M[m.id];return e&&e.tm===id});
 function upRow(x){const h=tmIn(x.id);return `<button class="res" data-a="${h?"open":"eadd"}" ${h?`data-id="${h.id}"`:`data-tm="${x.id}"`}>${x.poster_path?`<img src="${IMG}w92${x.poster_path}" alt="">`:'<i class="np"></i>'}<span><b>${esc(x.title)}</b><small>${x.release_date?fdate(x.release_date):"Sin fecha"}${x.original_title&&x.original_title!==x.title?" · "+esc(x.original_title):""}</small></span>${h?`<span class="ok2">✓ ${esc(where(h))}</span>`:'<span class="ok2" style="color:var(--acc);font-size:22px">+</span>'}</button>`}
 function renderE(){const inM=d=>!EMON||(d||"").slice(0,7)===EMON;const mine=list().filter(m=>inM(relOf(m)));let h="";
  if(Q.trim()){h+=`<div class="sec">Estrenos que coinciden</div>`;h+=ESR==null?'<p class="hint">Buscando…</p>':ESR.length?`<div style="display:grid;gap:6px">${ESR.map(upRow).join("")}</div>`:'<p class="hint">Sin resultados.</p>'}
- else{h+=`<div class="sec">Mis estrenos (${mine.length})</div>`+(mine.length?mine.map(row).join(""):'<p class="hint">Aún no has añadido ninguno. Elige abajo o busca arriba.</p>');
+ else{const inc=mine.filter(m=>{const d=relOf(m);return d&&d<=today()}),fut=mine.filter(m=>!inc.includes(m));
+  if(inc.length)h+=`<div class="sec">En cines (${inc.length})</div>`+inc.map(row).join("");
+  h+=`<div class="sec">Mis estrenos (${fut.length})</div>`+(fut.length?fut.map(row).join(""):'<p class="hint">'+(inc.length?"No tienes más estrenos pendientes.":"Aún no has añadido ninguno. Elige abajo o busca arriba.")+'</p>');
   h+=`<div class="sec">Próximos estrenos en España</div>`;
   if(!UPC){h+='<p class="hint">Cargando…</p>';loadUpc()}else{const u=UPC.filter(x=>inM(x.release_date));h+=u.length?`<div style="display:grid;gap:6px">${u.map(upRow).join("")}</div>`:'<p class="hint">No hay estrenos ese mes.</p>'}}
  $("#ls").innerHTML=h;refreshRel()}
@@ -182,7 +184,9 @@ async function refreshRel(){if(rRun||!KEYS)return;rRun=true;let ch=false;
  try{for(const m of S.movies.filter(m=>m.s==="e")){const e=M[m.id];if(!e||!(e.tm>0))continue;if(e.rdt&&Date.now()-e.rdt<12*36e5)continue;
    try{const d=await tmdb("/movie/"+e.tm,{append_to_response:"release_dates"});const r=relFrom(d);delete e.rc;delete e.rd;delete e.rci;Object.assign(e,r);e.rdt=Date.now();e.v=Date.now();ch=true}catch(z){}}}
  finally{rRun=false}if(ch){saveMeta(true);estCheck();if(T==="e"&&!$("#sh.on"))render()}}
-function estCheck(){const t=today(),mv=[];for(const m of S.movies){if(m.s!=="e")continue;const d=relOf(m);if(d&&d<=t){m.s="s";m.dl=true;m.a=Date.now();mv.push(disp(m))}}
+const plus30=d=>new Date(new Date(d+"T12:00:00").getTime()+30*864e5).toISOString().slice(0,10);
+function estCheck(){if(!S.fix1&&S.movies.length){for(const m of S.movies)if((m.id==="jh41ykvv"||m.id==="xpmlrt42")&&m.s==="s"&&m.dl){m.s="e";delete m.dl}S.fix1=1;save()}
+ const t=today(),mv=[];for(const m of S.movies){if(m.s!=="e")continue;const d=relOf(m);if(d&&plus30(d)<=t){m.s="s";m.dl=true;m.a=Date.now();mv.push(disp(m))}}
  if(mv.length){save();toast(mv.length===1?`Ya estrenada: ${mv[0]} → Descargar`:`${mv.length} estrenos pasan a Descargar`);render()}}
 /* Hojas */
 let RV=false,SHT="";
@@ -199,7 +203,7 @@ function ficha(m){CUR=m.id;const e=meta(m);const R=[["IMDb",e&&e.ir!=null?f1(e.i
  ${e&&e.tm>0?`<div class="rt">${R.map(([a,b,c])=>`<div><b>${b}</b><span>${a}${c?"<br>"+c:""}</span></div>`).join("")}</div>`:""}
  ${e&&e.d&&e.d.length?`<h4>Dirección</h4><div>${e.d.map(x=>`<button class="pp" data-a="fdir" data-k="${esc(x)}">${esc(x)}</button>`).join("")}</div>`:""}
  ${e&&e.c&&e.c.length?`<h4>Reparto</h4><div>${e.c.map(x=>`<button class="pp" data-a="fact" data-k="${esc(x)}">${esc(x)}</button>`).join("")}</div>`:""}
- ${m.s==="e"?`<h4>Estreno en España</h4><div class="dt"><div>🎬 Cines: <b>${e&&e.rc?fdate(e.rc)+"</b> · "+left(e.rc)+(e.rci?" <small>(fecha internacional)</small>":""):"</b>sin fecha"}</div><div>📺 Plataformas: <b>${e&&e.rd?fdate(e.rd)+"</b> · "+left(e.rd):"</b>sin fecha"}</div></div>`:""}
+ ${m.s==="e"?`<h4>Estreno en España</h4><div class="dt"><div>🎬 Cines: <b>${e&&e.rc?fdate(e.rc)+"</b> · "+(e.rc<=today()?"en cines; pasa a Descargar el "+fdate(plus30(e.rc)):left(e.rc))+(e.rci?" <small>(fecha internacional)</small>":""):"</b>sin fecha"}</div><div>📺 Plataformas: <b>${e&&e.rd?fdate(e.rd)+"</b> · "+left(e.rd):"</b>sin fecha"}</div></div>`:""}
  ${e&&e.tm>0?`<h4>Dónde verla en España</h4><div id="pv"><p class="hint" style="margin:0;text-align:left">Cargando…</p></div>`:(m.s!=="e"&&!m.dl?`<h4>Dónde verla</h4><div class="pv"><span>📀 Plex (en tu disco)</span></div>`:"")}
  ${e&&e.tm>0?`<h4>Sinopsis</h4><p class="ov" id="ov">Cargando…</p>`:""}
  <h4>Acciones</h4>
