@@ -35,6 +35,7 @@ main{padding:4px 14px}
 .row small{display:block;color:var(--mut);font-size:12.5px;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .nt{flex:none;font-weight:800;font-size:14px;padding:3px 7px;border-radius:7px;background:var(--imdb);color:#000;font-variant-numeric:tabular-nums}
 .ic{flex:none;font-size:15px}
+.tg{flex:none;font-size:21px;line-height:1;padding:6px 4px;margin:-6px 0 -6px -4px}.tg.off{opacity:.28;filter:grayscale(1)}
 .more{display:block;width:100%;margin:10px 0;padding:12px;border-radius:12px;border:2px dashed var(--line);color:var(--mut);font-weight:600}
 .add{display:block;width:100%;margin:10px 0 4px;padding:11px;border-radius:12px;background:var(--acc);color:#fff;font-weight:700}
 .hint{color:var(--mut);font-size:14px;margin:14px 2px;text-align:center}
@@ -134,7 +135,7 @@ function row(m){const e=meta(m),r=e&&e.ir,sm=[];
  if(m.rec!=null&&m.s!=="e")sm.push("👤 "+(m.rec?esc(m.rec):"Recomendada"));if(m.dl&&SUB!=="d")sm.push("⬇️ Descargar");
  if(ORD==="r"&&F.src!=="imdb"){const x=rating(m);if(x!=null)sm.push(({tmdb:"TMDB",rt:"Rotten",mc:"Metacritic",media:"Media"})[F.src]+" "+f1(x))}
  if(e&&(e.mq==="dud"||e.mq==="no"))sm.push('<span class="warn">⚠️ revisar datos</span>');
- return `<div class="row" data-a="open" data-id="${m.id}">${m.pr&&m.s==="s"?'<span class="ic">🔥</span>':""}${m.fav&&m.s==="v"?'<span class="ic">⭐</span>':""}<div class="t"><b>${esc(disp(m))}</b>${sm.length?`<small>${sm.join(" · ")}</small>`:""}</div>${r!=null?`<span class="nt">${f1(r)}</span>`:""}</div>`}
+ return `<div class="row" data-a="open" data-id="${m.id}">${m.s==="s"?`<button class="tg${m.pr?"":" off"}" data-a="qpr" data-id="${m.id}" aria-label="Prioridad">🔥</button>`:""}${m.s==="v"?`<button class="tg${m.fav?"":" off"}" data-a="qfav" data-id="${m.id}" aria-label="Favorita">${m.fav?"⭐":"☆"}</button>`:""}<div class="t"><b>${esc(disp(m))}</b>${sm.length?`<small>${sm.join(" · ")}</small>`:""}</div>${r!=null?`<span class="nt">${f1(r)}</span>`:""}</div>`}
 function cnt(fnc){return S.movies.filter(fnc).length}
 function renderTop(){for(const k of["s","v","e"])$("#tb-"+k).classList.toggle("on",T===k);
  $("#tb-s").textContent=`Sin ver (${cnt(m=>m.s==="s"&&!m.dl)})`;$("#tb-v").textContent=`Vistas (${cnt(m=>m.s==="v")})`;$("#tb-e").textContent=`Estrenos (${cnt(m=>m.s==="e")})`;
@@ -245,6 +246,7 @@ document.addEventListener("click",ev=>{
  if(a==="emon"){EMON=t.dataset.k;render();scrollTo(0,0);return}
  if(a==="sub"){SUB=t.dataset.k;LIM=200;saveUI();render();scrollTo(0,0);return}
  if(a==="more"){LIM+=300;render();return}
+ if((a==="qfav"||a==="qpr")&&m){if(a==="qfav"){if(m.fav)delete m.fav;else m.fav=true}else{if(m.pr)delete m.pr;else m.pr=true}save();render();if(SHT==="review")reviewList();return}
  if(a==="open"&&m){ficha(m);return}
  if(a==="close"){closeSh();return}
  if(a==="filt"){filtSheet();return}
