@@ -454,7 +454,7 @@ function eventSegs(date,h){const hs=h*60,he=hs+60,order=[];
  for(let m=0;m<60;m++){const c=[];order.forEach((e,k)=>{if(cov[k][m])c.push(k)});if(!c.length)continue;
   const rm=new Set();
   for(let x=0;x<c.length;x++)for(let y=x+1;y<c.length;y++){const hi=c[x],lo=c[y],key=pk(hi,lo),d=ovr[key];
-   if(!pairs[key])pairs[key]={key,ia:order[hi].id,ib:order[lo].id,sa:specs[hi].startMin,sb:specs[lo].startMin,ea:specs[hi].endMin,eb:specs[lo].endMin};
+   if(!pairs[key])pairs[key]={key,ia:order[hi].id,ib:order[lo].id,sa:specs[hi].startMin,sb:specs[lo].startMin,ea:specs[hi].endMin,eb:specs[lo].endMin,decided:d==="both"||d===order[hi].id||d===order[lo].id};
    if(d==="both")continue;if(d===order[lo].id)rm.add(hi);else rm.add(lo)}
   const v=c.filter(k=>!rm.has(k));vis[m]=v.length?v:[c[0]]}
  const sig=m=>vis[m]?vis[m][0]+","+(vis[m][1]===undefined?"":vis[m][1]):"";
@@ -527,7 +527,7 @@ function renderGrid(){
      if(v.important){td.classList.add("importantRange");if(!(samePrev&&prev?.important))td.classList.add("importantStart");if(!(sameNext&&next?.important))td.classList.add("importantEnd")}
     }
     const sec=v.segs&&v.segs.find(x=>x.second);td.textContent=showText?(sec?`${sec.text||""} / ${sec.second.text||""}`:(v.text||"")):"";
-    if(v.pairs&&v.pairs.length)v.pairs.forEach(pp=>{if(Math.floor(Math.max(pp.sa,pp.sb)/60)!==h)return;const st=document.createElement("span");st.className="ovStar";st.textContent="*";st.title="Eventos que coinciden";["touchstart","mousedown","touchend","mouseup"].forEach(ev=>st.addEventListener(ev,e=>e.stopPropagation(),{passive:true}));st.onclick=e=>{e.stopPropagation();openOverlap(displayDate,pp)};td.appendChild(st)});
+    if(v.pairs&&v.pairs.length)v.pairs.forEach(pp=>{if(pp.decided||Math.floor(Math.max(pp.sa,pp.sb)/60)!==h)return;const st=document.createElement("span");st.className="ovStar";st.textContent="*";st.title="Eventos que coinciden";["touchstart","mousedown","touchend","mouseup"].forEach(ev=>st.addEventListener(ev,e=>e.stopPropagation(),{passive:true}));st.onclick=e=>{e.stopPropagation();openOverlap(displayDate,pp)};td.appendChild(st)});
    }else{td.textContent="";td.style.background="var(--cell)";td.style.color="#111"}
    if(displayDate===today&&h===hr)td.classList.add("currentCell");bindCell(td);tr.appendChild(td)
   }
