@@ -91,6 +91,8 @@ input[type=color]{width:54px;height:38px;border:1px solid var(--ui-border);borde
 .eventItemTitle{font-size:15px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .eventItemMeta{font-size:12px;color:#666;margin-top:3px}
 .eventDot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:-1px;border:1px solid rgba(0,0,0,.15)}
+.ovStar{position:absolute;top:0;right:0;width:22px;height:100%;display:flex;align-items:flex-start;justify-content:center;font-size:19px;font-weight:900;line-height:1;color:#e2001a;text-shadow:0 0 2px #fff,0 0 3px #fff;z-index:4;cursor:pointer}
+.ovOpt.on{border:2px solid #1677d2}
 .emptyList{padding:18px 6px;text-align:center;color:#777;font-size:14px}
 .ruleBox .eventGrid{margin:0 0 8px}
 .ruleBox .miniLabel{margin:2px 0 4px}
@@ -331,7 +333,7 @@ function slotEnd(date,h){const d=parseISO(date);d.setHours(h+1,0,0,0);return d}
 function effectiveDate(displayDate,h){if(inNav(displayDate))return displayDate;return slotEnd(displayDate,h)<=new Date()?addDays(displayDate,7):displayDate}
 // Para una franja ya terminada, la celda queda vacía salvo que el usuario la haya editado manualmente para la próxima semana.
 // Los eventos planificados/repetitivos futuros NO se muestran antes de que su fecha llegue a la cabecera.
-function navResolved(date,h){const v=resolved(date,h);if(!v)return null;if(v.source==="event"){const segs=eventSegs(date,h);if(!segs.length)return null;return {...segs[0],segs,activeNow:true,visibleStartMin:segs[0].segStart,visibleEndMin:segs[0].segEnd}}return v}
+function navResolved(date,h){const v=resolved(date,h);if(!v)return null;if(v.source==="event"){const segs=eventSegs(date,h);if(!segs.length)return null;return {...segs[0],segs,pairs:segs.pairs||[],activeNow:true,visibleStartMin:segs[0].segStart,visibleEndMin:segs[0].segEnd}}return v}
 function isPastSlot(displayDate,h){return !inNav(displayDate)&&slotEnd(displayDate,h)<=new Date()}
 function visibleResolved(displayDate,h){
  if(inNav(displayDate))return navResolved(displayDate,h);
@@ -343,10 +345,10 @@ function visibleResolved(displayDate,h){
  const today=isoDate(now),isNow=displayDate===today&&h===now.getHours(),nowMin=now.getHours()*60+now.getMinutes();
  if(v.source==="event"){
    // Varios eventos en la misma hora: se pintan todos los tramos futuros y el nombre/color es el del evento activo.
-   let segs=eventSegs(displayDate,h),activeNow=true;
+   let segs=eventSegs(displayDate,h),activeNow=true;const pairs=segs.pairs||[];
    if(isNow){segs=segs.filter(x=>x.segEnd>nowMin);if(!segs.length)return null;activeNow=segs[0].segStart<=nowMin;segs=segs.map(x=>({...x,segStart:Math.max(x.segStart,nowMin)}))}
    if(!segs.length)return null;
-   return {...segs[0],segs,activeNow,visibleStartMin:segs[0].segStart,visibleEndMin:segs[0].segEnd};
+   return {...segs[0],segs,pairs,activeNow,visibleStartMin:segs[0].segStart,visibleEndMin:segs[0].segEnd};
  }
  if(isNow){
    const originalStart=Number.isFinite(+v.startMin)?+v.startMin:h*60;
@@ -360,7 +362,7 @@ function visibleResolved(displayDate,h){
 }
 function cleanupPast(){const cut=new Date();cut.setDate(cut.getDate()-365);let changed=false;for(const k of Object.keys(state.cells)){const m=k.match(/^(\d{4}-\d{2}-\d{2})-(\d{2})$/);if(!m)continue;const date=m[1],h=+m[2];if(slotEnd(date,h)<=cut){delete state.cells[k];changed=true}}
 // Historial: se conserva un año; después se borran las franjas manuales y los eventos de fecha concreta más antiguos.
-const cutISO=isoDate(cut),nEv=state.events.length;state.events=state.events.filter(e=>(e.repeat&&e.repeat!=="none")||!e.date||e.date>=cutISO);if(state.events.length!==nEv)changed=true;
+const cutISO=isoDate(cut),nEv=state.events.length;if(state.overlaps)for(const k of Object.keys(state.overlaps))if(k.slice(0,10)<cutISO){delete state.overlaps[k];changed=true}state.events=state.events.filter(e=>(e.repeat&&e.repeat!=="none")||!e.date||e.date>=cutISO);if(state.events.length!==nEv)changed=true;
 // Los eventos planificados no se borran automáticamente al finalizar.
 // Si ya han pasado, dejan de mostrarse; los datos permanecen guardados.
 if(changed)saveState()}
@@ -445,17 +447,39 @@ function eventSegs(date,h){const hs=h*60,he=hs+60,order=[];
  for(let i=state.events.length-1;i>=0;i--){const e=state.events[i];if(!(e.repeat&&e.repeat!=="none")&&eventMatches(e,date,h))order.push(e)}
  for(let i=state.events.length-1;i>=0;i--){const e=state.events[i];if(e.repeat&&e.repeat!=="none"&&eventMatches(e,date,h))order.push(e)}
  if(!order.length)return [];
- const own=new Array(60).fill(-1),specs=order.map(e=>evSpec(e,date));
- order.forEach((e,k)=>{const sp=specs[k],holes=eventHoles(e,date);for(let m=Math.max(hs,sp.startMin);m<Math.min(he,sp.endMin);m++){if(own[m-hs]===-1&&!holes.some(x=>m>=x[0]&&m<x[1]))own[m-hs]=k}});
- const out=[];let m=0;while(m<60){const k=own[m];if(k<0){m++;continue}let n=m;while(n<60&&own[n]===k)n++;out.push({...specs[k],segStart:hs+m,segEnd:hs+n});m=n}
- return out}
+ const specs=order.map(e=>evSpec(e,date)),ovr=state.overlaps||{};
+ const cov=order.map((e,k)=>{const sp=specs[k],holes=eventHoles(e,date),a=new Uint8Array(60);for(let m=Math.max(hs,sp.startMin);m<Math.min(he,sp.endMin);m++)if(!holes.some(x=>m>=x[0]&&m<x[1]))a[m-hs]=1;return a});
+ const pk=(i,j)=>{const a=order[i].id,b=order[j].id;return date+"|"+(a<b?a+"|"+b:b+"|"+a)};
+ const vis=new Array(60).fill(null),pairs={};
+ for(let m=0;m<60;m++){const c=[];order.forEach((e,k)=>{if(cov[k][m])c.push(k)});if(!c.length)continue;
+  const rm=new Set();
+  for(let x=0;x<c.length;x++)for(let y=x+1;y<c.length;y++){const hi=c[x],lo=c[y],key=pk(hi,lo),d=ovr[key];
+   if(!pairs[key])pairs[key]={key,ia:order[hi].id,ib:order[lo].id,sa:specs[hi].startMin,sb:specs[lo].startMin,ea:specs[hi].endMin,eb:specs[lo].endMin};
+   if(d==="both")continue;if(d===order[lo].id)rm.add(hi);else rm.add(lo)}
+  const v=c.filter(k=>!rm.has(k));vis[m]=v.length?v:[c[0]]}
+ const sig=m=>vis[m]?vis[m][0]+","+(vis[m][1]===undefined?"":vis[m][1]):"";
+ const out=[];let m=0;while(m<60){if(!vis[m]){m++;continue}const g=sig(m);let n=m;while(n<60&&vis[n]&&sig(n)===g)n++;const k1=vis[m][0],k2=vis[m][1];out.push({...specs[k1],second:k2===undefined?null:specs[k2],segStart:hs+m,segEnd:hs+n});m=n}
+ out.pairs=Object.values(pairs);return out}
 function applySegBackground(td,v,h){const hs=h*60,segs=v.segs||[v],cell="var(--cell)",st=[];let pr=0;
  segs.forEach(x=>{const f=(x.segStart-hs)/60*100,t=(x.segEnd-hs)/60*100,c=norm(x.color);if(f>pr)st.push(`${cell} ${pr}%,${cell} ${f}%`);st.push(`${c} ${f}%,${c} ${t}%`);pr=t});
  if(pr<100)st.push(`${cell} ${pr}%,${cell} 100%`);
- if(segs.length===1&&segs[0].segStart<=hs&&segs[0].segEnd>=hs+60){td.style.background=norm(segs[0].color);td.style.backgroundImage="none";return}
- td.classList.add("partialEvent");td.style.backgroundColor=cell;td.style.backgroundImage=`linear-gradient(to right,${st.join(",")})`}
+ const two=segs.filter(x=>x.second);
+ if(segs.length===1&&!two.length&&segs[0].segStart<=hs&&segs[0].segEnd>=hs+60){td.style.background=norm(segs[0].color);td.style.backgroundImage="none";return}
+ td.classList.add("partialEvent");td.style.backgroundColor=cell;const img=`linear-gradient(to right,${st.join(",")})`;
+ if(two.length){const ov=[];let p2=0;two.forEach(x=>{const f=(x.segStart-hs)/60*100,t=(x.segEnd-hs)/60*100,c=norm(x.second.color);if(f>p2)ov.push(`transparent ${p2}%,transparent ${f}%`);ov.push(`${c} ${f}%,${c} ${t}%`);p2=t});if(p2<100)ov.push(`transparent ${p2}%,transparent 100%`);
+  td.style.backgroundImage=`linear-gradient(to right,${ov.join(",")}),${img}`;td.style.backgroundSize="100% 50%,100% 100%";td.style.backgroundPosition="0 100%,0 0"}
+ else td.style.backgroundImage=img}
 function resolved(date,h){const manual=state.cells[cellKey(date,h)];if(manual){const sm=Number.isFinite(+manual.startMin)?+manual.startMin:h*60,em=Number.isFinite(+manual.endMin)?+manual.endMin:(h+1)*60;return {...manual,startMin:sm,endMin:em,source:"cell",sourceId:manual.manualId||cellKey(date,h),startHour:Math.floor(sm/60),endHour:Math.ceil(em/60),date};}
 const a=eventSegs(date,h);return a[0]||null}
+let ovCur=null;
+function openOverlap(date,p){const ea=state.events.find(x=>x.id===p.ia),eb=state.events.find(x=>x.id===p.ib);if(!ea||!eb)return;ovCur={date,p};
+ const A=evSpec(ea,date),B=evSpec(eb,date),from=Math.max(p.sa,p.sb),to=Math.min(p.ea,p.eb),d=parseISO(date),cur=(state.overlaps||{})[p.key]||p.ia;
+ document.getElementById("ovInfo").textContent=`${DAYS[dayIndexFromISO(date)]} ${d.getDate()} · coinciden de ${formatTime(from)} a ${formatTime(to)}. Elige qué se ve en ese tramo; el resto de cada evento se mantiene.`;
+ const box=document.getElementById("ovOpts");box.innerHTML="";
+ const opts=[[p.ia,A],[p.ib,B]].map(([id,sp])=>({id,html:`<div class="eventItemTitle"><span class="eventDot" style="background:${esc(norm(sp.color))}"></span>Solo «${esc(sp.text||"(Sin texto)")}»</div><div class="eventItemMeta">${formatTime(sp.startMin)}–${formatTime(sp.endMin)}</div>`}));
+ opts.push({id:"both",html:`<div class="eventItemTitle">Ver los dos</div><div class="eventItemMeta">La celda se divide en dos en el tramo común</div>`});
+ opts.forEach(o=>{const b=document.createElement("button");b.type="button";b.className="eventItem ovOpt"+(cur===o.id?" on":"");b.innerHTML=o.html;b.onclick=()=>{snap();state.overlaps=state.overlaps||{};state.overlaps[p.key]=o.id;saveState();ovModal.classList.remove("show");render()};box.appendChild(b)});
+ ovModal.classList.add("show")}
 function sameEventRange(a,b){return !!a&&!!b&&a.source==="event"&&b.source==="event"&&a.sourceId===b.sourceId&&a.date===b.date&&a.startMin===b.startMin&&a.endMin===b.endMin}
 function sameManualRange(a,b){return !!a&&!!b&&a.source==="cell"&&b.source==="cell"&&a.sourceId===b.sourceId&&a.date===b.date&&a.startMin===b.startMin&&a.endMin===b.endMin}
 function sameRange(a,b){return sameEventRange(a,b)||sameManualRange(a,b)}
@@ -468,6 +492,8 @@ function applyEventBackground(td,v,h){
 }
 function sameImportantRange(a,b){return sameEventRange(a,b)&&a.important&&b.important}
 
+const ovModal=document.createElement("div");ovModal.className="modal";ovModal.id="ovModal";ovModal.innerHTML='<div class="sheet"><h2>Eventos que coinciden</h2><div class="smallnote" id="ovInfo"></div><div class="eventList" id="ovOpts"></div><button id="ovClose" class="widebtn" type="button" style="width:100%">Cerrar</button></div>';document.body.appendChild(ovModal);
+document.getElementById("ovClose").onclick=()=>ovModal.classList.remove("show");ovModal.onclick=e=>{if(e.target===ovModal)ovModal.classList.remove("show")};
 PALETTE.forEach(c=>{const b=document.createElement("button");b.className="sw";b.type="button";b.style.background=c;b.onclick=()=>colorInput.value=c;palette.appendChild(b)});
 for(let m=0;m<1440;m+=15){const a=document.createElement("option");a.value=m;a.textContent=formatTime(m);eventStart.appendChild(a);const c=a.cloneNode(true);cellStart.appendChild(c)}for(let m=15;m<=1440;m+=15){const b=document.createElement("option");b.value=m;b.textContent=formatTime(m);eventEnd.appendChild(b);const c=b.cloneNode(true);cellEnd.appendChild(c)}
 DAYS.forEach((d,i)=>{const b=document.createElement("button");b.type="button";b.className="daytoggle";b.textContent=d;b.dataset.day=i;b.onclick=()=>{b.classList.toggle("on");if(eventEdit.mode==="edit"){const ev=state.events.find(x=>x.id===eventEdit.eventId);if(ev?.repeat&&ev.repeat!=="none")setEventScope("series")}};weekdayPicker.appendChild(b)});
@@ -500,7 +526,8 @@ function renderGrid(){
      if(samePrev){td.classList.add(sameNext?"eventBlockMid":"eventBlockEnd")}else if(sameNext)td.classList.add("eventBlockStart");
      if(v.important){td.classList.add("importantRange");if(!(samePrev&&prev?.important))td.classList.add("importantStart");if(!(sameNext&&next?.important))td.classList.add("importantEnd")}
     }
-    td.textContent=showText?(v.text||""):"";
+    const sec=v.segs&&v.segs.find(x=>x.second);td.textContent=showText?(sec?`${sec.text||""} / ${sec.second.text||""}`:(v.text||"")):"";
+    if(v.pairs&&v.pairs.length)v.pairs.forEach(pp=>{if(Math.floor(Math.max(pp.sa,pp.sb)/60)!==h)return;const st=document.createElement("span");st.className="ovStar";st.textContent="*";st.title="Eventos que coinciden";["touchstart","mousedown","touchend","mouseup"].forEach(ev=>st.addEventListener(ev,e=>e.stopPropagation(),{passive:true}));st.onclick=e=>{e.stopPropagation();openOverlap(displayDate,pp)};td.appendChild(st)});
    }else{td.textContent="";td.style.background="var(--cell)";td.style.color="#111"}
    if(displayDate===today&&h===hr)td.classList.add("currentCell");bindCell(td);tr.appendChild(td)
   }
@@ -519,7 +546,7 @@ function applyDrag(td){const displayDate=td.dataset.date,h=+td.dataset.h;if(isPa
 function removeManualRange(date,h){const cur=state.cells[cellKey(date,h)];if(!cur)return;const id=cur.manualId;if(id){for(const [k,v] of Object.entries(state.cells))if(v?.manualId===id)delete state.cells[k]}else delete state.cells[cellKey(date,h)]}
 function setManualRange(date,startMin,endMin,text,color,textColor="#111111",note="",important=false,doSave=true){startMin=Math.max(0,Math.min(1439,+startMin||0));endMin=Math.max(startMin+15,Math.min(1440,+endMin||startMin+60));const first=Math.floor(startMin/60),last=Math.ceil(endMin/60)-1;const touched=new Set();for(let h=first;h<=last;h++){const cur=state.cells[cellKey(date,h)];if(cur?.manualId)touched.add(cur.manualId)}for(const id0 of touched)for(const [k,v] of Object.entries(state.cells))if(v?.manualId===id0)delete state.cells[k];const id=uid();for(let h=first;h<=last;h++){state.cells[cellKey(date,h)]={text,note:note||"",color:norm(color),textColor:textColor||"#111111",important:!!important,manualId:id,startMin,endMin}}if(doSave)saveState();return id}
 function setCell(date,h,text,color,textColor="#111111",note="",important=false,doSave=true){removeManualRange(date,h);if(text)setManualRange(date,h*60,(h+1)*60,text,color,textColor,note,important,false);if(doSave)saveState()}
-function deleteAt(date,h){const v=resolved(date,h);if(v?.source==="event"){const hole=[h*60,(h+1)*60];for(const id of new Set(eventSegs(date,h).map(x=>x.sourceId))){const e=state.events.find(x=>x.id===id);if(!e)continue;if(e.repeat&&e.repeat!=="none"){e.exceptions=e.exceptions||{};const ex=e.exceptions[date]||{};if(!ex.cancelled)e.exceptions[date]={...ex,holes:[...(ex.holes||[]),hole]}}else{e.holes=[...(e.holes||[]),hole];let all=true;for(let m=eventStartMin(e);m<eventEndMin(e);m++)if(!e.holes.some(x=>m>=x[0]&&m<x[1])){all=false;break}if(all)state.events=state.events.filter(x=>x.id!==e.id)}}}else removeManualRange(date,h);saveState()}
+function deleteAt(date,h){const v=resolved(date,h);if(v?.source==="event"){const hole=[h*60,(h+1)*60];for(const id of new Set(eventSegs(date,h).flatMap(x=>[x.sourceId,x.second&&x.second.sourceId]).filter(Boolean))){const e=state.events.find(x=>x.id===id);if(!e)continue;if(e.repeat&&e.repeat!=="none"){e.exceptions=e.exceptions||{};const ex=e.exceptions[date]||{};if(!ex.cancelled)e.exceptions[date]={...ex,holes:[...(ex.holes||[]),hole]}}else{e.holes=[...(e.holes||[]),hole];let all=true;for(let m=eventStartMin(e);m<eventEndMin(e);m++)if(!e.holes.some(x=>m>=x[0]&&m<x[1])){all=false;break}if(all)state.events=state.events.filter(x=>x.id!==e.id)}}}else removeManualRange(date,h);saveState()}
 function renderCurrentPreview(){const n=new Date(),date=isoDate(n),h=n.getHours(),v=visibleResolved(date,h);if(!v)return hidePreview();if(v.source==="event"&&!v.activeNow)return hidePreview();previewCard.textContent=(v.note&&v.note.trim())?v.note:v.text;previewCard.style.background=norm(v.color);previewCard.style.color=v.textColor||"#111111";previewCard.classList.toggle("importantPreview",!!v.important);previewCard.classList.add("show")}
 function hidePreview(){previewCard.classList.remove("show","importantPreview");previewCard.textContent="";previewCard.style.background="var(--page)"}
 function renderTools(){if(!selectedCell){importantBtn.classList.remove("importantActive");return}const v=visibleResolved(selectedCell.displayDate||selectedCell.date,selectedCell.h);importantBtn.classList.toggle("importantActive",!!v?.important)}
