@@ -333,7 +333,7 @@ function slotEnd(date,h){const d=parseISO(date);d.setHours(h+1,0,0,0);return d}
 function effectiveDate(displayDate,h){if(inNav(displayDate))return displayDate;return slotEnd(displayDate,h)<=new Date()?addDays(displayDate,7):displayDate}
 // Para una franja ya terminada, la celda queda vacía salvo que el usuario la haya editado manualmente para la próxima semana.
 // Los eventos planificados/repetitivos futuros NO se muestran antes de que su fecha llegue a la cabecera.
-function navResolved(date,h){const v=resolved(date,h);if(!v)return null;if(v.source==="event"){const segs=eventSegs(date,h);if(!segs.length)return null;return {...segs[0],segs,pairs:segs.pairs||[],activeNow:true,visibleStartMin:segs[0].segStart,visibleEndMin:segs[0].segEnd}}return v}
+function navResolved(date,h){const v=resolved(date,h);if(!v)return null;if(v.source==="event"){const segs=eventSegs(date,h);if(!segs.length)return null;return {...segs[0],segs,base:cBase(date,h),pairs:segs.pairs||[],activeNow:true,visibleStartMin:segs[0].segStart,visibleEndMin:segs[0].segEnd}}return v}
 function isPastSlot(displayDate,h){return !inNav(displayDate)&&slotEnd(displayDate,h)<=new Date()}
 function visibleResolved(displayDate,h){
  if(inNav(displayDate))return navResolved(displayDate,h);
@@ -348,7 +348,7 @@ function visibleResolved(displayDate,h){
    let segs=eventSegs(displayDate,h),activeNow=true;const pairs=segs.pairs||[];
    if(isNow){segs=segs.filter(x=>x.segEnd>nowMin);if(!segs.length)return null;activeNow=segs[0].segStart<=nowMin;segs=segs.map(x=>({...x,segStart:Math.max(x.segStart,nowMin)}))}
    if(!segs.length)return null;
-   return {...segs[0],segs,pairs,activeNow,visibleStartMin:segs[0].segStart,visibleEndMin:segs[0].segEnd};
+   return {...segs[0],segs,base:cBase(displayDate,h),pairs,activeNow,visibleStartMin:segs[0].segStart,visibleEndMin:segs[0].segEnd};
  }
  if(isNow){
    const originalStart=Number.isFinite(+v.startMin)?+v.startMin:h*60;
@@ -460,7 +460,7 @@ function eventSegs(date,h){const hs=h*60,he=hs+60,order=[];
  const sig=m=>vis[m]?vis[m][0]+","+(vis[m][1]===undefined?"":vis[m][1]):"";
  const out=[];let m=0;while(m<60){if(!vis[m]){m++;continue}const g=sig(m);let n=m;while(n<60&&vis[n]&&sig(n)===g)n++;const k1=vis[m][0],k2=vis[m][1];out.push({...specs[k1],second:k2===undefined?null:specs[k2],segStart:hs+m,segEnd:hs+n});m=n}
  out.pairs=Object.values(pairs);return out}
-function applySegBackground(td,v,h){const hs=h*60,segs=v.segs||[v],cell="var(--cell)",st=[];let pr=0;
+function applySegBackground(td,v,h){const hs=h*60,segs=v.segs||[v],cell=v.base?norm(v.base.color):"var(--cell)",st=[];let pr=0;
  segs.forEach(x=>{const f=(x.segStart-hs)/60*100,t=(x.segEnd-hs)/60*100,c=norm(x.color);if(f>pr)st.push(`${cell} ${pr}%,${cell} ${f}%`);st.push(`${c} ${f}%,${c} ${t}%`);pr=t});
  if(pr<100)st.push(`${cell} ${pr}%,${cell} 100%`);
  const two=segs.filter(x=>x.second);
@@ -469,7 +469,9 @@ function applySegBackground(td,v,h){const hs=h*60,segs=v.segs||[v],cell="var(--c
  if(two.length){const ov=[];let p2=0;two.forEach(x=>{const f=(x.segStart-hs)/60*100,t=(x.segEnd-hs)/60*100,c=norm(x.second.color);if(f>p2)ov.push(`transparent ${p2}%,transparent ${f}%`);ov.push(`${c} ${f}%,${c} ${t}%`);p2=t});if(p2<100)ov.push(`transparent ${p2}%,transparent 100%`);
   td.style.backgroundImage=`linear-gradient(to right,${ov.join(",")}),${img}`;td.style.backgroundSize="100% 50%,100% 100%";td.style.backgroundPosition="0 100%,0 0"}
  else td.style.backgroundImage=img}
-function resolved(date,h){const manual=state.cells[cellKey(date,h)];if(manual){const sm=Number.isFinite(+manual.startMin)?+manual.startMin:h*60,em=Number.isFinite(+manual.endMin)?+manual.endMin:(h+1)*60;return {...manual,startMin:sm,endMin:em,source:"cell",sourceId:manual.manualId||cellKey(date,h),startHour:Math.floor(sm/60),endHour:Math.ceil(em/60),date};}
+function isC(m){return !!m&&String(m.text||"").trim()==="C"}
+function cBase(date,h){const m=state.cells[cellKey(date,h)];return isC(m)?{color:norm(m.color)}:null}
+function resolved(date,h){const manual=state.cells[cellKey(date,h)];if(manual){const sm=Number.isFinite(+manual.startMin)?+manual.startMin:h*60,em=Number.isFinite(+manual.endMin)?+manual.endMin:(h+1)*60;const cellObj={...manual,startMin:sm,endMin:em,source:"cell",sourceId:manual.manualId||cellKey(date,h),startHour:Math.floor(sm/60),endHour:Math.ceil(em/60),date};if(isC(manual)){const a0=eventSegs(date,h);if(a0.length)return a0[0]}return cellObj}
 const a=eventSegs(date,h);return a[0]||null}
 let ovCur=null;
 function openOverlap(date,p){const ea=state.events.find(x=>x.id===p.ia),eb=state.events.find(x=>x.id===p.ib);if(!ea||!eb)return;ovCur={date,p};
