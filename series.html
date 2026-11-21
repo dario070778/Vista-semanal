@@ -66,7 +66,8 @@ h2{font-size:15px;font-weight:700;color:var(--amb);margin:24px 2px 8px}
 .lgc h3{margin:0;font-size:22px;text-align:center}.lgc p{margin:0;color:var(--mut);font-size:14px;text-align:center}
 #toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 24px);transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:99px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:30}
 #toast.on{opacity:1}
-</style></head>
+</style><script>if("serviceWorker" in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));</script>
+</head>
 <body>
 <div id="app"></div><div id="sh"></div><div id="toast"></div>
 <script>
