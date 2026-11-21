@@ -15,10 +15,13 @@ nav button{font:inherit;border:0;border-radius:999px;padding:12px 20px;backgroun
 nav button.on{background:var(--on);color:var(--onink)}
 iframe{flex:1;width:100%;border:0;background:var(--bg)}
 nav button{font-family:'Barlow Condensed','Arial Narrow',-apple-system,system-ui,sans-serif;text-transform:uppercase;letter-spacing:.4px;font-weight:700;font-size:17px;padding:10px 18px}nav button.on{font-weight:800}
+#off{display:none;position:fixed;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 10px);z-index:9;background:#3a1d1d;color:#ff8a80;font:700 13px -apple-system,system-ui,sans-serif;padding:8px 14px;border-radius:999px;white-space:nowrap;box-shadow:0 2px 10px #000a}#off.on{display:block}
 </style></head><body>
-<nav></nav>
+<nav></nav><div id="off">Sin conexión · se guarda en el móvil y se sube al volver</div>
 <script>
-const T=[["gym","Entrenamiento","gym.html?v=19"],["pro","Progreso","progreso.html?v=19"],["cal","Calendario","calendario.html?v=19"],["vol","Volumen","volumen.html?v=19"],["gra","Gráficas","graficas.html?v=19"],["kc","Calorías","calorias.html?v=19"],["x","X","x.html?v=19"]];
+const T=[["gym","Entrenamiento","gym.html?v=20"],["pro","Progreso","progreso.html?v=20"],["cal","Calendario","calendario.html?v=20"],["vol","Volumen","volumen.html?v=20"],["gra","Gráficas","graficas.html?v=20"],["kc","Calorías","calorias.html?v=20"],["x","X","x.html?v=20"]];
+const off=document.getElementById("off"),upd=()=>off.classList.toggle("on",!navigator.onLine);addEventListener("online",upd);addEventListener("offline",upd);upd();
+if("serviceWorker" in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
 const nav=document.querySelector("nav");let cur="gym";
 try{cur=localStorage.getItem("app-tab")||"gym"}catch(e){}
 if(!T.some(t=>t[0]===cur))cur="gym";
