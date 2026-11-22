@@ -11,9 +11,9 @@ html,body{margin:0;background:var(--bg);color:var(--ink);font:500 15px/1.3 -appl
 body{padding:10px 12px 40px}
 button,input,textarea,select{font:inherit;color:inherit}
 .top{display:flex;align-items:center;gap:8px;margin:4px 0 12px}
-.top h1{flex:1;margin:0;font:800 28px 'Barlow Condensed','Arial Narrow',sans-serif;letter-spacing:.5px;text-transform:uppercase}
+.top h1{flex:1;margin:0;white-space:nowrap;font:800 26px 'Barlow Condensed','Arial Narrow',sans-serif;letter-spacing:.5px;text-transform:uppercase}
 .seg{display:flex;background:var(--card);border-radius:999px;padding:3px}
-.seg button{border:0;background:none;padding:7px 14px;border-radius:999px;font-weight:700;font-size:14px;color:var(--mut);cursor:pointer}
+.seg button{border:0;background:none;padding:7px 11px;border-radius:999px;font-weight:700;font-size:14px;color:var(--mut);cursor:pointer}
 .seg button.on{background:var(--acc);color:#111}
 h2{margin:20px 2px 8px;font:800 19px 'Barlow Condensed','Arial Narrow',sans-serif;text-transform:uppercase;letter-spacing:.6px;color:var(--mut);display:flex;align-items:center;gap:8px}
 h2 .lk{margin-left:auto}
@@ -101,7 +101,7 @@ h2 .lk{margin-left:auto}
 #dot{position:fixed;top:6px;right:6px;width:8px;height:8px;border-radius:50%;background:#999;z-index:30}
 </style></head><body>
 <div id="dot"></div>
-<div class="top"><h1>Sobre mí</h1><div class="seg"><button data-v="hoy">Registros</button><button data-v="apu">Apuntes</button></div></div>
+<div class="top"><h1>Sobre mí</h1><div class="seg"><button data-v="hoy">Registros</button><button data-v="apu">Apuntes</button><button data-v="x">X</button></div></div>
 <div id="out"></div>
 <div id="sh"><div class="bx" id="shb"></div></div>
 <div id="toast"><span id="tt"></span><button id="tb">Detalles</button></div>
@@ -154,6 +154,7 @@ let V="hoy",DAY=today(),RG=30;try{V=localStorage.getItem("sobremi-v")||"hoy";RG=
 const bOf=id=>S.btn.find(b=>b.id===id);
 function apInfo(a){const b=bOf(a.b);return{e:a.e||(b&&b.e)||"📝",n:a.b==="nota"?"Nota":(b&&b.n)||a.n||"—"}}
 function render(){const sv=V==="res"?"hoy":V;document.querySelectorAll(".seg button").forEach(b=>b.classList.toggle("on",b.dataset.v===sv));
+ if(V==="x"){if(!$("xf")){$("out").innerHTML=`<iframe id="xf" src="x.html?v=21" title="X" style="display:block;width:calc(100% + 24px);margin:0 -12px -40px;border:0;background:#000"></iframe>`}const f=$("xf");f.style.height=(innerHeight-f.getBoundingClientRect().top-window.scrollY)+"px";return}
  $("out").innerHTML=V==="res"?resumen():V==="apu"?apuntes():hoy();if(V==="apu")drawAp()}
 function hoy(){
  let h=`<div class="bt">${S.btn.map(b=>`<button data-b="${b.id}"><span class="e">${esc(b.e)}</span><span class="n">${esc(b.n)}</span></button>`).join("")}<button class="add" data-a="addb"><span class="e">＋</span><span class="n">Botones</span></button></div>
