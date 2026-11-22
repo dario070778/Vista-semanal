@@ -94,6 +94,8 @@ function render(){HOY=ds(Date.now());days();
 $("days").addEventListener("click",e=>{const b=e.target.closest("[data-d]");if(!b)return;DAY=b.dataset.d;render();scrollTo(0,0)});
 function center(){const b=$("days").querySelector(".on");if(b)b.scrollIntoView({inline:"center",block:"nearest"})}
 render();center();load();
-setInterval(()=>{if(!document.hidden)load()},M.some(m=>m.st==="in")?60000:120000);
+/* En directo: cada 20 s; si no, cada 2 min */
+const isLive=()=>M.some(m=>m.st==="in"||(m.st==="pre"&&!m.x&&m.t<Date.now()+5*60e3&&m.t>Date.now()-3*3600e3));
+(function tick(){setTimeout(async()=>{if(!document.hidden)await load();tick()},isLive()?20000:120000)})();
 document.addEventListener("visibilitychange",()=>{if(!document.hidden){if(ds(Date.now())!==HOY){DAY=ds(Date.now())}load()}});
 </script></body></html>

@@ -120,7 +120,12 @@ Deno.serve(async (req) => {
   for (let i = -WIN_BACK; i <= WIN_FWD; i++) days.push(ymd(new Date(now.getTime() + i * 864e5)));
   const mode = u.searchParams.get("mode") ?? "tick";
   let toFetch: string[];
-  if (mode === "range") { const f = +(u.searchParams.get("from") ?? 0), n = +(u.searchParams.get("n") ?? 6); toFetch = days.slice(f, f + n); }
+  if (mode === "live") {
+    // Solo si hay algún partido en juego (o a punto de empezar): refresca hoy y nada más
+    const act = Object.values(V.m as Record<string, M>).some(m => m.src === "espn" && m.st !== "post" && !m.x && m.t < Date.now() + 5 * 60e3 && m.t > Date.now() - 4 * 3600e3);
+    if (!act) return new Response("idle");
+    toFetch = [ymd(now), ...(now.getUTCHours() < 4 ? [ymd(new Date(now.getTime() - 864e5))] : [])];
+  } else if (mode === "range") { const f = +(u.searchParams.get("from") ?? 0), n = +(u.searchParams.get("n") ?? 6); toFetch = days.slice(f, f + n); }
   else {
     const today = ymd(now), yest = ymd(new Date(now.getTime() - 864e5));
     const rot: string[] = []; for (let k = 0; k < 3; k++) rot.push(days[(V.rot + k) % days.length]);
@@ -136,7 +141,7 @@ Deno.serve(async (req) => {
   Object.assign(V.m, fresh);
 
   let tvMsg = "";
-  if (mode === "tv" || !V.tvAt || Date.now() - V.tvAt > 6 * 3600e3) {
+  if (mode !== "live" && (mode === "tv" || !V.tvAt || Date.now() - V.tvAt > 6 * 3600e3)) {
     const all: TV[] = [];
     for (const p of TV_PAGES) { try { const h = await (await fetch("https://www.futbolenlatv.es/" + p, { headers: UA })).text(); all.push(...parseTV(h)); } catch { /* sigue */ } }
     // Quita duplicados (el mismo partido sale en la página de la competición y en la del Sevilla)
@@ -152,5 +157,5 @@ Deno.serve(async (req) => {
   V.upd = Date.now(); datos.updatedAt = Date.now();
   const w = await fetch(`${URL_}/rest/v1/vista_semanal`, { method: "POST", headers: { ...H, Prefer: "resolution=merge-duplicates,return=minimal" },
     body: JSON.stringify({ id: "futbol", datos, actualizado_en: new Date().toISOString() }) });
-  return new Response(`${w.ok ? "ok" : "error"} dias=${toFetch.join(",")} partidos=${Object.keys(V.m).length} nuevos=${Object.keys(fresh).length}${tvMsg}${ERR.length ? " err=" + ERR.slice(0, 3).join("|") : ""}`);
+  return new Response(`${w.ok ? "ok" : "error"} ${mode} dias=${toFetch.join(",")} partidos=${Object.keys(V.m).length} nuevos=${Object.keys(fresh).length}${tvMsg}${ERR.length ? " err=" + ERR.slice(0, 3).join("|") : ""}`);
 });
