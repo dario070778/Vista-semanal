@@ -228,7 +228,7 @@ async function accessToken(){
  let s=getSession();if(!s)return null;
  if(s.expires_at-60>Date.now()/1000)return s.access_token;
  try{s=saveSession(await authRequest("token?grant_type=refresh_token",{refresh_token:s.refresh_token}));return s.access_token}
- catch(e){if(/invalid|expired|not found|already used/i.test(e.message))localStorage.removeItem(SESSION_KEY);return null}
+ catch(e){if(/invalid|expired|not found|already used/i.test(e.message)){localStorage.removeItem(SESSION_KEY);return null}throw new Error("Sin conexión")}
 }
 async function hdr(json){
  const t=await accessToken();
@@ -618,8 +618,9 @@ document.getElementById("eventCancel").onclick=()=>eventModal.classList.remove("
 document.getElementById("eventListBtn").onclick=openEventList;
 document.getElementById("eventListClose").onclick=()=>eventListModal.classList.remove("show");eventListModal.onclick=e=>{if(e.target===eventListModal)eventListModal.classList.remove("show")};
 
-(async()=>{await syncCloud();localStorage.setItem(STATE_KEY,JSON.stringify(state));localStorage.setItem(WORDS_KEY,JSON.stringify(words));render();setInterval(render,60000);setInterval(async()=>{await syncCloud();render()},30000);window.addEventListener("online",()=>syncCloud().then(render));document.addEventListener("visibilitychange",()=>{if(!document.hidden)syncCloud().then(render)})})();
+(async()=>{render();await syncCloud();localStorage.setItem(STATE_KEY,JSON.stringify(state));localStorage.setItem(WORDS_KEY,JSON.stringify(words));render();setInterval(render,60000);setInterval(async()=>{await syncCloud();render()},30000);window.addEventListener("online",()=>syncCloud().then(render));document.addEventListener("visibilitychange",()=>{if(!document.hidden)syncCloud().then(render)})})();
 })();
+if("serviceWorker" in navigator)addEventListener("load",()=>navigator.serviceWorker.register("../sw.js").catch(()=>{}));
 </script>
 </body>
 </html>
