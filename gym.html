@@ -151,7 +151,15 @@ function home(){const lc=S.wo.filter(w=>w.type==="c").sort((a,b)=>b.ts-a.ts)[0],
  `<button class="add" data-a="newtpl">+ Otra sesión</button><h2>Resto</h2><button class="tc" style="--c:#7048E8" data-a="ofb"><div class="t"><b>Full body</b><small>${fbl()}</small></div><span class="go">›</span></button>`+
  `<button class="tc xc" style="--c:#0C8599" data-a="ocardio"><div class="t"><b>Cardio</b><small>${lc?"última vez "+fdt(lc.ts):"sin hacer aún"}</small></div><span class="go">›</span></button>`+
  `<button class="tc xc" style="--c:#7048E8" data-a="osteps"><div class="t"><b>Pasos</b><small>${ls?"último registro "+fday(ls.d):"sin registros aún"}</small></div><span class="go">›</span></button>`+
- `</main>`}
+ `<p style="text-align:center;margin:28px 0 6px"><button data-a="oant" style="border:0;background:none;color:#8A867E;text-decoration:underline;font:500 14px -apple-system,system-ui,sans-serif;cursor:pointer;padding:6px">Antiguamente (2025 – jun 2026)</button></p></main>`}
+/* Rutina antigua (Recordatorios "Entreno anterior"): pesos finales, solo consulta */
+const ANT=[["Espalda + Pecho","#4263EB",[["Espalda",[["Pecho apoyado","65",4],["Polea remo cerrado","70",3],["Polea barra","75",3],["High row","40",3]]],["Pecho",[["Press banca","65",4],["Press inclinado (mancuernas)","22,5",3],["Press declinado","35",3],["Apertura","75",3],["Cruce de poleas","25",3]]]]],
+ ["Bíceps + Tríceps","#F76707",[["Bíceps",[["Barra Z agarre invertido","20",4],["Polea cuerda","40",3],["Mancuerna alterna inclinado","10",3],["Mancuerna martillo","12,5",3],["Curl predicador","15",3],["Abdominales con polea","",3],["Abdominales elevación rodilla","",3]]],["Tríceps",[["Polea V","40",3],["Fondo máquina","65",3],["Polea sobre cabeza","30",3],["Polea individual","25",3],["Abdominales con polea","",3],["Abdominales elevación rodilla","",3]]]]],
+ ["Hombros + Piernas","#2F9E44",[["Hombros",[["Press militar","20",4],["Polea lateral individual","15",3],["Apertura máquina","55",3],["Apertura lateral","40",3]]],["Piernas",[["Sentadilla con barra","40",4],["Prensa","110",3],["Peso muerto rumano","20",3],["Gemelos","40",3],["Cuádriceps","85",3],["Femoral","65",3],["Abductores","40",3]]]]]];
+function antV(){$("#app").innerHTML=`<div class="bar"><button class="back" data-a="back">‹ Volver</button></div><main><h1 class="st">Antiguamente</h1><p class="hint" style="text-align:left;margin:-4px 2px 10px">2025 – junio 2026 · pesos finales que cargaba · solo consulta</p>`+
+ ANT.map((d,i)=>`<div style="border-left:4px solid ${d[1]};background:#ffffff0d;border-radius:12px;padding:10px 12px;margin:12px 0"><b style="font-size:17px">Día ${i+1} · ${d[0]}</b>`+
+  d[2].map(g=>`<div style="margin-top:10px;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;opacity:.6">${g[0]}</div>`+
+   g[1].map(e=>`<div style="display:flex;gap:8px;padding:6px 0;border-bottom:1px solid #ffffff12"><span style="flex:1">${e[0]}</span><span style="opacity:.6;font-size:14px">${e[2]} series</span><b style="min-width:62px;text-align:right">${e[1]?e[1]+" kg":"—"}</b></div>`).join("")).join("")+`</div>`).join("")+`</main>`}
 function histV(kind){const body=kind==="c"?cr():kind==="p"?srows():hlist();
  $("#app").innerHTML=`<div class="bar"><button class="back" data-a="back">‹ Volver</button></div><main><h1 class="st">Historial</h1>${body}</main>`}
 function cardioV(){const n=S.wo.filter(w=>w.type==="c"&&w.cal==null).length;
@@ -191,7 +199,7 @@ function exBlock(T,x,D){const e=dx(T,x);
 function sess(){const T=S.tpl.find(x=>x.id===cur);if(!T){view="home";return home()}const D=draft(T);
  $("#app").innerHTML=`<div class="bar"><button class="back" data-a="back">‹ Volver</button><span style="flex:1"></span><button class="sw${S.cmp?" on":""}" data-a="cmp"><span>Comparar</span><i></i></button></div><main style="--c:${T.color}"><h1 class="st">${esc(T.name)}</h1><div class="last">${fdate(Date.now())}</div>${wbar(T)}`+
  T.ex.map(x=>exBlock(T,x,D)).join("")+`<button class="add" data-a="addex">Añadir ejercicio</button><button class="add" data-a="reset">Reiniciar sesión de hoy</button></main>`}
-const render=()=>{fix();return view==="home"?home():view==="c"?cardioV():view==="p"?stepsV():view==="h"?histV():view==="ch"?histV("c"):view==="ph"?histV("p"):sess()};
+const render=()=>{fix();return view==="home"?home():view==="c"?cardioV():view==="p"?stepsV():view==="h"?histV():view==="ch"?histV("c"):view==="ph"?histV("p"):view==="ant"?antV():sess()};
 function openSh(h){$("#sh").innerHTML=`<div class="sheet">${h}</div>`;$("#sh").classList.add("on")}
 function closeSh(){$("#sh").classList.remove("on");ED=null;EI=null}
 let tt;function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("on");clearTimeout(tt);tt=setTimeout(()=>t.classList.remove("on"),1600)}
@@ -250,6 +258,7 @@ document.addEventListener("click",ev=>{
  else if(a==="ofb"){fbOpen();return}
  else if(a==="ocardio"){view="c"}
  else if(a==="osteps"){view="p";STD=null}
+ else if(a==="oant"){view="ant"}
  else if(a==="csave"){const d=pn($("#c-d").value),secs=Math.round(pn($("#c-h").value)*3600+pn($("#c-m").value)*60+pn($("#c-s").value));if(!(d>0&&secs>0)){toast("Pon distancia y tiempo");return}S.wo.push({id:uid(),type:"c",ts:Date.now(),day:today(),dist:d,secs,cal:null});view=HOME();toast("Cardio guardado")}
  else if(a==="hc"){const c=S.wo.find(w=>w.id===t.dataset.id);if(!c)return;openSh(`<h3>Cardio</h3><p class="hint">${fdt(c.ts)}</p><div class="hl"><b>${dec(c.dist)} km · ${fdur(c.secs*1000)}</b><small>${pace(c.dist,c.secs)}</small><small>${kmh(c.dist,c.secs)}</small></div>`+calBlock(c)+`<button class="big w" data-a="delc" data-id="${c.id}">Eliminar</button><button class="big" data-a="close">Cerrar</button>`);return}
  else if(a==="delc"){closeSh();if(!confirm("¿Eliminar este cardio?"))return;S.wo=S.wo.filter(w=>w.id!==t.dataset.id)}
