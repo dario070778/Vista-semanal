@@ -158,7 +158,7 @@ const MESL=["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","d
 function histV(){const esps=[...new Set(HI.map(x=>x.esp).filter(Boolean))].sort();
  $("out").innerHTML=`<input class="srch" id="hq" placeholder="Buscar en el historial…" value="${esc(HQ)}">
  ${esps.length>1?`<div class="chips" id="hes" style="margin-top:8px"><button data-he="" class="${HE===""?"on":""}">Todas</button>${esps.map(e=>`<button data-he="${esc(e)}" class="${e===HE?"on":""}">${esc(e)}</button>`).join("")}</div>`:""}<div id="hl"></div>`;drawHist()}
-function drawHist(){const q=nrm(HQ),L=HI.filter(x=>(!HE||x.esp===HE)&&(!q||nrm(JSON.stringify(x)).includes(q))).sort((a,b)=>b.f.localeCompare(a.f));let y="",h="";
+function drawHist(){const q=nrm(HQ),L=HI.filter(x=>(!HE||x.esp===HE)&&(!q||nrm(JSON.stringify(x)).includes(q))).sort((a,b)=>(b.f+(b.hm||"")).localeCompare(a.f+(a.hm||"")));let y="",h="";
  L.forEach(x=>{const [Y,Mo,Da]=x.f.split("-");if(Y!==y){y=Y;h+=`<div class="yr">${Y}</div>`}
   h+=`<div class="hc" data-hi="${esc(x.id)}"><div class="fd"><b>${+Da}</b><small>${MESL[+Mo-1]}</small></div><div class="tx"><b>${esc(x.t)}</b><small>${esc([x.esp,x.centro].filter(Boolean).join(" · "))}</small>${x.pend?'<span class="tg p">Pendiente de transcribir</span>':""}</div></div>`});
  $("hl").innerHTML=h||`<div class="ft">${HI.length?"Nada coincide.":"Aún no hay informes. Pásaselos a Claude en el chat para que los transcriba aquí."}</div>`}
