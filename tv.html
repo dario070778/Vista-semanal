@@ -8,28 +8,121 @@
 <link rel="icon" href="icono-peliculas.png">
 <title>TV</title>
 <style>
-:root{--bg:#EEF1F4;--card:#fff;--mut:#6B7480;--acc:#2D5BFF;--line:#DDE2E8}
-@media(prefers-color-scheme:dark){:root{--bg:#0F1318;--card:#1A2028;--mut:#8A94A1;--acc:#6E8BFF;--line:#2A323C}}
+:root{--bg:#EEF1F4;--card:#fff;--ink:#14181F;--mut:#6B7480;--acc:#2D5BFF;--line:#DDE2E8;--imdb:#F5C518}
+@media(prefers-color-scheme:dark){:root{--bg:#0F1318;--card:#1A2028;--ink:#EEF1F4;--mut:#8A94A1;--acc:#6E8BFF;--line:#2A323C}}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);font:16px/1.3 -apple-system,system-ui,sans-serif}
+html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--ink);font:16px/1.3 -apple-system,system-ui,sans-serif}
+button,select,input{font:inherit;color:inherit}
 .bar{position:fixed;left:0;right:0;top:0;z-index:2;background:var(--bg);padding:calc(env(safe-area-inset-top) + 6px) 14px 6px;border-bottom:1px solid var(--line)}
-.tb{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:var(--card);border-radius:14px;padding:4px}
-.tb button{font:inherit;border:0;background:none;cursor:pointer;padding:9px 4px;border-radius:11px;font-weight:800;font-size:16px;color:var(--mut)}
+.tb{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;background:var(--card);border-radius:14px;padding:4px}
+.tb button{border:0;background:none;cursor:pointer;padding:9px 2px;border-radius:11px;font-weight:800;font-size:15px;color:var(--mut)}
 .tb button.on{background:var(--acc);color:#fff}
-iframe{position:fixed;left:0;right:0;bottom:0;width:100%;border:0;background:var(--bg);display:none}
-iframe.on{display:block}
+iframe,#bq{position:fixed;left:0;right:0;bottom:0;width:100%;border:0;background:var(--bg);display:none}
+iframe.on,#bq.on{display:block}
+#bq{overflow-y:auto;-webkit-overflow-scrolling:touch;padding:10px 14px calc(env(safe-area-inset-bottom) + 30px)}
+.box{background:var(--card);border-radius:16px;padding:12px;display:grid;gap:9px}
+.box h4{margin:2px 0 -3px;font-size:12px;color:var(--mut);text-transform:uppercase;letter-spacing:.03em}
+.chips{display:flex;flex-wrap:wrap;gap:6px}.chips button{border:0;cursor:pointer;padding:7px 11px;border-radius:99px;background:var(--bg);font-weight:600;font-size:14px}.chips button.on{background:var(--acc);color:#fff}
+.in{width:100%;font-size:16px;background:var(--bg);border:1px solid var(--line);border-radius:11px;padding:9px 11px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.gl{max-height:118px;overflow:auto}
+.hd{display:flex;align-items:center;gap:8px;margin:14px 2px 6px}.hd b{flex:1;font-size:15px}.hd select{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:5px 8px;font-size:14px;font-weight:600}
+.lnk{border:0;background:none;color:var(--acc);font-weight:600;cursor:pointer;padding:4px}
+.row{display:flex;align-items:center;gap:9px;background:var(--card);border-radius:12px;padding:9px 11px;margin:6px 0;cursor:pointer}
+.row img,.row .np{width:34px;height:50px;border-radius:5px;object-fit:cover;flex:none;background:var(--line)}
+.row .t{flex:1;min-width:0}.row b{display:block;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row small{display:block;color:var(--mut);font-size:12.5px;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nt{flex:none;font-weight:800;font-size:14px;padding:3px 7px;border-radius:7px;background:var(--imdb);color:#000}
+.hint{color:var(--mut);font-size:14px;text-align:center;margin:16px 0}
+.more{display:block;width:100%;margin:10px 0;padding:11px;border-radius:12px;border:2px dashed var(--line);background:none;color:var(--mut);font-weight:600;cursor:pointer}
 </style>
 <script>if("serviceWorker" in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));</script>
 </head><body>
-<div class="bar" id="bar"><div class="tb"><button id="b-p" data-k="p">🎬 Películas</button><button id="b-s" data-k="s">📺 Series</button></div></div>
-<iframe id="f-p" title="Películas"></iframe><iframe id="f-s" title="Series"></iframe>
+<div class="bar" id="bar"><div class="tb"><button id="b-p" data-k="p">🎬 Películas</button><button id="b-s" data-k="s">📺 Series</button><button id="b-b" data-k="b">🔍 Buscar</button></div></div>
+<iframe id="f-p" title="Películas"></iframe><iframe id="f-s" title="Series"></iframe><div id="bq"></div>
 <script>
 const SRC={p:"pelis.html",s:"series.html"},$=id=>document.getElementById(id);
-let cur;try{cur=localStorage.getItem("tv-tab")}catch(e){}if(cur!=="s")cur="p";
-function fit(){const h=$("bar").offsetHeight;for(const k in SRC){const f=$("f-"+k);f.style.top=h+"px";f.style.height=(innerHeight-h)+"px"}}
-function load(k){const f=$("f-"+k);if(!f.src)f.src=SRC[k]}
-function show(k){cur=k;try{localStorage.setItem("tv-tab",k)}catch(e){}load(k);for(const x in SRC){$("f-"+x).classList.toggle("on",x===k);$("b-"+x).classList.toggle("on",x===k)}}
+const IMG="https://image.tmdb.org/t/p/";
+let cur;try{cur=localStorage.getItem("tv-tab")}catch(e){}if(!["p","s","b"].includes(cur))cur="p";
+function fit(){const h=$("bar").offsetHeight;for(const id of["f-p","f-s","bq"]){const f=$(id);f.style.top=h+"px";f.style.height=(innerHeight-h)+"px"}}
+function load(k){const f=$("f-"+k);if(f&&!f.src)f.src=SRC[k]}
+function show(k){cur=k;try{localStorage.setItem("tv-tab",k)}catch(e){}if(k!=="b")load(k);
+ for(const x of["p","s"])$("f-"+x).classList.toggle("on",x===k);$("bq").classList.toggle("on",k==="b");for(const x of["p","s","b"])$("b-"+x).classList.toggle("on",x===k);
+ if(k==="b"){readData();renderB();extras()}}
 document.querySelector(".tb").addEventListener("click",e=>{const b=e.target.closest("button");if(b)show(b.dataset.k)});
-addEventListener("resize",fit);fit();show(cur);
-setTimeout(()=>load(cur==="p"?"s":"p"),1500);
+addEventListener("resize",fit);
+/* ---------- Buscar ---------- */
+const esc=t=>String(t==null?"":t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const nrm=t=>String(t||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^a-z0-9ñ ]+/g," ").replace(/\s+/g," ").trim();
+const f1=x=>x==null?"":(+x).toLocaleString("es-ES",{minimumFractionDigits:1,maximumFractionDigits:1});
+const J=k=>{try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}};
+const ST={ms:"Sin ver",md:"Sin ver · Descargar",mv:"Vistas",mvd:"Vistas · Descargar",me:"Estrenos",sv:"Viendo",sx:"Próxima",sp:"Parada",se:"Esperando",sd:"Descargar",st:"Terminada"};
+let ITEMS=[],XT={},B={tipo:"a",q:"",st:[],g:"",y1:"",y2:"",r1:0,r2:10,act:"",dir:"",ord:"r"},LIM=150;
+try{Object.assign(B,J("tv-busca")||{})}catch(e){}
+try{XT=J("tv-series-extra")||{}}catch(e){}
+function readData(){const P=J("pelis-v1")||{movies:[]},M=J("pelis-meta")||{},SS=J("series-v1")||{series:[]};ITEMS=[];
+ for(const m of P.movies||[]){const e=M[m.id]||{};ITEMS.push({k:"p",id:m.id,t:m.cn||(e.tm>0&&e.t)||m.n,ot:e.ot,y:e.y||m.y||null,g:e.g||[],c:e.c||[],d:e.d||[],r:e.ir??null,p:e.p,
+  st:m.s==="e"?"me":m.s==="v"?(m.dl?"mvd":"mv"):(m.dl?"md":"ms")})}
+ for(const s of SS.series||[]){const e=s.m||{},x=(e.tm&&XT[e.tm])||{};ITEMS.push({k:"s",id:s.id,t:s.name,y:e.y||null,g:e.g||[],c:x.c||[],d:x.d||[],r:x.ir??null,p:e.p,st:"s"+(s.state||"v")})}}
+function saveB(){try{localStorage.setItem("tv-busca",JSON.stringify(B))}catch(e){}}
+function res(){const q=nrm(B.q),a=nrm(B.act),d=nrm(B.dir),rr=B.r1>0||B.r2<10;
+ let r=ITEMS.filter(i=>{if(B.tipo!=="a"&&i.k!==B.tipo)return false;if(B.st.length&&!B.st.includes(i.st))return false;
+  if(q&&!(nrm(i.t).includes(q)||nrm(i.ot).includes(q)))return false;if(B.g&&!i.g.includes(B.g))return false;
+  if(B.y1&&!(i.y>=+B.y1))return false;if(B.y2&&!(i.y<=+B.y2))return false;
+  if(rr&&(i.r==null||i.r<B.r1||i.r>B.r2))return false;
+  if(a&&!i.c.some(x=>nrm(x).includes(a)))return false;if(d&&!i.d.some(x=>nrm(x).includes(d)))return false;return true});
+ const abc=(x,y)=>x.t.localeCompare(y.t,"es",{sensitivity:"base",numeric:true});
+ if(B.ord==="r")r.sort((x,y)=>(y.r??-1)-(x.r??-1)||abc(x,y));else if(B.ord==="y")r.sort((x,y)=>(y.y||0)-(x.y||0)||abc(x,y));else r.sort(abc);return r}
+function chips(key,opts,multi){return `<div class="chips${key==="g"?" gl":""}">${opts.map(([v,l])=>`<button class="${multi?(B[key].includes(v)?"on":""):(B[key]==v?"on":"")}" data-b="${key}" data-v="${esc(v)}" data-m="${multi?1:""}">${esc(l)}</button>`).join("")}</div>`}
+function renderB(keep){const sc=$("bq").scrollTop;
+ const G=[...new Set(ITEMS.filter(i=>B.tipo==="a"||i.k===B.tipo).flatMap(i=>i.g))].sort((a,b)=>a.localeCompare(b,"es"));
+ const sts=Object.entries(ST).filter(([k])=>B.tipo==="a"||k[0]===(B.tipo==="p"?"m":"s"));
+ const opR=[...Array(21).keys()].map(i=>i/2);
+ const r=res(),act=B.st.length||B.q||B.g||B.y1||B.y2||B.r1>0||B.r2<10||B.act||B.dir;
+ $("bq").innerHTML=`<div class="box">
+ ${chips("tipo",[["a","Todo"],["p","🎬 Películas"],["s","📺 Series"]])}
+ <input class="in" id="bq-q" type="search" placeholder="Título…" value="${esc(B.q)}" autocomplete="off">
+ <h4>Estado</h4>${chips("st",sts,true)}
+ <h4>Género</h4>${chips("g",[["","Todos"]].concat(G.map(g=>[g,g])))}
+ <h4>Año</h4><div class="g2"><input class="in" id="bq-y1" type="number" inputmode="numeric" placeholder="Desde" value="${esc(B.y1)}"><input class="in" id="bq-y2" type="number" inputmode="numeric" placeholder="Hasta" value="${esc(B.y2)}"></div>
+ <h4>Nota IMDb</h4><div class="g2"><select class="in" id="bq-r1">${opR.map(v=>`<option value="${v}"${+B.r1===v?" selected":""}>Desde ${f1(v)}</option>`).join("")}</select><select class="in" id="bq-r2">${opR.map(v=>`<option value="${v}"${+B.r2===v?" selected":""}>Hasta ${f1(v)}</option>`).join("")}</select></div>
+ <div class="g2"><input class="in" id="bq-act" placeholder="Actor / actriz" value="${esc(B.act)}" autocomplete="off"><input class="in" id="bq-dir" placeholder="Director / creador" value="${esc(B.dir)}" autocomplete="off"></div>
+ </div>
+ <div class="hd"><b>${r.length} resultado${r.length===1?"":"s"}</b>${act?'<button class="lnk" data-b="clr">Limpiar</button>':""}<select id="bq-ord"><option value="r"${B.ord==="r"?" selected":""}>Nota</option><option value="y"${B.ord==="y"?" selected":""}>Año</option><option value="n"${B.ord==="n"?" selected":""}>A-Z</option></select></div>
+ <p class="hint" id="bq-ex" style="margin:0 0 4px;font-size:12px">${exTxt()}</p>
+ <div id="bq-r">${listHtml(r)}</div>`;
+ if(keep)$("bq").scrollTop=sc;bindB()}
+function listHtml(r){return r.slice(0,LIM).map(i=>`<div class="row" data-o="${i.k}" data-id="${i.id}">${i.p?`<img src="${IMG}w92${i.p}" alt="" loading="lazy">`:'<i class="np"></i>'}<div class="t"><b>${i.k==="p"?"🎬":"📺"} ${esc(i.t)}</b><small>${[i.y,ST[i.st]].filter(Boolean).join(" · ")}</small></div>${i.r!=null?`<span class="nt">${f1(i.r)}</span>`:""}</div>`).join("")+
+ (r.length>LIM?`<button class="more" data-b="more">Mostrar más (${r.length-LIM})</button>`:"")+(!r.length?'<p class="hint">Nada coincide con esos filtros.</p>':"")}
+function relist(){const r=res();$("bq-r").innerHTML=listHtml(r);const h=document.querySelector(".hd b");if(h)h.textContent=`${r.length} resultado${r.length===1?"":"s"}`}
+function bindB(){const t=(id,k,num)=>{const el=$(id);if(!el)return;el.oninput=el.onchange=()=>{B[k]=num?+el.value:el.value.trim();LIM=150;saveB();relist()}};
+ t("bq-q","q");t("bq-y1","y1");t("bq-y2","y2");t("bq-act","act");t("bq-dir","dir");t("bq-r1","r1",1);t("bq-r2","r2",1);
+ $("bq-ord").onchange=e=>{B.ord=e.target.value;saveB();relist()}}
+$("bq").addEventListener("click",e=>{const b=e.target.closest("[data-b]");
+ if(b){const k=b.dataset.b,v=b.dataset.v;
+  if(k==="clr"){B={tipo:B.tipo,q:"",st:[],g:"",y1:"",y2:"",r1:0,r2:10,act:"",dir:"",ord:B.ord}}
+  else if(k==="more"){LIM+=300;relist();return}
+  else if(b.dataset.m){B[k]=B[k].includes(v)?B[k].filter(x=>x!==v):B[k].concat(v)}
+  else{B[k]=v;if(k==="tipo")B.st=B.st.filter(x=>v==="a"||x[0]===(v==="p"?"m":"s"))}
+  LIM=150;saveB();renderB(true);return}
+ const o=e.target.closest("[data-o]");if(o)openIn(o.dataset.o,o.dataset.id)});
+function openIn(k,id){show(k);const f=$("f-"+k);const go=()=>{try{const w=f.contentWindow;
+  if(k==="p")w.eval(`(()=>{const m=S.movies.find(x=>x.id===${JSON.stringify(id)});if(m)ficha(m)})()`);
+  else w.eval(`(()=>{X=${JSON.stringify(id)};render();const el=document.querySelector('[data-id="'+X+'"]');if(el)el.scrollIntoView({block:"center"})})()`)}catch(z){}};
+ if(f.contentWindow&&f.contentWindow.document.readyState==="complete"&&f.src)setTimeout(go,50);else f.addEventListener("load",()=>setTimeout(go,300),{once:true})}
+/* Reparto, creadores y nota IMDb de las series (se guardan en este dispositivo) */
+let xRun=false;
+function exTxt(){const s=ITEMS.filter(i=>i.k==="s");const tm=(J("series-v1")||{series:[]}).series.filter(x=>x.m&&x.m.tm);const done=tm.filter(x=>XT[x.m.tm]&&XT[x.m.tm].ok).length;
+ return tm.length&&done<tm.length?`Cargando reparto de las series: ${done}/${tm.length}`:""}
+async function extras(){if(xRun)return;const K=J("pelis-keys");if(!K||!K.tmdb)return;const SS=J("series-v1")||{series:[]};
+ const todo=SS.series.filter(s=>s.m&&s.m.tm&&!(XT[s.m.tm]&&XT[s.m.tm].ok));if(!todo.length)return;xRun=true;let n=0;
+ try{for(const s of todo){const tm=s.m.tm;try{
+   const u=new URL(`https://api.themoviedb.org/3/tv/${tm}`);u.searchParams.set("api_key",K.tmdb);u.searchParams.set("language","es-ES");u.searchParams.set("append_to_response","aggregate_credits,external_ids");
+   const d=await (await fetch(u)).json();const x={ok:1,c:((d.aggregate_credits&&d.aggregate_credits.cast)||[]).slice(0,10).map(c=>c.name),d:(d.created_by||[]).map(c=>c.name),im:(d.external_ids&&d.external_ids.imdb_id)||null};
+   if(x.im&&K.omdb){let o=J("pelis-omdb");const td=new Date().toISOString().slice(0,10);if(!o||o.d!==td)o={d:td,n:0,blk:false};
+    if(!o.blk&&o.n<980){try{const j=await (await fetch(`https://www.omdbapi.com/?i=${x.im}&apikey=${K.omdb}`)).json();o.n++;if(j.Response==="False"&&/limit/i.test(j.Error||""))o.blk=true;else{x.ir=parseFloat(j.imdbRating)||null;x.iv=parseInt(String(j.imdbVotes||"").replace(/\D/g,""))||null}}catch(z){}localStorage.setItem("pelis-omdb",JSON.stringify(o))}else x.ok=0}
+   XT[tm]=x;if(++n%5===0){localStorage.setItem("tv-series-extra",JSON.stringify(XT));if(cur==="b"){readData();relist();const t=$("bq-ex");if(t)t.textContent=exTxt()}}}catch(z){}}}
+ finally{xRun=false;try{localStorage.setItem("tv-series-extra",JSON.stringify(XT))}catch(e){}if(cur==="b"){readData();relist();const t=$("bq-ex");if(t)t.textContent=exTxt()}}}
+fit();show(cur);
+setTimeout(()=>{load("p");load("s")},1500);
 </script></body></html>
