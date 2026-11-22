@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Ocio</title>
+<style>
+:root{--bg:#EEF1F4;--card:#fff;--ink:#14181F;--mut:#6B7480;--acc:#2D5BFF;--line:#DDE2E8}
+@media (prefers-color-scheme: dark){:root{--bg:#0F1318;--card:#1A2028;--ink:#EEF1F4;--mut:#8A94A1;--acc:#6E8BFF;--line:#2A323C}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;overflow:hidden;background:var(--bg)}
+.sw{position:fixed;top:0;left:0;right:0;height:46px;display:flex;align-items:center;justify-content:center;background:var(--bg);border-bottom:1px solid var(--line);z-index:2}
+.sw div{display:flex;background:var(--card);border-radius:999px;padding:3px}
+.sw button{border:0;background:none;color:var(--mut);font:700 14px -apple-system,system-ui,sans-serif;padding:6px 22px;border-radius:999px;cursor:pointer}
+.sw button.on{background:var(--acc);color:#fff}
+iframe{position:fixed;top:46px;left:0;width:100%;height:calc(100% - 46px);border:0;display:none;background:var(--bg)}
+iframe.on{display:block}
+</style></head><body>
+<div class="sw"><div><button data-p="tv">TV</button><button data-p="fut">Fútbol</button></div></div>
+<iframe id="f-tv" title="TV"></iframe><iframe id="f-fut" title="Fútbol"></iframe>
+<script>
+const SRC={tv:"tv.html",fut:"futbol.html?v=1"};
+function go(p){document.querySelectorAll(".sw button").forEach(b=>b.classList.toggle("on",b.dataset.p===p));
+ document.querySelectorAll("iframe").forEach(f=>f.classList.toggle("on",f.id==="f-"+p));
+ const f=document.getElementById("f-"+p);if(!f.src)f.src=SRC[p];try{localStorage.setItem("ocio-p",p)}catch(e){}}
+document.querySelector(".sw").addEventListener("click",e=>{const b=e.target.closest("button");if(b)go(b.dataset.p)});
+let p="tv";try{p=localStorage.getItem("ocio-p")||"tv"}catch(e){}go(SRC[p]?p:"tv");
+</script></body></html>

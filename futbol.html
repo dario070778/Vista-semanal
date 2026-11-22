@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Fútbol</title>
+<style>
+:root{--bg:#EEF1F4;--card:#fff;--ink:#14181F;--mut:#6B7480;--acc:#2D5BFF;--line:#DDE2E8;--live:#E03131;--sev:#D6001C;--sevbg:#FFF1F2}
+@media (prefers-color-scheme: dark){:root{--bg:#0F1318;--card:#1A2028;--ink:#EEF1F4;--mut:#8A94A1;--acc:#6E8BFF;--line:#2A323C;--live:#FF6B6B;--sev:#FF4D5E;--sevbg:#2A1A1F}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:500 15px/1.3 -apple-system,system-ui,sans-serif}
+.days{position:sticky;top:0;z-index:5;background:var(--bg);display:flex;gap:6px;overflow-x:auto;padding:10px 12px 8px;scrollbar-width:none;border-bottom:1px solid var(--line)}
+.days::-webkit-scrollbar{display:none}
+.days button{flex:none;border:0;background:var(--card);color:var(--ink);border-radius:12px;padding:6px 10px;min-width:54px;text-align:center;cursor:pointer;font:600 12px -apple-system,system-ui,sans-serif;line-height:1.15}
+.days button b{display:block;font-size:16px}
+.days button.on{background:var(--acc);color:#fff}
+.days button .dot{display:block;width:5px;height:5px;border-radius:50%;background:currentColor;margin:3px auto 0;opacity:.55}
+.days button .dot.no{opacity:0}
+main{padding:4px 10px 40px}
+.cp{display:flex;align-items:center;gap:8px;margin:16px 4px 6px;font-weight:800;font-size:13px;text-transform:uppercase;letter-spacing:.4px;color:var(--mut)}
+.cp i{width:4px;height:16px;border-radius:2px;background:var(--k)}
+.card{background:var(--card);border-radius:14px;overflow:hidden}
+.m{display:flex;gap:10px;padding:10px 12px;border-top:1px solid var(--line);align-items:center}
+.m:first-child{border-top:0}
+.m.sev{background:var(--sevbg);box-shadow:inset 4px 0 0 var(--sev)}
+.st{width:50px;flex:none;text-align:center;font-weight:700;font-size:14px}
+.st small{display:block;font-size:11px;font-weight:600;color:var(--mut);margin-top:1px}
+.st.live{color:var(--live)}
+.st.live small{color:var(--live)}
+.tm{flex:1;min-width:0}
+.tr{display:flex;align-items:center;gap:8px;padding:2px 0}
+.tr img{width:20px;height:20px;object-fit:contain;flex:none}
+.tr .ph{width:20px;height:20px;border-radius:50%;background:var(--line);flex:none}
+.tr span{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tr.w span{font-weight:800}
+.tr .g{font-weight:800;min-width:16px;text-align:right}
+.live .g,.tr .g.live{color:var(--live)}
+.sev .tr span.s{color:var(--sev);font-weight:800}
+.tv{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px}
+.tv span{font-size:11.5px;font-weight:600;padding:2px 7px;border-radius:6px;background:var(--bg);color:var(--mut);white-space:nowrap}
+.tv span.c{color:var(--ink)}
+.emp{text-align:center;color:var(--mut);padding:60px 20px;font-size:15px}
+.ft{text-align:center;color:var(--mut);font-size:11.5px;margin:18px 0 0}
+.msg{background:#FFF4E6;color:#9C4A00;border-radius:12px;padding:9px 12px;font-size:13px;margin:10px 0 0;display:none}.msg.on{display:block}
+</style></head><body>
+<div class="days" id="days"></div>
+<main><div class="msg" id="msg"></div><div id="out"></div></main>
+<script>
+const SB="https://tdundqjsixqrddszumly.supabase.co",SBK="sb_publishable_KTvtNJcl64iOH4Hee-3L-Q__vSiCgrP";
+const KS=["gym-session","entreno-session","pelis-session","series-session"];
+const $=id=>document.getElementById(id),J=k=>{try{return JSON.parse(localStorage.getItem(k)||"null")}catch(e){return null}};
+const esc=t=>String(t==null?"":t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const pad=n=>String(n).padStart(2,"0"),ds=t=>{const d=new Date(t);return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())};
+const addD=(d,n)=>{const x=new Date(d+"T12:00:00");x.setDate(x.getDate()+n);return ds(x)};
+const hh=t=>{const d=new Date(t);return pad(d.getHours())+":"+pad(d.getMinutes())};
+const DIAS=["dom","lun","mar","mié","jue","vie","sáb"],MES=["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
+const COMP={liga:["LaLiga","#FF4B44"],ucl:["Champions League","#1E3A8A"],uel:["Europa League","#F08C00"],uecl:["Conference League","#2F9E44"],copa:["Copa del Rey","#C92A2A"],super:["Supercopa","#7048E8"],otra:["Otras","#868E96"]};
+const ORD=["liga","ucl","uel","uecl","copa","super","otra"];
+const isSev=n=>/sevilla/i.test(n)&&!/atl[eé]tico/i.test(n);
+let HOY=ds(Date.now()),DAY=HOY,M=[],UPD=0;
+
+async function tok(){let s=null;KS.forEach(k=>{const v=J(k);if(v&&v.refresh_token&&(!s||(v.expires_at||0)>(s.expires_at||0)))s=v});if(!s)return null;
+ if(s.expires_at-60>Date.now()/1000)return s.access_token;
+ const r=await fetch(SB+"/auth/v1/token?grant_type=refresh_token",{method:"POST",headers:{apikey:SBK,"Content-Type":"application/json"},body:JSON.stringify({refresh_token:s.refresh_token})});const j=await r.json();if(!r.ok)return null;
+ const n=JSON.stringify({access_token:j.access_token,refresh_token:j.refresh_token,expires_at:Math.floor(Date.now()/1000)+(+j.expires_in||3600)});KS.forEach(k=>localStorage.setItem(k,n));return j.access_token}
+function setData(v){M=Object.values((v&&v.m)||{});UPD=(v&&v.upd)||0}
+const c0=J("futbol-cache");if(c0)setData(c0);
+async function load(){try{const t=await tok();if(!t){msg("Sin sesión: abre Deporte e inicia sesión.");return}
+  const r=await fetch(SB+"/rest/v1/vista_semanal?id=eq.futbol&select=datos",{headers:{apikey:SBK,Authorization:"Bearer "+t}});if(!r.ok)throw new Error(r.status);
+  const j=await r.json(),v=j[0]&&j[0].datos&&j[0].datos.v;if(v){setData({m:v.m,upd:v.upd});try{localStorage.setItem("futbol-cache",JSON.stringify({m:v.m,upd:v.upd}))}catch(e){}}msg("");render()}
+ catch(e){msg(navigator.onLine?"No se pudieron cargar los partidos.":"Sin conexión: se muestran los últimos datos guardados.")}}
+function msg(t){$("msg").textContent=t;$("msg").classList.toggle("on",!!t)}
+
+function days(){const have=new Set(M.map(m=>ds(m.t)));let h="";
+ for(let i=-7;i<=21;i++){const d=addD(HOY,i),x=new Date(d+"T12:00:00");
+  const lb=i===0?"Hoy":i===-1?"Ayer":i===1?"Mañana":DIAS[x.getDay()];
+  h+=`<button data-d="${d}" class="${d===DAY?"on":""}">${lb}<b>${x.getDate()}</b>${i<-1||i>1?MES[x.getMonth()]:"&nbsp;"}<span class="dot ${have.has(d)?"":"no"}"></span></button>`}
+ $("days").innerHTML=h}
+function row(m){const sev=isSev(m.h.n)||isSev(m.a.n),live=m.st==="in",post=m.st==="post";
+ let st;if(m.x&&m.c!=="otra")st=`<div class="st"><small>${esc(m.x)}</small></div>`;
+ else if(live)st=`<div class="st live">${esc(m.cl||"En juego")}<small>en directo</small></div>`;
+ else if(post)st=`<div class="st"><small>${esc(m.cl||"Final")}</small></div>`;
+ else st=`<div class="st">${hh(m.t)}${(m.tv||[]).length===1&&/por confirmar/i.test(m.tv[0])?"<small>por confirmar</small>":""}</div>`;
+ const w=post&&m.hs!==m.as?(m.hs>m.as?"h":"a"):"";
+ const team=(t,g,k)=>`<div class="tr ${w===k?"w":""}">${t.l?`<img src="${esc(t.l)}" alt="" loading="lazy">`:'<span class="ph"></span>'}<span class="${isSev(t.n)?"s":""}">${esc(t.n)}</span>${m.st!=="pre"?`<span class="g ${live?"live":""}">${g}</span>`:""}</div>`;
+ const tv=(m.tv||[]).filter(c=>!/por confirmar/i.test(c));
+ return`<div class="m ${sev?"sev":""}">${st}<div class="tm">${team(m.h,m.hs,"h")}${team(m.a,m.as,"a")}${tv.length?`<div class="tv">${tv.map((c,i)=>`<span class="${i===0?"c":""}">📺 ${esc(c)}</span>`).join("")}</div>`:""}</div></div>`}
+function render(){HOY=ds(Date.now());days();
+ const L=M.filter(m=>ds(m.t)===DAY).sort((a,b)=>a.t-b.t),G={};
+ L.forEach(m=>{const k=m.c==="otra"?"otra:"+(m.x||""):m.c;(G[k]=G[k]||[]).push(m)});
+ const keys=Object.keys(G).sort((a,b)=>ORD.indexOf(a.split(":")[0])-ORD.indexOf(b.split(":")[0]));
+ let h=keys.length?keys.map(k=>{const [c,x]=k.split(":"),cp=COMP[c]||COMP.otra;return`<div class="cp" style="--k:${cp[1]}"><i></i>${esc(x||cp[0])}</div><div class="card">${G[k].map(row).join("")}</div>`}).join("")
+  :`<div class="emp">Sin partidos este día.</div>`;
+ if(UPD)h+=`<div class="ft">Actualizado ${new Date(UPD).toLocaleString("es-ES",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})} · TV: futbolenlatv.es</div>`;
+ $("out").innerHTML=h}
+$("days").addEventListener("click",e=>{const b=e.target.closest("[data-d]");if(!b)return;DAY=b.dataset.d;render();scrollTo(0,0)});
+function center(){const b=$("days").querySelector(".on");if(b)b.scrollIntoView({inline:"center",block:"nearest"})}
+render();center();load();
+setInterval(()=>{if(!document.hidden)load()},M.some(m=>m.st==="in")?60000:120000);
+document.addEventListener("visibilitychange",()=>{if(!document.hidden){if(ds(Date.now())!==HOY){DAY=ds(Date.now())}load()}});
+</script></body></html>
