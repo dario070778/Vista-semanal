@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0B0B0C">
+<title>Salud</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0B0B0C;--card:#16161A;--ln:#25252B;--ink:#F4F1EA;--mut:#8A867E;--acc:#F2B632;
+ --pas:#4DABF7;--kc:#FF922B;--sue:#9775FA;--fc:#FF6B6B;--vfc:#20C997;--vo2:#38D9A9;--peso:#FCC419;color-scheme:dark}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:500 15px/1.3 -apple-system,system-ui,sans-serif}
+body{padding:10px 12px 40px}
+h2,.big,.ttl{font-family:'Barlow Condensed','Arial Narrow',-apple-system,system-ui,sans-serif}
+.top{display:flex;align-items:center;gap:8px;margin:4px 0 12px}
+.top h1{flex:1;margin:0;font:800 28px 'Barlow Condensed','Arial Narrow',sans-serif;letter-spacing:.5px;text-transform:uppercase}
+.dn{display:flex;align-items:center;gap:4px;background:var(--card);border-radius:999px;padding:3px}
+.dn button{border:0;background:none;color:var(--ink);font:700 18px -apple-system,system-ui,sans-serif;width:34px;height:32px;border-radius:999px;cursor:pointer}
+.dn button:disabled{opacity:.25}
+.dn span{min-width:92px;text-align:center;font-weight:700;font-size:14px}
+h2{margin:20px 2px 8px;font-size:19px;font-weight:800;text-transform:uppercase;letter-spacing:.6px;color:var(--mut)}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.c{background:var(--card);border-radius:16px;padding:12px 12px 11px;min-width:0}
+.c .l{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--mut);font-weight:700;text-transform:uppercase;letter-spacing:.3px}
+.c .l i{width:8px;height:8px;border-radius:50%;background:var(--k,#888);flex:none}
+.big{font-size:32px;font-weight:800;line-height:1.05;margin-top:6px;white-space:nowrap}
+.big small{font-size:16px;font-weight:700;color:var(--mut);margin-left:2px}
+.g3 .big{font-size:26px}
+.sub{font-size:12px;color:var(--mut);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.up{color:#51CF66}.dw{color:#FF8787}
+.no{color:#4A4740}
+.st{display:flex;height:12px;border-radius:6px;overflow:hidden;margin:12px 0 8px;background:var(--ln)}
+.st b{display:block;height:100%}
+.lg{display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;font-size:13px}
+.lg span{display:flex;align-items:center;gap:6px}.lg i{width:9px;height:9px;border-radius:3px;flex:none}.lg em{margin-left:auto;font-style:normal;font-weight:700}
+.chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:8px;scrollbar-width:none}.chips::-webkit-scrollbar{display:none}
+.chips button{border:0;border-radius:999px;padding:8px 13px;background:var(--card);color:var(--ink);font:700 14px -apple-system,system-ui,sans-serif;white-space:nowrap;cursor:pointer}
+.chips button.on{background:var(--acc);color:#111}
+.rg{display:flex;gap:6px;margin-left:auto}
+.ch{background:var(--card);border-radius:16px;padding:12px 10px 8px}
+.ch .hd{display:flex;align-items:baseline;gap:8px;margin:0 4px 6px}
+.ch .hd b{font:800 22px 'Barlow Condensed',sans-serif}.ch .hd span{color:var(--mut);font-size:13px}
+svg text{font:600 10px -apple-system,system-ui,sans-serif;fill:var(--mut)}
+.ft{color:var(--mut);font-size:12px;text-align:center;margin:22px 10px 0;line-height:1.5}
+.msg{background:#2A1F12;color:#FFC078;border-radius:12px;padding:10px 12px;font-size:13.5px;margin-bottom:10px;display:none}.msg.on{display:block}
+</style></head><body>
+<div class="top"><h1>Salud</h1><div class="dn"><button id="pv">‹</button><span id="dl">Hoy</span><button id="nx">›</button></div></div>
+<div class="msg" id="msg"></div>
+<div id="out"></div>
+<script>
+const SB="https://tdundqjsixqrddszumly.supabase.co",SBK="sb_publishable_KTvtNJcl64iOH4Hee-3L-Q__vSiCgrP";
+const KS=["gym-session","entreno-session","pelis-session","series-session"];
+const $=id=>document.getElementById(id),J=k=>{try{return JSON.parse(localStorage.getItem(k)||"null")}catch(e){return null}};
+const pad=n=>String(n).padStart(2,"0"),ds=t=>{const d=new Date(t);return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())};
+const addD=(d,n)=>{const x=new Date(d+"T12:00:00");x.setDate(x.getDate()+n);return ds(x)};
+const HOY=ds(Date.now());let DAY=HOY;
+const nf=(n,dc=0)=>n==null||n===""||isNaN(n)?"—":Number(n).toLocaleString("es-ES",{minimumFractionDigits:dc,maximumFractionDigits:dc});
+const hs=m=>m<60?Math.round(m)+" min":hm(m);
+const hm=m=>m?Math.floor(m/60)+" h "+pad(Math.round(m%60))+" min":"—";
+const DIAS=["dom","lun","mar","mié","jue","vie","sáb"],MES=["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
+const fdl=d=>{if(d===HOY)return"Hoy";if(d===addD(HOY,-1))return"Ayer";const x=new Date(d+"T12:00:00");return DIAS[x.getDay()]+" "+x.getDate()+" "+MES[x.getMonth()]};
+const fds=d=>{const x=new Date(d+"T12:00:00");return x.getDate()+"/"+(x.getMonth()+1)};
+
+/* ---- Sesión y datos ---- */
+async function tok(){let s=null;KS.forEach(k=>{const v=J(k);if(v&&v.refresh_token&&(!s||(v.expires_at||0)>(s.expires_at||0)))s=v});if(!s)return null;
+ if(s.expires_at-60>Date.now()/1000)return s.access_token;
+ const r=await fetch(SB+"/auth/v1/token?grant_type=refresh_token",{method:"POST",headers:{apikey:SBK,"Content-Type":"application/json"},body:JSON.stringify({refresh_token:s.refresh_token})});const j=await r.json();if(!r.ok)return null;
+ const n=JSON.stringify({access_token:j.access_token,refresh_token:j.refresh_token,expires_at:Math.floor(Date.now()/1000)+(+j.expires_in||3600)});KS.forEach(k=>localStorage.setItem(k,n));return j.access_token}
+async function rows(t){const r=await fetch(SB+"/rest/v1/vista_semanal?id=in.(gym,salud,peso)&select=id,datos",{headers:{apikey:SBK,Authorization:"Bearer "+t}});if(!r.ok)throw new Error("sb "+r.status);return r.json()}
+/* D[fecha] = {p,k,sue,pro,lig,rem,desp,fc,vfc,vo2,km,pis,min,ka,kr,peso} */
+let D={},UPD=0;
+function build(rs){const o={};const get=d=>o[d]||(o[d]={});
+ rs.forEach(r=>{const x=r.datos||{};if(x.updatedAt>UPD)UPD=x.updatedAt;
+  if(r.id==="gym")((x.state&&x.state.steps)||[]).forEach(z=>{const e=get(z.d);if(z.p>0)e.p=z.p;if(z.k>0)e.k=z.k});
+  if(r.id==="salud")Object.entries(x.v||{}).forEach(([d,v])=>Object.assign(get(d),v));
+  if(r.id==="peso")(Array.isArray(x.v)?x.v:[]).forEach(z=>{if(z.kg>0&&!get(z.d).peso)get(z.d).peso=z.kg})});
+ return o}
+const cache=J("salud-cache");if(cache){D=cache.D||{};UPD=cache.U||0}
+async function load(){try{const t=await tok();if(!t){msg("Sin sesión: abre Deporte e inicia sesión.");return}
+  D=build(await rows(t));localStorage.setItem("salud-cache",JSON.stringify({D,U:UPD}));msg("");render()}
+ catch(e){msg(navigator.onLine?"No se pudieron cargar los datos ("+e.message+").":"Sin conexión: se muestran los últimos datos guardados.")}}
+function msg(t){$("msg").textContent=t;$("msg").classList.toggle("on",!!t)}
+
+/* ---- Utilidades ---- */
+const v=(d,k)=>{const e=D[d];return e&&e[k]>0?e[k]:null};
+function avg(k,end,n){let s=0,c=0;for(let i=1;i<=n;i++){const x=v(addD(end,-i),k);if(x!=null){s+=x;c++}}return c?s/c:null}
+function last(k,end){const ks=Object.keys(D).filter(d=>d<=end&&v(d,k)!=null).sort();const d=ks[ks.length-1];return d?{d,x:D[d][k]}:null}
+function cmp(k,x,end,unit,dc=0,inv=false){if(x==null)return"";const a=avg(k,end,7);if(a==null)return"";const df=x-a;if(Math.abs(df)<(dc?0.05:0.5))return"= media 7 días";
+ const good=inv?df<0:df>0;return`<span class="${good?"up":"dw"}">${df>0?"▲":"▼"} ${nf(Math.abs(df),dc)}${unit}</span> vs media 7 días`}
+function card(lbl,col,val,unit,sub,dc=0){return`<div class="c" style="--k:${col}"><div class="l"><i></i>${lbl}</div><div class="big ${val==null?"no":""}">${val==null?"—":nf(val,dc)}${val!=null&&unit?`<small>${unit}</small>`:""}</div><div class="sub">${sub||"&nbsp;"}</div></div>`}
+function lastCard(lbl,col,k,unit,dc=0,inv=false){const l=last(k,DAY);if(!l)return card(lbl,col,null,unit,"sin datos",dc);
+ return card(lbl,col,l.x,unit,l.d===DAY?(cmp(k,l.x,DAY,unit?" "+unit:"",dc,inv)||"&nbsp;"):"último: "+fdl(l.d),dc)}
+
+/* ---- Pantalla ---- */
+const MET={p:["Pasos","--pas","",0,"bar"],k:["Calorías","--kc","kcal",0,"bar"],sue:["Sueño","--sue","h",1,"bar"],fc:["FC reposo","--fc","ppm",0,"line"],vfc:["VFC","--vfc","ms",0,"line"],vo2:["VO2 máx","--vo2","",1,"line"],km:["Distancia","--pas","km",1,"bar"],min:["Ejercicio","--kc","min",0,"bar"],peso:["Peso","--peso","kg",1,"line"]};
+let MK="p",RG=7;try{MK=localStorage.getItem("salud-mk")||"p";RG=+localStorage.getItem("salud-rg")||7}catch(e){}if(!MET[MK])MK="p";
+const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+function render(){
+ $("dl").textContent=fdl(DAY);$("nx").disabled=DAY>=HOY;
+ const e=D[DAY]||{},su=e.sue||null,ph=[["pro","Profundo","#5F3DC4"],["lig","Ligero","#9775FA"],["rem","REM","#4DABF7"],["desp","Despierto","#FF8787"]],pt=ph.reduce((s,p)=>s+(e[p[0]]||0),0);
+ let h=`<h2>${DAY===HOY?"Hoy":fdl(DAY)}</h2><div class="g2">`+
+  card("Pasos","var(--pas)",v(DAY,"p"),"",cmp("p",v(DAY,"p"),DAY,""))+
+  card("Calorías","var(--kc)",v(DAY,"k"),"kcal",cmp("k",v(DAY,"k"),DAY," kcal"))+
+  `<div class="c" style="--k:var(--sue)"><div class="l"><i></i>Sueño</div><div class="big ${su?"":"no"}">${su?Math.floor(su/60)+"<small>h</small> "+pad(Math.round(su%60))+"<small>min</small>":"—"}</div><div class="sub">${su?(cmp("sue",su,DAY," min")||"&nbsp;"):"&nbsp;"}</div></div>`+
+  lastCard("FC reposo","var(--fc)","fc","ppm",0,true)+`</div>`;
+ /* Sueño */
+ h+=`<h2>Sueño</h2><div class="c">`;
+ if(su||pt){h+=`<div class="sub" style="font-size:13px">Total dormido <b style="color:var(--ink)">${hm(su||pt-(e.desp||0))}</b>${avg("sue",DAY,7)?" · media 7 días "+hm(avg("sue",DAY,7)):""}</div>`;
+  if(pt)h+=`<div class="st">${ph.map(p=>e[p[0]]?`<b style="width:${e[p[0]]/pt*100}%;background:${p[2]}"></b>`:"").join("")}</div><div class="lg">${ph.map(p=>`<span><i style="background:${p[2]}"></i>${p[1]}<em>${e[p[0]]?hs(e[p[0]]):"—"}</em></span>`).join("")}</div>`;
+  else h+=`<div class="sub" style="margin-top:6px">Sin fases de sueño para este día.</div>`}
+ else h+=`<div class="sub" style="font-size:13px">Sin datos de sueño para este día.</div>`;
+ h+=`</div>`;
+ /* Corazón */
+ h+=`<h2>Corazón</h2><div class="g3">`+lastCard("FC reposo","var(--fc)","fc","ppm",0,true)+lastCard("VFC","var(--vfc)","vfc","ms")+lastCard("VO2 máx","var(--vo2)","vo2","",1)+`</div>`;
+ /* Actividad */
+ h+=`<h2>Actividad</h2><div class="g2">`+
+  card("Pasos","var(--pas)",v(DAY,"p"),"",avg("p",DAY,7)?"media 7 días "+nf(avg("p",DAY,7)):"")+
+  card("Distancia","var(--pas)",v(DAY,"km"),"km","",1)+
+  card("Pisos","var(--vo2)",v(DAY,"pis"),"","")+
+  card("Ejercicio","var(--kc)",v(DAY,"min"),"min","")+
+  card("Cal. activas","var(--kc)",v(DAY,"ka"),"kcal","")+
+  card("Cal. reposo","var(--kc)",v(DAY,"kr"),"kcal","")+`</div>`;
+ /* Cuerpo */
+ const pw=last("peso",DAY),p30=pw?last("peso",addD(pw.d,-30)):null;
+ h+=`<h2>Cuerpo</h2><div class="g2">`+card("Peso","var(--peso)",pw?pw.x:null,"kg",pw?(pw.d===DAY?"hoy":"último: "+fdl(pw.d)):"sin datos",1)+
+  card("Cambio 30 días","var(--peso)",p30&&p30.d!==pw.d?Math.abs(pw.x-p30.x):null,"kg",p30&&p30.d!==pw.d?(pw.x<p30.x?"<span class=up>▼ bajada</span>":pw.x>p30.x?"<span class=dw>▲ subida</span>":"igual")+" desde "+fdl(p30.d):"sin datos",1)+`</div>`;
+ /* Evolución */
+ h+=`<h2>Evolución</h2><div class="chips" id="mk">${Object.entries(MET).map(([k,m])=>`<button data-k="${k}" class="${k===MK?"on":""}">${m[0]}</button>`).join("")}</div>
+  <div class="ch">${chart()}</div><div class="chips" id="rg" style="margin-top:8px;justify-content:center">${[7,30,90].map(n=>`<button data-n="${n}" class="${n===RG?"on":""}">${n} días</button>`).join("")}</div>`;
+ h+=`<div class="ft">Los datos llegan desde Salud del iPhone (Garmin + iPhone) con el atajo «Sync Salud».${UPD?"<br>Última actualización: "+new Date(UPD).toLocaleString("es-ES",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}):""}</div>`;
+ $("out").innerHTML=h}
+function chart(){const m=MET[MK],col=css(m[1]),days=[];for(let i=RG-1;i>=0;i--)days.push(addD(DAY,-i));
+ let pts=days.map(d=>{let x=v(d,MK);if(MK==="sue"&&x!=null)x=x/60;return{d,x}});
+ const vals=pts.filter(p=>p.x!=null).map(p=>p.x);
+ if(!vals.length)return`<div class="hd"><b>${m[0]}</b><span>sin datos en ${RG} días</span></div>`;
+ const av=vals.reduce((a,b)=>a+b,0)/vals.length;
+ const W=340,H=170,L=34,R=16,T=10,B=22,iw=W-L-R,ih=H-T-B;
+ let mn=m[4]==="bar"?0:Math.min(...vals),mx=Math.max(...vals);if(m[4]==="line"){const pd=(mx-mn)*.15||1;mn=Math.max(0,mn-pd);mx+=pd}if(mx===mn)mx=mn+1;
+ const y=x=>T+ih-(x-mn)/(mx-mn)*ih,xs=i=>L+(RG===1?iw/2:i*(iw/(RG-1)));
+ let s=`<svg viewBox="0 0 ${W} ${H}" width="100%">`;
+ for(let g=0;g<=3;g++){const gv=mn+(mx-mn)*g/3,gy=y(gv);s+=`<line x1="${L}" x2="${W-R}" y1="${gy}" y2="${gy}" stroke="#25252B"/><text x="${L-5}" y="${gy+3}" text-anchor="end">${gv>=1000?nf(gv/1000,1)+"k":nf(gv,m[3]&&mx-mn<10?1:0)}</text>`}
+ const step=Math.ceil(RG/6);days.forEach((d,i)=>{if((RG-1-i)%step===0){const bw=iw/RG;const cx=m[4]==="bar"?L+bw*i+bw/2:xs(i);s+=`<text x="${cx}" y="${H-6}" text-anchor="middle">${fds(d)}</text>`}});
+ if(m[4]==="bar"){const bw=iw/RG;pts.forEach((p,i)=>{if(p.x==null)return;const top=y(p.x);s+=`<rect x="${L+bw*i+bw*.15}" y="${top}" width="${bw*.7}" height="${T+ih-top}" rx="${Math.min(3,bw*.2)}" fill="${col}" opacity="${p.d===DAY?1:.75}"/>`})}
+ else{const q=pts.map((p,i)=>p.x==null?null:[xs(i),y(p.x)]).filter(Boolean);s+=`<polyline points="${q.map(a=>a.join(",")).join(" ")}" fill="none" stroke="${col}" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>`+(q.length<=31?q.map(a=>`<circle cx="${a[0]}" cy="${a[1]}" r="2.6" fill="${col}"/>`).join(""):"")}
+ s+=`<line x1="${L}" x2="${W-R}" y1="${y(av)}" y2="${y(av)}" stroke="#F4F1EA" stroke-dasharray="4 4" opacity=".45"/></svg>`;
+ const fmt=x=>MK==="sue"?hm(x*60):nf(x,m[3])+(m[2]?" "+m[2]:"");
+ return`<div class="hd"><b>${m[0]}</b><span>media ${fmt(av)} · ${vals.length} días con datos</span></div>`+s}
+document.addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;
+ if(b.id==="pv"){DAY=addD(DAY,-1);render()}else if(b.id==="nx"&&DAY<HOY){DAY=addD(DAY,1);render()}
+ else if(b.closest("#mk")){MK=b.dataset.k;try{localStorage.setItem("salud-mk",MK)}catch(x){}render()}
+ else if(b.closest("#rg")){RG=+b.dataset.n;try{localStorage.setItem("salud-rg",RG)}catch(x){}render()}});
+render();load();
+</script></body></html>
