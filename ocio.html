@@ -17,7 +17,7 @@ iframe.on{display:block}
 <div class="sw"><div><button data-p="tv">TV</button><button data-p="fut">Fútbol</button></div></div>
 <iframe id="f-tv" title="TV"></iframe><iframe id="f-fut" title="Fútbol"></iframe>
 <script>
-const SRC={tv:"tv.html",fut:"futbol.html?v=2"};
+const SRC={tv:"tv.html",fut:"futbol.html?v=3"};
 function go(p){document.querySelectorAll(".sw button").forEach(b=>b.classList.toggle("on",b.dataset.p===p));
  document.querySelectorAll("iframe").forEach(f=>f.classList.toggle("on",f.id==="f-"+p));
  const f=document.getElementById("f-"+p);if(!f.src)f.src=SRC[p];try{localStorage.setItem("ocio-p",p)}catch(e){}}
