@@ -107,7 +107,7 @@ addEventListener("online",sync);document.addEventListener("visibilitychange",()=
 
 /* ---- Estado de vista ---- */
 let V="no",NG="*",NQ="",RT="",RE="p",RQ="";
-try{V=localStorage.getItem("util-v")||"no";RE=localStorage.getItem("util-re")||"p"}catch(e){}
+try{RE=localStorage.getItem("util-re")||"p"}catch(e){}
 function render(){document.querySelectorAll(".seg button").forEach(b=>b.classList.toggle("on",b.dataset.v===V));
  $("out").innerHTML=V==="re"?recs():notas();V==="re"?drawRe():drawNo()}
 
@@ -122,7 +122,7 @@ function drawNo(){const x=$("nl");if(!x)return;const q=nrm(NQ);
   :`<div class="emp">${S.no.length?"Nada coincide.":"Aún no hay notas."}</div>`}
 function grpChips(id,sel){return`<div class="ty wr" id="${id}">${S.gr.map(g=>`<button data-g="${esc(g)}" class="${g===sel?"on":""}">${esc(g)}</button>`).join("")}</div>`}
 function editNo(id){const n=S.no.find(x=>x.id===id);if(!n)return;let g=n.g||"";
- shb.innerHTML=`<h3>Nota</h3><div class="ft" style="text-align:left;margin:0 2px">${fdt(n.ts)}</div>
+ shb.innerHTML=`<h3>Nota</h3><div class="g2"><div><label>Día</label><input type="date" id="e-d" value="${ds(n.ts)}"></div><div><label>Hora</label><input type="time" id="e-h" value="${hh(n.ts)}"></div></div>
   <label>Nombre (opcional)</label><input id="e-n" value="${esc(n.n||"")}" placeholder="Ponle un nombre">
   <label>Grupo (opcional)</label>${grpChips("e-g",g)}<input id="e-ng" placeholder="…o escribe un grupo nuevo">
   <label>Texto</label><textarea id="e-x" style="min-height:150px">${esc(n.tx)}</textarea>
@@ -133,6 +133,7 @@ function editNo(id){const n=S.no.find(x=>x.id===id);if(!n)return;let g=n.g||"";
   if(x.dataset.x==="del"){if(!confirm("¿Borrar esta nota?"))return;S.no=S.no.filter(y=>y.id!==id);save();close();render();return}
   const tx=$("e-x").value.trim();if(!tx){alert("La nota está vacía");return}
   const ng=$("e-ng").value.trim();if(ng){const ex=S.gr.find(z=>nrm(z)===nrm(ng));g=ex||ng;if(!ex)S.gr.push(ng)}
+  const dv=$("e-d").value,hv=$("e-h").value;if(dv&&hv){const t=new Date(dv+"T"+hv+":00").getTime();if(!isNaN(t))n.ts=t}
   n.tx=tx;const nm=$("e-n").value.trim();if(nm)n.n=nm;else delete n.n;if(g)n.g=g;else delete n.g;save();close();render()}}
 function editGrupos(){const T=S.gr.slice(),idx=T.map((t,k)=>k),orig=S.gr.slice();
  const draw=()=>{shb.innerHTML=`<h3>Grupos</h3>${T.length?T.map((t,k)=>`<div class="eb" data-k="${k}"><input value="${esc(t)}"><button data-y="up">↑</button><button data-y="rm">✕</button></div>`).join(""):`<div class="emp">Sin grupos todavía.</div>`}
