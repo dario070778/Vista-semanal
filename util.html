@@ -2,7 +2,7 @@
 <html lang="es"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0B0B0C">
-<title>Útil</title>
+<title>Sobre mí</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#0B0B0C;--card:#16161A;--c2:#202026;--ln:#2A2A31;--ink:#F4F1EA;--mut:#8A867E;--acc:#F2B632;--ok:#51CF66;color-scheme:dark}
@@ -11,9 +11,9 @@ html,body{margin:0;background:var(--bg);color:var(--ink);font:500 15px/1.3 -appl
 body{padding:10px 12px 40px}
 button,input,textarea{font:inherit;color:inherit}
 .top{display:flex;align-items:center;gap:8px;margin:4px 0 12px}
-.top h1{flex:1;margin:0;font:800 28px 'Barlow Condensed','Arial Narrow',sans-serif;letter-spacing:.5px;text-transform:uppercase}
+.top h1{flex:1;margin:0;font:800 28px 'Barlow Condensed','Arial Narrow',sans-serif;letter-spacing:.5px;text-transform:uppercase;white-space:nowrap;font-size:23px}
 .seg{display:flex;background:var(--card);border-radius:999px;padding:3px}
-.seg button{border:0;background:none;padding:7px 13px;border-radius:999px;font-weight:700;font-size:14px;color:var(--mut);cursor:pointer}
+.seg button{border:0;background:none;padding:7px 9px;border-radius:999px;font-weight:700;font-size:13.5px;color:var(--mut);cursor:pointer}
 .seg button.on{background:var(--acc);color:#111}
 h2{margin:20px 2px 8px;font:800 19px 'Barlow Condensed','Arial Narrow',sans-serif;text-transform:uppercase;letter-spacing:.6px;color:var(--mut);display:flex;align-items:center;gap:8px}
 h2 .lk{margin-left:auto}
@@ -77,7 +77,7 @@ h2 .lk{margin-left:auto}
 #dot{position:fixed;top:6px;right:6px;width:8px;height:8px;border-radius:50%;background:#999;z-index:30}
 </style></head><body>
 <div id="dot"></div>
-<div class="top"><h1>Útil</h1><div class="seg"><button data-v="no">Notas</button><button data-v="re">Recomendaciones</button></div></div>
+<div class="top"><h1>Sobre mí</h1><div class="seg"><button data-v="no">Notas</button><button data-v="re">Recomendaciones</button><button data-v="x">X</button></div></div>
 <div id="out"></div>
 <div id="sh"><div class="bx" id="shb"></div></div>
 <div id="toast"></div><div id="lb"><img id="lbi" alt=""><button id="lbx">Cerrar</button></div>
@@ -125,6 +125,7 @@ addEventListener("online",sync);document.addEventListener("visibilitychange",()=
 let V="no",NG="*",NQ="",RT="",RE="p",RQ="";
 try{RE=localStorage.getItem("util-re")||"p"}catch(e){}
 function render(){document.querySelectorAll(".seg button").forEach(b=>b.classList.toggle("on",b.dataset.v===V));
+ if(V==="x"){if(!$("xf")){$("out").innerHTML=`<iframe id="xf" src="x.html?v=21" title="X" style="display:block;width:calc(100% + 24px);margin:0 -12px -40px;border:0;background:#000"></iframe>`}const f=$("xf");f.style.height=(innerHeight-f.getBoundingClientRect().top-window.scrollY)+"px";return}
  $("out").innerHTML=V==="re"?recs():notas();V==="re"?drawRe():drawNo()}
 
 /* ---- Notas ---- */
