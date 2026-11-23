@@ -10,15 +10,15 @@
 html,body{margin:0;background:var(--bg);color:var(--ink);font:500 15px/1.3 -apple-system,system-ui,sans-serif}
 body{padding:10px 12px 40px}
 button,input,textarea{font:inherit;color:inherit}
-.top{display:flex;align-items:center;gap:8px;margin:4px 0 12px}
+.top{display:flex;align-items:center;gap:8px;margin:4px 0 10px}
 .top h1{flex:1;margin:0;font:800 28px 'Barlow Condensed','Arial Narrow',sans-serif;letter-spacing:.5px;text-transform:uppercase;white-space:nowrap;font-size:23px}
-.seg{display:flex;background:var(--card);border-radius:999px;padding:3px}
-.seg button{border:0;background:none;padding:7px 9px;border-radius:999px;font-weight:700;font-size:13.5px;color:var(--mut);cursor:pointer}
+.seg{display:flex;background:var(--card);border-radius:999px;padding:4px;width:fit-content;margin:0 auto 16px}
+.seg button{border:0;background:none;padding:10px 18px;border-radius:999px;font-weight:800;font-size:16px;color:var(--mut);cursor:pointer}
 .seg button.on{background:var(--acc);color:#111}
 h2{margin:20px 2px 8px;font:800 19px 'Barlow Condensed','Arial Narrow',sans-serif;text-transform:uppercase;letter-spacing:.6px;color:var(--mut);display:flex;align-items:center;gap:8px}
 h2 .lk{margin-left:auto}
 .lk{border:0;background:none;color:var(--acc);font:700 14px -apple-system,system-ui,sans-serif;cursor:pointer;padding:4px;text-transform:none;letter-spacing:0}
-.qw textarea{width:100%;min-height:90px;background:var(--card);border:1px solid var(--ln);border-radius:14px;padding:12px;font-size:16px;resize:vertical;line-height:1.4}
+.qw textarea{width:100%;min-height:38vh;background:var(--card);border:1px solid var(--ln);border-radius:18px;padding:16px;font-size:20px;resize:vertical;line-height:1.45}.gch{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:18px 0 6px}.gch button{border:0;border-radius:999px;padding:9px 15px;background:var(--card);font-weight:700;font-size:15px;color:var(--mut);cursor:pointer}.gch button.on{background:var(--acc);color:#111}.gch .lu{width:40px;padding:9px 0;border:1px solid var(--ln);background:none}.gch .lu.on{border-color:var(--acc);background:none}.gtl{display:flex;justify-content:center;gap:18px;margin:4px 0 8px}.gtl button{border:0;background:none;color:var(--mut);font-size:13px;text-decoration:underline;cursor:pointer;padding:4px}.eb .hd{width:44px;font-size:16px}.eb .hd.on{background:#3a2f12}
 .big{width:100%;border:0;border-radius:14px;background:var(--acc);color:#111;font-weight:800;padding:12px;cursor:pointer;margin-top:8px}
 .ty{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;margin:8px 0;scrollbar-width:none}.ty::-webkit-scrollbar{display:none}
 .ty.wr{flex-wrap:wrap;overflow:visible}
@@ -77,7 +77,7 @@ h2 .lk{margin-left:auto}
 #dot{position:fixed;top:6px;right:6px;width:8px;height:8px;border-radius:50%;background:#999;z-index:30}
 </style></head><body>
 <div id="dot"></div>
-<div class="top"><h1>Sobre mí</h1><div class="seg"><button data-v="no">Notas</button><button data-v="re">Recomendaciones</button><button data-v="x">X</button></div></div>
+<div class="top"><h1>Sobre mí</h1></div><div class="seg"><button data-v="no">Notas</button><button data-v="re">Recomendaciones</button><button data-v="x">X</button></div>
 <div id="out"></div>
 <div id="sh"><div class="bx" id="shb"></div></div>
 <div id="toast"></div><div id="lb"><img id="lbi" alt=""><button id="lbx">Cerrar</button></div>
@@ -97,7 +97,7 @@ const TIP=["Películas","Series","Restaurantes","Lugares","Actividades"];
 
 /* ---- Datos: no = notas, gr = grupos, re = recomendaciones ---- */
 let S=J(LK)||{};fixS();
-function fixS(){if(!Array.isArray(S.no))S.no=[];if(!Array.isArray(S.gr))S.gr=[];if(!Array.isArray(S.re))S.re=[]}
+function fixS(){if(!Array.isArray(S.no))S.no=[];if(!Array.isArray(S.gr))S.gr=[];if(!Array.isArray(S.re))S.re=[];if(!Array.isArray(S.gh))S.gh=[]}
 const UK=LK+"-at",DK=LK+"-dirty",lat=()=>+localStorage.getItem(UK)||0;
 function save(){localStorage.setItem(LK,JSON.stringify(S));localStorage.setItem(UK,String(Date.now()));localStorage.setItem(DK,"1");queue()}
 
@@ -122,21 +122,26 @@ async function sync(){if(busy){again=1;return}busy=1;let st="ok";
 addEventListener("online",sync);document.addEventListener("visibilitychange",()=>{if(!document.hidden)sync()});
 
 /* ---- Estado de vista ---- */
-let V="no",NG="*",NQ="",RT="",RE="p",RQ="";
+let V="no",NG=null,NQ="",NS=0,RT="",RE="p",RQ="";
 try{RE=localStorage.getItem("util-re")||"p"}catch(e){}
 function render(){document.querySelectorAll(".seg button").forEach(b=>b.classList.toggle("on",b.dataset.v===V));
  if(V==="x"){if(!$("xf")){$("out").innerHTML=`<iframe id="xf" src="x.html?v=21" title="X" style="display:block;width:calc(100% + 24px);margin:0 -12px -40px;border:0;background:#000"></iframe>`}const f=$("xf");f.style.height=(innerHeight-f.getBoundingClientRect().top-window.scrollY)+"px";return}
  $("out").innerHTML=V==="re"?recs():notas();V==="re"?drawRe():drawNo()}
 
 /* ---- Notas ---- */
-function notas(){return`<div class="qw"><textarea id="nx" placeholder="Escribe rápido… (luego le pones nombre o grupo)"></textarea><button class="big" data-a="nsave">Guardar nota</button></div>
- <h2>Notas<button class="lk" data-a="grupos">Grupos</button></h2>
- <div class="ty" id="nfl"><button data-ng="*" class="${NG==="*"?"on":""}">Todas</button>${S.gr.map(g=>`<button data-ng="${esc(g)}" class="${g===NG?"on":""}">${esc(g)}</button>`).join("")}<button data-ng="" class="${NG===""?"on":""}">Sin grupo</button></div>
- <input class="srch" id="nq" placeholder="Buscar…" value="${esc(NQ)}"><div id="nl"></div>`}
-function drawNo(){const x=$("nl");if(!x)return;const q=nrm(NQ);
- const L=S.no.filter(n=>(NG==="*"||(n.g||"")===NG)&&(!q||nrm((n.n||"")+" "+n.tx).includes(q))).sort((a,b)=>b.ts-a.ts);
- x.innerHTML=L.length?L.map(n=>`<div class="cd" data-no="${n.id}"><div class="t"><div class="m">${n.g?`<em>${esc(n.g)}</em>`:""}<span>${fdt(n.ts)}</span>${n.ad&&n.ad.length?`<span class="pin">📎 ${n.ad.length}</span>`:""}</div>${n.n?`<b>${esc(n.n)}</b>`:""}<p>${esc(n.tx)}</p></div></div>`).join("")
-  :`<div class="emp">${S.no.length?"Nada coincide.":"Aún no hay notas."}</div>`}
+function notas(){const vg=S.gr.filter(g=>!S.gh.includes(g)),noc=S.no.filter(isHid).length;
+ return`<div class="qw"><textarea id="nx" placeholder="Escribe aquí…"></textarea><button class="big" data-a="nsave">Guardar nota</button></div>
+ <div class="gch" id="nfl"><button data-ng="*" class="${NG==="*"?"on":""}">Todas</button>${vg.map(g=>`<button data-ng="${esc(g)}" class="${g===NG?"on":""}">${esc(g)}</button>`).join("")}<button data-ng="" class="${NG===""?"on":""}">Sin grupo</button><button class="lu ${NS?"on":""}" data-a="lupa" aria-label="Buscar">🔍</button></div>
+ ${NS?`<input class="srch" id="nq" placeholder="Buscar en las notas…" value="${esc(NQ)}">`:""}
+ <div id="nl"></div>
+ <div class="gtl"><button data-a="grupos">Grupos</button>${noc?`<button data-ng="__oc">Ver ocultas (${noc})</button>`:""}</div>`}
+const isHid=n=>!!n.h||(!!n.g&&S.gh.includes(n.g));
+function drawNo(){const x=$("nl");if(!x)return;const q=nrm(NQ).trim(),srch=NS&&q;
+ if(NG===null&&!srch){x.innerHTML="";return}
+ const L=S.no.filter(n=>{if(NG==="__oc"&&!srch)return isHid(n);if(isHid(n))return false;if(srch&&NG===null)return nrm((n.n||"")+" "+n.tx).includes(q);
+  return(NG==="*"||(n.g||"")===NG)&&(!srch||nrm((n.n||"")+" "+n.tx).includes(q))}).sort((a,b)=>b.ts-a.ts);
+ x.innerHTML=(NG==="__oc"&&!srch?`<h2>Ocultas<button class="lk" data-ng="__close">Cerrar</button></h2>`:"")+(L.length?L.map(n=>`<div class="cd" data-no="${n.id}"><div class="t"><div class="m">${n.g?`<em>${esc(n.g)}</em>`:""}<span>${fdt(n.ts)}</span>${n.ad&&n.ad.length?`<span class="pin">📎 ${n.ad.length}</span>`:""}${isHid(n)?`<span>🙈 oculta</span>`:""}</div>${n.n?`<b>${esc(n.n)}</b>`:""}<p>${esc(n.tx)}</p></div></div>`).join("")
+  :`<div class="emp">${S.no.length?"Nada que mostrar aquí.":"Aún no hay notas."}</div>`)}
 function grpChips(id,sel){return`<div class="ty wr" id="${id}">${S.gr.map(g=>`<button data-g="${esc(g)}" class="${g===sel?"on":""}">${esc(g)}</button>`).join("")}</div>`}
 function editNo(id){const n=S.no.find(x=>x.id===id);if(!n)return;let g=n.g||"";
  shb.innerHTML=`<h3>Nota</h3><div class="g2"><div><label>Día</label><input type="date" id="e-d" value="${ds(n.ts)}"></div><div><label>Hora</label><input type="time" id="e-h" value="${hh(n.ts)}"></div></div>
@@ -146,7 +151,7 @@ function editNo(id){const n=S.no.find(x=>x.id===id);if(!n)return;let g=n.g||"";
   <label>Adjuntos</label><div class="ads" id="e-ads"></div>
   <div class="adb"><label>📎 Adjuntar<input type="file" id="e-f" accept="image/*,audio/*,.m4a,.mp3,.wav,.aac,.pdf" multiple hidden></label><button data-x="lnk">🔗 Enlace</button></div>
   <div class="lnk" id="e-l"><input id="e-u" placeholder="Pega aquí el enlace (YouTube…)" inputmode="url"><button data-x="ladd">Añadir</button></div><div class="up" id="e-up"></div>
-  <div class="ac"><button class="del" data-x="del">Borrar</button><button data-x="no">Cancelar</button><button class="ok" data-x="ok">Guardar</button></div>`;
+  <div class="ac"><button data-x="hide">${n.h?"👁 Mostrar":"🙈 Ocultar"}</button></div><div class="ac"><button class="del" data-x="del">Borrar</button><button data-x="no">Cancelar</button><button class="ok" data-x="ok">Guardar</button></div>`;
  sh.classList.add("on");
  const drawAds=()=>{$("e-ads").innerHTML=adHtml(n);$("e-ads").style.display=n.ad&&n.ad.length?"":"none";fillAds()};drawAds();
  $("e-f").onchange=async ev=>{const fs=[...ev.target.files];ev.target.value="";const up=$("e-up");
@@ -161,25 +166,27 @@ function editNo(id){const n=S.no.find(x=>x.id===id);if(!n)return;let g=n.g||"";
    if(a.t==="yt")fetch("https://www.youtube.com/oembed?format=json&url="+encodeURIComponent(u)).then(r=>r.ok?r.json():null).then(j=>{if(j&&j.title){a.ti=j.title;save();drawAds()}}).catch(()=>{});return}
   const gb=e.target.closest("#e-g button");if(gb){g=g===gb.dataset.g?"":gb.dataset.g;shb.querySelectorAll("#e-g button").forEach(b=>b.classList.toggle("on",b.dataset.g===g));$("e-ng").value="";return}
   const x=e.target.closest("[data-x]");if(!x)return;if(x.dataset.x==="no")return close();
+  if(x.dataset.x==="hide"){if(n.h)delete n.h;else n.h=1;save();close();render();toast(n.h?"Nota oculta":"Nota visible");return}
   if(x.dataset.x==="del"){if(!confirm("¿Borrar esta nota"+(n.ad&&n.ad.length?" y sus adjuntos":"")+"?"))return;(n.ad||[]).forEach(unlink);S.no=S.no.filter(y=>y.id!==id);save();close();render();return}
   const tx=$("e-x").value.trim();if(!tx){alert("La nota está vacía");return}
   const ng=$("e-ng").value.trim();if(ng){const ex=S.gr.find(z=>nrm(z)===nrm(ng));g=ex||ng;if(!ex)S.gr.push(ng)}
   const dv=$("e-d").value,hv=$("e-h").value;if(dv&&hv){const t=new Date(dv+"T"+hv+":00").getTime();if(!isNaN(t))n.ts=t}
   n.tx=tx;const nm=$("e-n").value.trim();if(nm)n.n=nm;else delete n.n;if(g)n.g=g;else delete n.g;save();close();render()}}
-function editGrupos(){const T=S.gr.slice(),idx=T.map((t,k)=>k),orig=S.gr.slice();
- const draw=()=>{shb.innerHTML=`<h3>Grupos</h3>${T.length?T.map((t,k)=>`<div class="eb" data-k="${k}"><input value="${esc(t)}"><button data-y="up">↑</button><button data-y="rm">✕</button></div>`).join(""):`<div class="emp">Sin grupos todavía.</div>`}
+function editGrupos(){const T=S.gr.slice(),idx=T.map((t,k)=>k),orig=S.gr.slice(),HD=T.map(t=>S.gh.includes(t));
+ const draw=()=>{shb.innerHTML=`<h3>Grupos</h3>${T.length?T.map((t,k)=>`<div class="eb" data-k="${k}"><input value="${esc(t)}"><button class="hd ${HD[k]?"on":""}" data-y="hd" title="Ocultar grupo">${HD[k]?"🙈":"👁"}</button><button data-y="up">↑</button><button data-y="rm">✕</button></div>`).join(""):`<div class="emp">Sin grupos todavía.</div>`}
   <div class="ac"><button data-y="add">＋ Añadir grupo</button></div><div class="ac"><button data-y="no">Cancelar</button><button class="ok" data-y="ok">Guardar</button></div>
-  <div class="ft">Si renombras un grupo, sus notas se cambian también. Si lo quitas, sus notas se quedan sin grupo.</div>`};
+  <div class="ft">🙈 = grupo oculto (sus notas solo salen en «Ver ocultas»). Si renombras un grupo, sus notas se cambian también. Si lo quitas, sus notas se quedan sin grupo.</div>`};
  const read=()=>shb.querySelectorAll(".eb").forEach(r=>{T[+r.dataset.k]=r.querySelector("input").value.trim()});
  draw();sh.classList.add("on");
  shb.onclick=e=>{const y=e.target.closest("[data-y]");if(!y)return;const k=y.closest(".eb")?+y.closest(".eb").dataset.k:-1;read();const a=y.dataset.y;
   if(a==="no")return close();
-  if(a==="up"&&k>0){[T[k-1],T[k]]=[T[k],T[k-1]];[idx[k-1],idx[k]]=[idx[k],idx[k-1]];draw()}
-  else if(a==="rm"){T.splice(k,1);idx.splice(k,1);draw()}
-  else if(a==="add"){T.push("");idx.push(-1);draw();const r=shb.querySelectorAll(".eb input");r[r.length-1].focus()}
+  if(a==="hd"){HD[k]=!HD[k];draw()}
+  else if(a==="up"&&k>0){[T[k-1],T[k]]=[T[k],T[k-1]];[idx[k-1],idx[k]]=[idx[k],idx[k-1]];[HD[k-1],HD[k]]=[HD[k],HD[k-1]];draw()}
+  else if(a==="rm"){T.splice(k,1);idx.splice(k,1);HD.splice(k,1);draw()}
+  else if(a==="add"){T.push("");idx.push(-1);HD.push(false);draw();const r=shb.querySelectorAll(".eb input");r[r.length-1].focus()}
   else if(a==="ok"){const ren={};idx.forEach((o,k)=>{if(o>=0)ren[orig[o]]=T[k]});
    S.no.forEach(n=>{if(!n.g)return;if(n.g in ren&&ren[n.g])n.g=ren[n.g];else delete n.g});
-   S.gr=[...new Set(T.filter(Boolean))];if(NG!=="*"&&NG!==""&&!S.gr.includes(NG))NG="*";save();close();render()}}}
+   S.gr=[...new Set(T.filter(Boolean))];S.gh=T.filter((t,k)=>t&&HD[k]);if(NG&&NG!=="*"&&NG!=="__oc"&&!S.gr.includes(NG))NG=null;save();close();render()}}}
 
 /* ---- Adjuntos (Supabase Storage, cubo privado util-adjuntos) ---- */
 const BK="util-adjuntos",SURL={};
@@ -257,12 +264,13 @@ document.addEventListener("click",e=>{if(e.target.closest("#sh"))return;
   r.pr=r.pr?0:1;if(r.pr)r.pt=Date.now();else delete r.pt;save();drawRe();toast(r.pr?"Marcada como probada":"Vuelve a pendientes");return}
  const no=e.target.closest("[data-no]");if(no){editNo(no.dataset.no);return}
  const re=e.target.closest("[data-re2]");if(re){editRe(re.dataset.re2);return}
- const ng=e.target.closest("[data-ng]");if(ng){NG=ng.dataset.ng;mark("#nfl button","ng",NG);drawNo();return}
+ const ng=e.target.closest("[data-ng]");if(ng){const v=ng.dataset.ng;NG=v==="__close"||NG===v?null:v;mark("#nfl button","ng",NG);drawNo();return}
  const rt=e.target.closest("[data-rt]");if(rt){RT=rt.dataset.rt;mark("#rft button","rt",RT);drawRe();return}
  const rf=e.target.closest("[data-re]");if(rf){RE=rf.dataset.re;try{localStorage.setItem("util-re",RE)}catch(x){}mark("#rfe button","re",RE);drawRe();return}
  const a=e.target.closest("[data-a]");if(!a)return;
  if(a.dataset.a==="nsave"){const tx=$("nx").value.trim();if(!tx)return;S.no.push({id:uid(),ts:Date.now(),tx});save();render();toast("Nota guardada · "+hh(Date.now()))}
  else if(a.dataset.a==="grupos")editGrupos();
+ else if(a.dataset.a==="lupa"){NS=NS?0:1;if(!NS)NQ="";render();if(NS)$("nq").focus()}
  else if(a.dataset.a==="radd")editRe(null)});
 render();sync();
 </script></body></html>
