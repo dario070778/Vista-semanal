@@ -18,7 +18,7 @@ button,input,textarea{font:inherit;color:inherit}
 h2{margin:20px 2px 8px;font:800 19px 'Barlow Condensed','Arial Narrow',sans-serif;text-transform:uppercase;letter-spacing:.6px;color:var(--mut);display:flex;align-items:center;gap:8px}
 h2 .lk{margin-left:auto}
 .lk{border:0;background:none;color:var(--acc);font:700 14px -apple-system,system-ui,sans-serif;cursor:pointer;padding:4px;text-transform:none;letter-spacing:0}
-.qw textarea{width:100%;min-height:38vh;background:var(--card);border:1px solid var(--ln);border-radius:18px;padding:16px;font-size:20px;resize:vertical;line-height:1.45}.gch{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:18px 0 6px}.gch button{border:0;border-radius:999px;padding:9px 15px;background:var(--card);font-weight:700;font-size:15px;color:var(--mut);cursor:pointer}.gch button.on{background:var(--acc);color:#111}.gch .lu{width:40px;padding:9px 0;border:1px solid var(--ln);background:none}.gch .lu.on{border-color:var(--acc);background:none}.gtl{display:flex;justify-content:center;gap:18px;margin:4px 0 8px}.gtl button{border:0;background:none;color:var(--mut);font-size:13px;text-decoration:underline;cursor:pointer;padding:4px}.eb .hd{width:44px;font-size:16px}.eb .hd.on{background:#3a2f12}
+.qw textarea{width:100%;min-height:38vh;background:var(--card);border:1px solid var(--ln);border-radius:18px;padding:16px;font-size:20px;resize:vertical;line-height:1.45}.gch{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:18px 0 6px}.gch button{border:0;border-radius:999px;padding:9px 15px;background:var(--card);font-weight:700;font-size:15px;color:var(--mut);cursor:pointer}.gch button.on{background:var(--acc);color:#111}.gch .lu{width:40px;padding:9px 0;border:1px solid var(--ln);background:none}.gch .lu.on{border-color:var(--acc);background:none}.lh{display:flex;align-items:center;justify-content:space-between;margin:14px 2px 4px}.lh b{font:800 19px 'Barlow Condensed','Arial Narrow',sans-serif;text-transform:uppercase;letter-spacing:.6px;color:var(--acc)}.lh button{border:1px solid var(--ln);background:var(--card);color:var(--ink);border-radius:999px;padding:7px 13px;font-weight:700;font-size:14px;cursor:pointer}.gtl{display:flex;justify-content:center;gap:18px;margin:4px 0 8px}.gtl button{border:0;background:none;color:var(--mut);font-size:13px;text-decoration:underline;cursor:pointer;padding:4px}.eb .hd{width:44px;font-size:16px}.eb .hd.on{background:#3a2f12}
 .big{width:100%;border:0;border-radius:14px;background:var(--acc);color:#111;font-weight:800;padding:12px;cursor:pointer;margin-top:8px}
 .ty{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;margin:8px 0;scrollbar-width:none}.ty::-webkit-scrollbar{display:none}
 .ty.wr{flex-wrap:wrap;overflow:visible}
@@ -140,7 +140,7 @@ function drawNo(){const x=$("nl");if(!x)return;const q=nrm(NQ).trim(),srch=NS&&q
  if(NG===null&&!srch){x.innerHTML="";return}
  const L=S.no.filter(n=>{if(NG==="__oc"&&!srch)return isHid(n);if(isHid(n))return false;if(srch&&NG===null)return nrm((n.n||"")+" "+n.tx).includes(q);
   return(NG==="*"||(n.g||"")===NG)&&(!srch||nrm((n.n||"")+" "+n.tx).includes(q))}).sort((a,b)=>b.ts-a.ts);
- x.innerHTML=(NG==="__oc"&&!srch?`<h2>Ocultas<button class="lk" data-ng="__close">Cerrar</button></h2>`:"")+(L.length?L.map(n=>`<div class="cd" data-no="${n.id}"><div class="t"><div class="m">${n.g?`<em>${esc(n.g)}</em>`:""}<span>${fdt(n.ts)}</span>${n.ad&&n.ad.length?`<span class="pin">📎 ${n.ad.length}</span>`:""}${isHid(n)?`<span>🙈 oculta</span>`:""}</div>${n.n?`<b>${esc(n.n)}</b>`:""}<p>${esc(n.tx)}</p></div></div>`).join("")
+ x.innerHTML=`<div class="lh"><b>${NG===null?"Búsqueda":NG==="__oc"?"Ocultas":NG==="*"?"Todas":NG===""?"Sin grupo":esc(NG)}</b><button data-ng="__close">✕ Cerrar</button></div>`+(L.length?L.map(n=>`<div class="cd" data-no="${n.id}"><div class="t"><div class="m">${n.g?`<em>${esc(n.g)}</em>`:""}<span>${fdt(n.ts)}</span>${n.ad&&n.ad.length?`<span class="pin">📎 ${n.ad.length}</span>`:""}${isHid(n)?`<span>🙈 oculta</span>`:""}</div>${n.n?`<b>${esc(n.n)}</b>`:""}<p>${esc(n.tx)}</p></div></div>`).join("")
   :`<div class="emp">${S.no.length?"Nada que mostrar aquí.":"Aún no hay notas."}</div>`)}
 function grpChips(id,sel){return`<div class="ty wr" id="${id}">${S.gr.map(g=>`<button data-g="${esc(g)}" class="${g===sel?"on":""}">${esc(g)}</button>`).join("")}</div>`}
 function editNo(id){const n=S.no.find(x=>x.id===id);if(!n)return;let g=n.g||"";
@@ -153,6 +153,7 @@ function editNo(id){const n=S.no.find(x=>x.id===id);if(!n)return;let g=n.g||"";
   <div class="lnk" id="e-l"><input id="e-u" placeholder="Pega aquí el enlace (YouTube…)" inputmode="url"><button data-x="ladd">Añadir</button></div><div class="up" id="e-up"></div>
   <div class="ac"><button data-x="hide">${n.h?"👁 Mostrar":"🙈 Ocultar"}</button></div><div class="ac"><button class="del" data-x="del">Borrar</button><button data-x="no">Cancelar</button><button class="ok" data-x="ok">Guardar</button></div>`;
  sh.classList.add("on");
+ {const ta=$("e-x"),fit=()=>{ta.style.height="auto";ta.style.height=Math.max(150,ta.scrollHeight+4)+"px"};ta.style.overflow="hidden";ta.style.resize="none";ta.oninput=fit;requestAnimationFrame(fit)}
  const drawAds=()=>{$("e-ads").innerHTML=adHtml(n);$("e-ads").style.display=n.ad&&n.ad.length?"":"none";fillAds()};drawAds();
  $("e-f").onchange=async ev=>{const fs=[...ev.target.files];ev.target.value="";const up=$("e-up");
   for(let i=0;i<fs.length;i++){up.textContent=`Subiendo ${i+1} de ${fs.length}…`;try{const a=await upload(fs[i]);(n.ad=n.ad||[]).push(a);save();drawAds()}catch(x){alert("No se pudo subir «"+fs[i].name+"»: "+x.message)}}
@@ -264,7 +265,7 @@ document.addEventListener("click",e=>{if(e.target.closest("#sh"))return;
   r.pr=r.pr?0:1;if(r.pr)r.pt=Date.now();else delete r.pt;save();drawRe();toast(r.pr?"Marcada como probada":"Vuelve a pendientes");return}
  const no=e.target.closest("[data-no]");if(no){editNo(no.dataset.no);return}
  const re=e.target.closest("[data-re2]");if(re){editRe(re.dataset.re2);return}
- const ng=e.target.closest("[data-ng]");if(ng){const v=ng.dataset.ng;NG=v==="__close"||NG===v?null:v;mark("#nfl button","ng",NG);drawNo();return}
+ const ng=e.target.closest("[data-ng]");if(ng){const v=ng.dataset.ng;if(v==="__close"){NG=null;NQ="";NS=0;render();return}NG=NG===v?null:v;mark("#nfl button","ng",NG);drawNo();return}
  const rt=e.target.closest("[data-rt]");if(rt){RT=rt.dataset.rt;mark("#rft button","rt",RT);drawRe();return}
  const rf=e.target.closest("[data-re]");if(rf){RE=rf.dataset.re;try{localStorage.setItem("util-re",RE)}catch(x){}mark("#rfe button","re",RE);drawRe();return}
  const a=e.target.closest("[data-a]");if(!a)return;
