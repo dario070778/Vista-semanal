@@ -19,7 +19,7 @@ nav button{font-family:'Barlow Condensed','Arial Narrow',-apple-system,system-ui
 </style></head><body>
 <nav></nav><div id="off">Sin conexión · se guarda en el móvil y se sube al volver</div>
 <script>
-const T=[["gym","Entrenamiento","gym.html?v=21"],["pro","Progreso","progreso.html?v=21"],["cal","Calendario","calendario.html?v=21"],["vol","Volumen","volumen.html?v=21"],["gra","Gráficas","graficas.html?v=21"],["kc","Calorías","calorias.html?v=21"]];
+const T=[["gym","Entrenamiento","gym.html?v=22"],["pro","Progreso","progreso.html?v=21"],["cal","Calendario","calendario.html?v=21"],["vol","Volumen","volumen.html?v=21"],["gra","Gráficas","graficas.html?v=21"],["kc","Calorías","calorias.html?v=21"]];
 const off=document.getElementById("off"),upd=()=>off.classList.toggle("on",!navigator.onLine);addEventListener("online",upd);addEventListener("offline",upd);upd();
 if("serviceWorker" in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
 const nav=document.querySelector("nav");let cur="gym";
