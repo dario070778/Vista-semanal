@@ -139,4 +139,5 @@ function open(d){const x=days[d]||{w:[],c:[],s:null},dt=new Date(d+"T00:00");
   en.map(e=>`<p style="margin:8px 0 0"><b>${e.n}</b> · ${e.k==null?PE:nf(e.k)+" kcal"}</p>`).join("")+(z&&z.k!=null&&!all?`<p class="mut">Fuera del entreno: ${PE}</p>`:"")}
  s+='<button class="x" data-x="1">Cerrar</button>';$("#sc").innerHTML=s;$("#sh").classList.add("on")}
 Nube("peso","peso-corporal",()=>[],()=>location.reload()).sync();
+(async()=>{try{const t=await tok();if(!t)return;const r=await fetch(SB+"/rest/v1/vista_semanal?id=in.(gym,entreno)&select=id,datos",{headers:{apikey:SBK,Authorization:"Bearer "+t}});if(!r.ok)return;let ch=0;(await r.json()).forEach(x=>{const d=x.datos||{},m=x.id==="gym"?["gym-v3","gym-updated-at","gym-dirty"]:["entreno-v2","entreno-updated-at","entreno-dirty"],at=+d.updatedAt||0;if(d.state&&at>(+localStorage.getItem(m[1])||0)&&localStorage.getItem(m[2])!=="1"){localStorage.setItem(m[0],JSON.stringify(d.state));localStorage.setItem(m[1],String(at));localStorage.setItem(m[2],"0");ch=1}});if(ch)location.reload()}catch(e){}})();
 </script></body></html>
