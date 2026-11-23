@@ -99,6 +99,17 @@ h2 .lk{margin-left:auto}
 #toast.on{transform:translateX(-50%) translateY(0)}
 #toast button{border:0;background:#111;color:#fff;border-radius:999px;padding:6px 12px;font-weight:700;cursor:pointer}
 #dot{position:fixed;top:6px;right:6px;width:8px;height:8px;border-radius:50%;background:#999;z-index:30}
+.calov{position:fixed;inset:0;background:#000a;z-index:50;display:flex;align-items:center;justify-content:center;padding:16px}
+.calbx{background:#18181D;border-radius:20px;padding:14px;width:100%;max-width:360px}
+.calh{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}.calh b{font-size:16px}
+.calh button{border:0;background:var(--c2,#202026);color:var(--ink,#F4F1EA);width:38px;height:34px;border-radius:999px;font-size:18px;cursor:pointer}.calh button:disabled{opacity:.25}
+.calw,.calg{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center}
+.calw span{font-size:11px;color:var(--mut,#8A867E);font-weight:700;padding:2px 0}
+.calg button{position:relative;border:0;background:none;color:var(--ink,#F4F1EA);height:40px;border-radius:12px;font:600 15px -apple-system,system-ui,sans-serif;cursor:pointer}
+.calg button:disabled{opacity:.25}.calg button.td{box-shadow:inset 0 0 0 1.5px var(--acc,#F2B632)}.calg button.on{background:var(--acc,#F2B632);color:#111}
+.calg em{position:absolute;left:50%;bottom:5px;width:5px;height:5px;margin-left:-2.5px;border-radius:50%;background:var(--acc,#F2B632)}.calg button.on em{background:#111}
+.calt{display:block;width:100%;margin-top:10px;border:0;border-radius:12px;padding:11px;background:var(--c2,#202026);color:var(--acc,#F2B632);font-weight:800;cursor:pointer}
+.hoyb{border:0;border-radius:999px;background:var(--acc,#F2B632);color:#111;font:800 13px -apple-system,system-ui,sans-serif;padding:7px 11px;cursor:pointer}
 </style></head><body>
 <div id="dot"></div>
 <div id="out"></div>
@@ -159,7 +170,7 @@ function hoy(){
  let h=`<div class="bt">${S.btn.map(b=>`<button data-b="${b.id}"><span class="e">${esc(b.e)}</span><span class="n">${esc(b.n)}</span></button>`).join("")}<button class="add" data-a="addb"><span class="e">＋</span><span class="n">Botones</span></button></div>
  <div class="nt"><textarea id="nota" placeholder="Nota libre…" rows="1"></textarea><button data-a="nota">Guardar</button></div>`;
  const L=S.ap.filter(a=>ds(a.ts)===DAY).sort((a,b)=>b.ts-a.ts);
- h+=`<h2>Del día<div class="dn"><button data-a="pv">‹</button><span>${fdl(DAY)}</span><button data-a="nx" ${DAY>=today()?"disabled":""}>›</button></div></h2>`;
+ h+=`<h2>Del día${DAY<today()?`<button class="hoyb" data-a="hoy" style="margin-left:auto">Hoy</button>`:""}<div class="dn" ${DAY<today()?'style="margin-left:6px"':""}><button data-a="pv">‹</button><span data-a="cal" style="cursor:pointer">${fdl(DAY)} ▾</span><button data-a="nx" ${DAY>=today()?"disabled":""}>›</button></div></h2>`;
  if(L.length){const c={};L.forEach(a=>{if(a.b==="nota")return;const k=a.b;c[k]=(c[k]||0)+1});
   const ck=Object.keys(c);if(ck.length)h+=`<div class="cnt">${ck.map(k=>{const i=apInfo(L.find(a=>a.b===k));return`<span>${esc(i.e)} ${c[k]}</span>`}).join("")}</div>`;
   h+=L.map(a=>{const i=apInfo(a),tg=(a.i?`<span class="tg i${a.i}">${INT[a.i]}</span>`:"")+(a.tc?`<span class="tg tt">${String(a.tc).replace(".",",")} °C</span>`:"");
@@ -276,6 +287,8 @@ document.addEventListener("click",e=>{if(e.target.closest("#sh")||e.target.close
  const af=e.target.closest("[data-af]");if(af){AF=af.dataset.af;document.querySelectorAll("#afl button").forEach(b=>b.classList.toggle("on",b.dataset.af===AF));drawAp();return}
  const r=e.target.closest("[data-rg]");if(r){RG=+r.dataset.rg;try{localStorage.setItem("sobremi-rg",RG)}catch(x){}render();return}
  const a=e.target.closest("[data-a]");if(!a)return;
+ if(a.dataset.a==="hoy"){DAY=today();render();return}
+ if(a.dataset.a==="cal"){const ds2=new Set(S.ap.map(x=>ds(x.ts)));openCal(DAY,today(),d=>ds2.has(d),d=>{DAY=d;render()});return}
  if(a.dataset.a==="pv"){DAY=addD(DAY,-1);render()}
  else if(a.dataset.a==="nx"&&DAY<today()){DAY=addD(DAY,1);render()}
  else if(a.dataset.a==="addb")editBtns();
@@ -284,5 +297,15 @@ document.addEventListener("click",e=>{if(e.target.closest("#sh")||e.target.close
  else if(a.dataset.a==="atipos")editTipos();
  else if(a.dataset.a==="asave"){const tx=$("ax").value.trim();if(!tx)return;const n={id:uid(),ts:Date.now(),tx};if(AT)n.ty=AT;S.no.push(n);AT="";save();render();toast("Apunte guardado · "+hh(n.ts))}
  else if(a.dataset.a==="nota"){const v=$("nota").value.trim();if(!v)return;const n={id:uid(),b:"nota",e:"📝",ts:Date.now(),no:v};S.ap.push(n);DAY=today();save();render();toast("📝 Nota guardada · "+hh(n.ts),n.id)}});
+/* ---- Calendario ---- */
+const CALM=["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+function openCal(cur,max,has,pick){let ym=cur.slice(0,7);const ov=document.createElement("div");ov.className="calov";document.body.appendChild(ov);
+ const draw=()=>{const [Y,M]=ym.split("-").map(Number),first=new Date(Y,M-1,1),off=(first.getDay()+6)%7,nd=new Date(Y,M,0).getDate(),mx=max.slice(0,7);
+  let g="";for(let i=0;i<off;i++)g+="<i></i>";
+  for(let d=1;d<=nd;d++){const k=ym+"-"+String(d).padStart(2,"0"),dis=k>max;g+=`<button data-cd="${k}" class="${k===cur?"on":""} ${k===max?"td":""}" ${dis?"disabled":""}>${d}${has(k)?"<em></em>":""}</button>`}
+  ov.innerHTML=`<div class="calbx"><div class="calh"><button data-cm="-1">‹</button><b>${CALM[M-1]} ${Y}</b><button data-cm="1" ${ym>=mx?"disabled":""}>›</button></div><div class="calw"><span>L</span><span>M</span><span>X</span><span>J</span><span>V</span><span>S</span><span>D</span></div><div class="calg">${g}</div><button class="calt" data-cd="${max}">Ir a hoy</button></div>`};
+ draw();
+ ov.onclick=e=>{if(e.target===ov){ov.remove();return}const m=e.target.closest("[data-cm]");if(m){const [Y,M]=ym.split("-").map(Number),x=new Date(Y,M-1+ +m.dataset.cm,1);ym=x.getFullYear()+"-"+String(x.getMonth()+1).padStart(2,"0");draw();return}
+  const c=e.target.closest("[data-cd]");if(c&&!c.disabled){ov.remove();pick(c.dataset.cd)}}}
 render();sync();
 </script></body></html>

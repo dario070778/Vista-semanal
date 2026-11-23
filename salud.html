@@ -63,8 +63,19 @@ svg text{font:600 10px -apple-system,system-ui,sans-serif;fill:var(--mut)}
 .msg{background:#2A1F12;color:#FFC078;border-radius:12px;padding:10px 12px;font-size:13.5px;margin-bottom:10px;display:none}.msg.on{display:block}
 #det .ims{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}#det .ims div{width:calc(50% - 4px);aspect-ratio:3/5;background:#000 center/contain no-repeat;border-radius:12px;cursor:zoom-in;display:flex;align-items:flex-end;justify-content:center}#det .ims small{background:rgba(0,0,0,.6);color:#fff;font-size:11px;padding:2px 8px;border-radius:8px;margin:6px}
 #zv{position:fixed;inset:0;background:#000;z-index:40;display:none;overflow:hidden;touch-action:none}#zv.on{display:block}#zv img{position:absolute;left:0;top:0;transform-origin:0 0;max-width:none;user-select:none;-webkit-user-select:none}#zv button{position:absolute;top:calc(env(safe-area-inset-top) + 10px);right:12px;z-index:2;border:0;border-radius:20px;background:rgba(255,255,255,.18);color:#fff;font:700 15px -apple-system,sans-serif;padding:8px 14px}
+.calov{position:fixed;inset:0;background:#000a;z-index:50;display:flex;align-items:center;justify-content:center;padding:16px}
+.calbx{background:#18181D;border-radius:20px;padding:14px;width:100%;max-width:360px}
+.calh{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}.calh b{font-size:16px}
+.calh button{border:0;background:var(--c2,#202026);color:var(--ink,#F4F1EA);width:38px;height:34px;border-radius:999px;font-size:18px;cursor:pointer}.calh button:disabled{opacity:.25}
+.calw,.calg{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center}
+.calw span{font-size:11px;color:var(--mut,#8A867E);font-weight:700;padding:2px 0}
+.calg button{position:relative;border:0;background:none;color:var(--ink,#F4F1EA);height:40px;border-radius:12px;font:600 15px -apple-system,system-ui,sans-serif;cursor:pointer}
+.calg button:disabled{opacity:.25}.calg button.td{box-shadow:inset 0 0 0 1.5px var(--acc,#F2B632)}.calg button.on{background:var(--acc,#F2B632);color:#111}
+.calg em{position:absolute;left:50%;bottom:5px;width:5px;height:5px;margin-left:-2.5px;border-radius:50%;background:var(--acc,#F2B632)}.calg button.on em{background:#111}
+.calt{display:block;width:100%;margin-top:10px;border:0;border-radius:12px;padding:11px;background:var(--c2,#202026);color:var(--acc,#F2B632);font-weight:800;cursor:pointer}
+.hoyb{border:0;border-radius:999px;background:var(--acc,#F2B632);color:#111;font:800 13px -apple-system,system-ui,sans-serif;padding:7px 11px;cursor:pointer}
 </style></head><body><div id="zv"><button id="zx">Cerrar</button><img id="zi" alt=""></div>
-<div class="top"><h1>Salud</h1><div class="dn" id="dnav"><button id="pv">‹</button><span id="dl">Hoy</span><button id="nx">›</button></div></div>
+<div class="top"><h1>Salud</h1><div id="dnav" style="display:flex;gap:6px;align-items:center"><button class="hoyb" id="hoyb">Hoy</button><div class="dn"><button id="pv">‹</button><span id="dl" style="cursor:pointer">Hoy</span><button id="nx">›</button></div></div></div>
 <div class="seg"><button data-sv="r">Registros</button><button data-sv="d">Datos</button><button data-sv="h">Historial</button></div>
 <div class="msg" id="msg"></div>
 <div id="out"></div><div id="det"></div>
@@ -114,14 +125,14 @@ function lastCard(lbl,col,k,unit,dc=0,inv=false){const l=last(k,DAY);if(!l)retur
  return card(lbl,col,l.x,unit,l.d===DAY?(cmp(k,l.x,DAY,unit?" "+unit:"",dc,inv)||"&nbsp;"):"último: "+fdl(l.d),dc)}
 
 /* ---- Pantalla ---- */
-const MET={p:["Pasos","--pas","",0,"bar"],k:["Calorías","--kc","kcal",0,"bar"],sue:["Sueño","--sue","h",1,"bar"],fc:["FC reposo","--fc","ppm",0,"line"],vfc:["VFC","--vfc","ms",0,"line"],vo2:["VO2 máx","--vo2","",1,"line"],km:["Distancia","--pas","km",1,"bar"],min:["Ejercicio","--kc","min",0,"bar"],peso:["Peso","--peso","kg",1,"line"]};
+const MET={p:["Pasos","--pas","",0,"bar"],k:["Calorías","--kc","kcal",0,"bar"],sue:["Sueño","--sue","h",1,"bar"],fc:["FC reposo","--fc","ppm",0,"line"],km:["Distancia","--pas","km",1,"bar"],peso:["Peso","--peso","kg",1,"line"]};
 let MK="p",RG=7;try{MK=localStorage.getItem("salud-mk")||"p";RG=+localStorage.getItem("salud-rg")||7}catch(e){}if(!MET[MK])MK="p";
 const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 let SV="r",HQ="",HE="";
 function render(){document.querySelectorAll(".seg button").forEach(b=>b.classList.toggle("on",b.dataset.sv===SV));$("dnav").style.visibility=SV==="d"?"":"hidden";
- if(SV==="r"){if(!$("rf")){$("out").innerHTML=`<iframe id="rf" src="registros.html?v=1" title="Registros" style="display:block;width:calc(100% + 24px);margin:0 -12px -40px;border:0"></iframe>`}const f=$("rf");f.style.height=(innerHeight-f.getBoundingClientRect().top-window.scrollY)+"px";return}
+ if(SV==="r"){if(!$("rf")){$("out").innerHTML=`<iframe id="rf" src="registros.html?v=2" title="Registros" style="display:block;width:calc(100% + 24px);margin:0 -12px -40px;border:0"></iframe>`}const f=$("rf");f.style.height=(innerHeight-f.getBoundingClientRect().top-window.scrollY)+"px";return}
  if(SV==="h"){histV();return}
- $("dl").textContent=fdl(DAY);$("nx").disabled=DAY>=HOY;
+ $("dl").textContent=fdl(DAY)+" ▾";$("nx").disabled=DAY>=HOY;$("hoyb").style.display=DAY===HOY?"none":"";
  const e=D[DAY]||{},su=e.sue||null,ph=[["pro","Profundo","#5F3DC4"],["lig","Ligero","#9775FA"],["rem","REM","#4DABF7"],["desp","Despierto","#FF8787"]],pt=ph.reduce((s,p)=>s+(e[p[0]]||0),0);
  let h=`<h2>${DAY===HOY?"Hoy":fdl(DAY)}</h2><div class="g2">`+
   card("Pasos","var(--pas)",v(DAY,"p"),"",cmp("p",v(DAY,"p"),DAY,""))+
@@ -136,13 +147,12 @@ function render(){document.querySelectorAll(".seg button").forEach(b=>b.classLis
  else h+=`<div class="sub" style="font-size:13px">Sin datos de sueño para este día.</div>`;
  h+=`</div>`;
  /* Corazón */
- h+=`<h2>Corazón</h2><div class="g3">`+lastCard("FC reposo","var(--fc)","fc","ppm",0,true)+lastCard("VFC","var(--vfc)","vfc","ms")+lastCard("VO2 máx","var(--vo2)","vo2","",1)+`</div>`;
+ h+=`<h2>Corazón</h2><div class="g2">`+lastCard("FC reposo","var(--fc)","fc","ppm",0,true)+`</div>`;
  /* Actividad */
  h+=`<h2>Actividad</h2><div class="g2">`+
   card("Pasos","var(--pas)",v(DAY,"p"),"",avg("p",DAY,7)?"media 7 días "+nf(avg("p",DAY,7)):"")+
   card("Distancia","var(--pas)",v(DAY,"km"),"km","",1)+
   card("Pisos","var(--vo2)",v(DAY,"pis"),"","")+
-  card("Ejercicio","var(--kc)",v(DAY,"min"),"min","")+
   card("Cal. activas","var(--kc)",v(DAY,"ka"),"kcal","")+
   card("Cal. reposo","var(--kc)",v(DAY,"kr"),"kcal","")+`</div>`;
  /* Cuerpo */
@@ -202,13 +212,25 @@ function chart(){const m=MET[MK],col=css(m[1]),days=[];for(let i=RG-1;i>=0;i--)d
  s+=`<line x1="${L}" x2="${W-R}" y1="${y(av)}" y2="${y(av)}" stroke="#F4F1EA" stroke-dasharray="4 4" opacity=".45"/></svg>`;
  const fmt=x=>MK==="sue"?hm(x*60):nf(x,m[3])+(m[2]?" "+m[2]:"");
  return`<div class="hd"><b>${m[0]}</b><span>media ${fmt(av)} · ${vals.length} días con datos</span></div>`+s}
-document.addEventListener("click",e=>{const hi=e.target.closest("[data-hi]");if(hi){openHist(hi.dataset.hi);return}
+document.addEventListener("click",e=>{if(e.target.closest("#dl")){openCal(DAY,HOY,d=>{const z=D[d];return!!z&&Object.values(z).some(x=>x)},d=>{DAY=d;render()});return}
+ const hi=e.target.closest("[data-hi]");if(hi){openHist(hi.dataset.hi);return}
  const b=e.target.closest("button");if(!b)return;
  if(b.dataset.x==="cl"){$("det").classList.remove("on");return}
  if(b.dataset.sv){SV=b.dataset.sv;render();return}
  if(b.dataset.he!==undefined){HE=b.dataset.he;render();return}
+ if(b.id==="hoyb"){DAY=HOY;render();return}
  if(b.id==="pv"){DAY=addD(DAY,-1);render()}else if(b.id==="nx"&&DAY<HOY){DAY=addD(DAY,1);render()}
  else if(b.closest("#mk")){MK=b.dataset.k;try{localStorage.setItem("salud-mk",MK)}catch(x){}render()}
  else if(b.closest("#rg")){RG=+b.dataset.n;try{localStorage.setItem("salud-rg",RG)}catch(x){}render()}});
+/* ---- Calendario ---- */
+const CALM=["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+function openCal(cur,max,has,pick){let ym=cur.slice(0,7);const ov=document.createElement("div");ov.className="calov";document.body.appendChild(ov);
+ const draw=()=>{const [Y,M]=ym.split("-").map(Number),first=new Date(Y,M-1,1),off=(first.getDay()+6)%7,nd=new Date(Y,M,0).getDate(),mx=max.slice(0,7);
+  let g="";for(let i=0;i<off;i++)g+="<i></i>";
+  for(let d=1;d<=nd;d++){const k=ym+"-"+String(d).padStart(2,"0"),dis=k>max;g+=`<button data-cd="${k}" class="${k===cur?"on":""} ${k===max?"td":""}" ${dis?"disabled":""}>${d}${has(k)?"<em></em>":""}</button>`}
+  ov.innerHTML=`<div class="calbx"><div class="calh"><button data-cm="-1">‹</button><b>${CALM[M-1]} ${Y}</b><button data-cm="1" ${ym>=mx?"disabled":""}>›</button></div><div class="calw"><span>L</span><span>M</span><span>X</span><span>J</span><span>V</span><span>S</span><span>D</span></div><div class="calg">${g}</div><button class="calt" data-cd="${max}">Ir a hoy</button></div>`};
+ draw();
+ ov.onclick=e=>{if(e.target===ov){ov.remove();return}const m=e.target.closest("[data-cm]");if(m){const [Y,M]=ym.split("-").map(Number),x=new Date(Y,M-1+ +m.dataset.cm,1);ym=x.getFullYear()+"-"+String(x.getMonth()+1).padStart(2,"0");draw();return}
+  const c=e.target.closest("[data-cd]");if(c&&!c.disabled){ov.remove();pick(c.dataset.cd)}}}
 render();load();
 </script></body></html>
