@@ -114,6 +114,8 @@ input[type=color]{width:54px;height:38px;border:1px solid var(--ui-border);borde
 .cdList{flex:1;min-height:0;overflow-y:auto;padding:4px 12px 100px;-webkit-overflow-scrolling:touch}
 .cdCard{display:flex;align-items:stretch;border-radius:18px;margin-bottom:10px;overflow:hidden;color:#fff;min-height:68px;cursor:pointer}
 .cdCard.past{opacity:.5}
+.cdCard.light{color:#111;border:1px solid #d6d6db}
+.cdCard.light .cdNum{background:rgba(0,0,0,.05)}
 .cdIc{flex:none;width:54px;display:flex;align-items:center;justify-content:center;font-size:30px}
 .cdMid{flex:1;min-width:0;padding:10px 6px 10px 0;display:flex;flex-direction:column;justify-content:center}
 .cdTitle{font-size:20px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -670,7 +672,7 @@ document.getElementById("eventListClose").onclick=()=>eventListModal.classList.r
 
 
 // ===== Cuentas regresivas =====
-const CD_COLORS=["#5a2de0","#e6a550","#cbb560","#568850","#436f9f","#7655a0","#8fa14c","#cdc04e","#acacac","#d03a20","#5a9c9c"];
+const CD_COLORS=["#ffffff","#5a2de0","#e6a550","#cbb560","#568850","#436f9f","#7655a0","#8fa14c","#cdc04e","#acacac","#d03a20","#5a9c9c"];
 const CD_ICONS=["📅","🎉","🎂","❤️","🩺","✈️","🏖️","🎄","⚽","🏠","💼","🎓","🎁","🚗"];
 const CD_MON=["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
 const CD_DOW=["dom","lun","mar","mié","jue","vie","sáb"];
@@ -704,6 +706,7 @@ function cdVisible(now){
  return cdList().filter(c=>c&&c.date&&(cdFilter==="all"||(c.tags||[]).includes(cdFilter))).map(c=>({c,i:cdInfo(c,now)})).sort((a,b)=>(a.i.past-b.i.past)||(a.i.past?b.i.at-a.i.at:a.i.at-b.i.at));
 }
 let cdFilter="all";
+function cdLight(x){const m=/^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(x||"");if(!m)return false;return (0.299*parseInt(m[1],16)+0.587*parseInt(m[2],16)+0.114*parseInt(m[3],16))>225}
 const cdColOk=x=>/^#[0-9a-f]{6}$/i.test(x||"")?x:"#7655a0";
 const cdScr=document.createElement("div");cdScr.className="cdScreen";cdScr.id="cdScreen";
 cdScr.innerHTML='<div class="cdTop"><button id="cdBack" class="cdBack" type="button">‹ Volver</button><div class="cdPill"><button id="cdIcsBtn" class="cdIconBtn" type="button" aria-label="Añadir al calendario">📆</button><button id="cdShare" class="cdIconBtn" type="button" aria-label="Compartir">📤</button></div></div><h1 class="cdH1">Cuentas Regresivas</h1><div class="cdChips" id="cdChips"></div><div class="cdList" id="cdListEl"></div><button id="cdAdd" class="cdAdd" type="button">＋ Nuevo evento</button>';
@@ -717,7 +720,7 @@ function cdRender(){
  if(!cdScr.classList.contains("show"))return;
  cdRenderChips();
  const rows=cdVisible(new Date());
- cdListEl.innerHTML=rows.length?rows.map(({c,i})=>'<div class="cdCard'+(i.past?" past":"")+'" data-id="'+esc(c.id)+'" style="background:'+cdColOk(c.color)+'"><div class="cdIc">'+esc(c.icon||"📅")+'</div><div class="cdMid"><div class="cdTitle">'+esc(c.title)+'</div><div class="cdDate">'+esc(i.dl)+'</div></div><div class="cdNum"><b>'+esc(i.big)+'</b>'+(i.unit?'<span>'+esc(i.unit)+'</span>':'')+'</div></div>').join(""):'<div class="cdEmpty">No hay cuentas regresivas.<br>Pulsa «Nuevo evento».</div>';
+ cdListEl.innerHTML=rows.length?rows.map(({c,i})=>'<div class="cdCard'+(i.past?" past":"")+(cdLight(c.color)?" light":"")+'" data-id="'+esc(c.id)+'" style="background:'+cdColOk(c.color)+'"><div class="cdIc">'+esc(c.icon||"📅")+'</div><div class="cdMid"><div class="cdTitle">'+esc(c.title)+'</div><div class="cdDate">'+esc(i.dl)+'</div></div><div class="cdNum"><b>'+esc(i.big)+'</b>'+(i.unit?'<span>'+esc(i.unit)+'</span>':'')+'</div></div>').join(""):'<div class="cdEmpty">No hay cuentas regresivas.<br>Pulsa «Nuevo evento».</div>';
 }
 function cdRefresh(){cdRender()}
 function cdToast(m){const t=document.createElement("div");t.className="cdToast";t.textContent=m;document.body.appendChild(t);setTimeout(()=>t.remove(),2200)}
