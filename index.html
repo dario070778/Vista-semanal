@@ -108,10 +108,11 @@ input[type=color]{width:54px;height:38px;border:1px solid var(--ui-border);borde
 .cdIconBtn{border:0;background:transparent;font-size:20px;min-width:44px;height:38px;border-radius:19px;padding:0}
 .cdBack{font:inherit;font-size:16px;border:1px solid #e0e0e4;background:#fff;border-radius:20px;padding:8px 14px;color:#1677d2}
 .cdH1{flex:none;margin:6px 14px 8px;font-size:30px;font-weight:800;letter-spacing:-.5px}
-.cdChips{flex:none;display:flex;gap:8px;overflow-x:auto;padding:0 12px 8px;-webkit-overflow-scrolling:touch}
+.cdBar{flex:none;display:flex;align-items:center;gap:8px;padding:0 12px 8px}
+.cdChips{flex:1;min-width:0;display:flex;gap:8px;overflow-x:auto;-webkit-overflow-scrolling:touch}
 .cdChip{flex:none;font:inherit;font-size:15px;border:1px solid #e0e0e4;background:#fff;border-radius:18px;padding:7px 14px;color:#111;white-space:nowrap}
 .cdChip.on{background:#d9d9de;font-weight:650}
-.cdList{flex:1;min-height:0;overflow-y:auto;padding:4px 12px 100px;-webkit-overflow-scrolling:touch}
+.cdList{flex:1;min-height:0;overflow-y:auto;padding:4px 12px calc(env(safe-area-inset-bottom,0px) + 16px);-webkit-overflow-scrolling:touch}
 .cdCard{display:flex;align-items:stretch;border-radius:18px;margin-bottom:10px;overflow:hidden;color:#fff;min-height:68px;cursor:pointer}
 .cdCard.past{opacity:.5}
 .cdCard.light{color:#111;border:1px solid #d6d6db}
@@ -124,7 +125,7 @@ input[type=color]{width:54px;height:38px;border:1px solid var(--ui-border);borde
 .cdNum b{font-size:28px;font-weight:800}
 .cdNum span{font-size:13px}
 .cdEmpty{text-align:center;color:#777;margin-top:40px;font-size:16px}
-.cdAdd{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 16px);font:inherit;font-size:20px;font-weight:700;color:#fff;background:#365a9a;border:0;border-radius:32px;padding:16px 34px;box-shadow:0 6px 18px rgba(0,0,0,.25);white-space:nowrap}
+.cdAdd{flex:none;font:inherit;font-size:15px;font-weight:700;color:#fff;background:#365a9a;border:0;border-radius:18px;padding:8px 14px;white-space:nowrap}
 .cdF input[type=text],.cdF input[type=date],.cdF input[type=time]{width:100%;font:inherit;font-size:16px;padding:9px;border:1px solid var(--ui-border);border-radius:8px;background:#fff;min-height:40px}
 .cdF .cdLbl{display:block;font-size:13px;color:#666;margin:12px 0 5px}
 .cdIcRow{display:flex;gap:8px;align-items:flex-start}
@@ -710,7 +711,7 @@ function cdLight(x){const m=/^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(x
 const cdTxOk=x=>/^#[0-9a-f]{6}$/i.test(x||"");
 const cdColOk=x=>/^#[0-9a-f]{6}$/i.test(x||"")?x:"#7655a0";
 const cdScr=document.createElement("div");cdScr.className="cdScreen";cdScr.id="cdScreen";
-cdScr.innerHTML='<div class="cdTop"><button id="cdBack" class="cdBack" type="button">‹ Volver</button><div class="cdPill"><button id="cdIcsBtn" class="cdIconBtn" type="button" aria-label="Añadir al calendario">📆</button><button id="cdShare" class="cdIconBtn" type="button" aria-label="Compartir">📤</button></div></div><h1 class="cdH1">Cuentas Regresivas</h1><div class="cdChips" id="cdChips"></div><div class="cdList" id="cdListEl"></div><button id="cdAdd" class="cdAdd" type="button">＋ Nuevo evento</button>';
+cdScr.innerHTML='<div class="cdTop"><button id="cdBack" class="cdBack" type="button">‹ Volver</button><div class="cdPill"><button id="cdIcsBtn" class="cdIconBtn" type="button" aria-label="Añadir al calendario">📆</button><button id="cdShare" class="cdIconBtn" type="button" aria-label="Compartir">📤</button></div></div><h1 class="cdH1">Cuentas Regresivas</h1><div class="cdBar"><div class="cdChips" id="cdChips"></div><button id="cdAdd" class="cdAdd" type="button">＋ Nuevo evento</button></div><div class="cdList" id="cdListEl"></div>';
 document.body.appendChild(cdScr);
 const cdListEl=document.getElementById("cdListEl"),cdChipsEl=document.getElementById("cdChips");
 function cdRenderChips(){
