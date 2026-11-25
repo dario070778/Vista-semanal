@@ -100,10 +100,56 @@ input[type=color]{width:54px;height:38px;border:1px solid var(--ui-border);borde
 .ruleBox .rMonths{grid-template-columns:repeat(4,1fr)}
 .ruleBox .checkline{margin:0 0 8px}
 .ruleBox .rEndVal input{margin-bottom:0}
+
+.cdScreen{position:fixed;inset:0;z-index:25;background:#f2f2f7;display:none;flex-direction:column;color:#111}
+.cdScreen.show{display:flex}
+.cdTop{flex:none;display:flex;align-items:center;justify-content:space-between;padding:calc(env(safe-area-inset-top,0px) + 8px) 12px 4px}
+.cdPill{display:flex;gap:2px;background:#fff;border:1px solid #e0e0e4;border-radius:22px;padding:2px}
+.cdIconBtn{border:0;background:transparent;font-size:20px;min-width:44px;height:38px;border-radius:19px;padding:0}
+.cdBack{font:inherit;font-size:16px;border:1px solid #e0e0e4;background:#fff;border-radius:20px;padding:8px 14px;color:#1677d2}
+.cdH1{flex:none;margin:6px 14px 8px;font-size:30px;font-weight:800;letter-spacing:-.5px}
+.cdChips{flex:none;display:flex;gap:8px;overflow-x:auto;padding:0 12px 8px;-webkit-overflow-scrolling:touch}
+.cdChip{flex:none;font:inherit;font-size:15px;border:1px solid #e0e0e4;background:#fff;border-radius:18px;padding:7px 14px;color:#111;white-space:nowrap}
+.cdChip.on{background:#d9d9de;font-weight:650}
+.cdList{flex:1;min-height:0;overflow-y:auto;padding:4px 12px 100px;-webkit-overflow-scrolling:touch}
+.cdCard{display:flex;align-items:stretch;border-radius:18px;margin-bottom:10px;overflow:hidden;color:#fff;min-height:68px;cursor:pointer}
+.cdCard.past{opacity:.5}
+.cdIc{flex:none;width:54px;display:flex;align-items:center;justify-content:center;font-size:30px}
+.cdMid{flex:1;min-width:0;padding:10px 6px 10px 0;display:flex;flex-direction:column;justify-content:center}
+.cdTitle{font-size:20px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cdDate{font-size:14px;opacity:.92;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cdNum{flex:none;width:84px;background:rgba(0,0,0,.1);display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.05}
+.cdNum b{font-size:28px;font-weight:800}
+.cdNum span{font-size:13px}
+.cdEmpty{text-align:center;color:#777;margin-top:40px;font-size:16px}
+.cdAdd{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 16px);font:inherit;font-size:20px;font-weight:700;color:#fff;background:#365a9a;border:0;border-radius:32px;padding:16px 34px;box-shadow:0 6px 18px rgba(0,0,0,.25);white-space:nowrap}
+.cdF input[type=text],.cdF input[type=date],.cdF input[type=time]{width:100%;font:inherit;font-size:16px;padding:9px;border:1px solid var(--ui-border);border-radius:8px;background:#fff;min-height:40px}
+.cdF .cdLbl{display:block;font-size:13px;color:#666;margin:12px 0 5px}
+.cdIcRow{display:flex;gap:8px;align-items:flex-start}
+.cdIcs{display:flex;flex-wrap:wrap;gap:6px;flex:1}
+.cdIcs button{font-size:20px;width:38px;height:38px;border:1px solid var(--ui-border);border-radius:8px;background:#fff;padding:0}
+.cdIcs button.on{border-color:#111;box-shadow:inset 0 0 0 1px #111}
+.cdCols{display:flex;flex-wrap:wrap;gap:10px}
+.cdCol{width:34px;height:34px;border-radius:50%;border:3px solid transparent;padding:0}
+.cdCol.on{border-color:#111;box-shadow:inset 0 0 0 2px #fff}
+.cdSeg{display:flex;gap:4px}
+.cdSeg button{flex:1;font:inherit;font-size:14px;border:1px solid var(--ui-border);background:#fff;border-radius:8px;padding:9px 2px;color:#111}
+.cdSeg button.on{background:#4b4a9c;color:#fff;border-color:#4b4a9c}
+.cdChk{display:flex;align-items:center;justify-content:space-between;padding:9px 0;font-size:16px;gap:10px}
+.cdChk input{width:24px;height:24px;flex:none}
+.cdChk small{color:#777}
+.cdTagRow{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px}
+.cdTagRow button{font:inherit;font-size:14px;border:1px solid var(--ui-border);background:#fff;border-radius:16px;padding:6px 12px;color:#111}
+.cdTagRow button.on{background:#4b4a9c;color:#fff;border-color:#4b4a9c}
+.cdErr{color:#b80016;font-size:14px;min-height:18px;margin:6px 0}
+.cdTagLine{display:flex;gap:6px;margin-bottom:8px}
+.cdTagLine input{flex:1}
+.cdTagLine button{font:inherit;font-size:15px;border:1px solid var(--ui-border);background:#fafafa;border-radius:8px;padding:0 12px;color:#b80016}
+.cdToast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:#222;color:#fff;border-radius:18px;padding:9px 16px;font-size:14px;z-index:60;pointer-events:none}
 </style>
 </head>
 <body>
-<header><div class="navbar"><button id="prevWeek" class="navbtn" type="button" aria-label="Semana anterior">‹</button><div class="month-title" id="monthTitle"></div><button id="todayBtn" class="navbtn todayBtn" type="button">Hoy</button><button id="nextWeek" class="navbtn" type="button" aria-label="Semana siguiente">›</button></div></header>
+<header><div class="navbar"><button id="cdBtn" class="navbtn" type="button" aria-label="Cuentas regresivas" style="min-width:32px;font-size:15px;padding:0 6px">⏳</button><button id="prevWeek" class="navbtn" type="button" aria-label="Semana anterior">‹</button><div class="month-title" id="monthTitle"></div><button id="todayBtn" class="navbtn todayBtn" type="button">Hoy</button><button id="nextWeek" class="navbtn" type="button" aria-label="Semana siguiente">›</button></div></header>
 <div class="gridwrap"><table><thead><tr id="dayRow"><th>Notas</th></tr></thead><tbody id="grid"></tbody></table></div>
 <div class="bottom-panel">
   <div class="wordbar" id="wordbar"></div>
@@ -327,7 +373,7 @@ const eventRuleUI=makeRuleUI();repeatBox.parentNode.insertBefore(eventRuleUI.el,
 eventRuleUI.onchange(()=>{if(eventEdit.mode==="edit"){const ev=state.events.find(x=>x.id===eventEdit.eventId);if(ev?.repeat&&ev.repeat!=="none")setEventScope("series")}});
 
 function snap(){undoStack=[{state:JSON.stringify(state),words:JSON.stringify(words)}];undoBtn.disabled=false}
-function undo(){if(!undoStack.length)return;const s=undoStack.pop();state=JSON.parse(s.state);words=JSON.parse(s.words);saveState();saveWords();undoBtn.disabled=true;render()}
+function undo(){if(!undoStack.length)return;const s=undoStack.pop();const keepCd=state.countdowns,keepTg=state.cdTags;state=JSON.parse(s.state);if(keepCd)state.countdowns=keepCd;if(keepTg)state.cdTags=keepTg;words=JSON.parse(s.words);saveState();saveWords();undoBtn.disabled=true;render()}
 function cellKey(date,h){return `${date}-${pad(h)}`}
 function slotEnd(date,h){const d=parseISO(date);d.setHours(h+1,0,0,0);return d}
 function effectiveDate(displayDate,h){if(inNav(displayDate))return displayDate;return slotEnd(displayDate,h)<=new Date()?addDays(displayDate,7):displayDate}
@@ -506,7 +552,7 @@ DAYS.forEach((d,i)=>{const b=document.createElement("button");b.type="button";b.
 function fitPreview(){const root=document.documentElement,gw=document.querySelector(".gridwrap");previewCard.style.minHeight="";root.style.removeProperty("--rowh");if(previewCard.classList.contains("show")){const over=gw.scrollHeight-gw.clientHeight;if(over>1)previewCard.style.minHeight=Math.max(56,previewCard.offsetHeight-Math.ceil(over))+"px"}
  // Si aun así no caben las 24 horas, las celdas bajan lo justo (mínimo 18 px) para verlas todas sin scroll.
  for(let i=0;i<3;i++){const over=gw.scrollHeight-gw.clientHeight;if(over<=0)break;const cur=parseFloat(getComputedStyle(root).getPropertyValue("--rowh"))||26;const next=Math.max(18,Math.floor((cur*24-over)/24*2)/2);if(next>=cur)break;root.style.setProperty("--rowh",next+"px")}}
-function render(){cleanupPast();renderMonth();renderHeader();renderGrid();renderWords();renderCurrentPreview();renderTools();fitPreview()}
+function render(){cleanupPast();renderMonth();renderHeader();renderGrid();renderWords();renderCurrentPreview();renderTools();fitPreview();if(typeof cdRefresh==="function")cdRefresh()}
 function renderMonth(){const n=new Date();monthTitle.textContent=navOffset===0?MONTHS[n.getMonth()]+" "+n.getFullYear():navTitle();todayBtn.classList.toggle("show",navOffset!==0);prevWeek.disabled=navOffset<=NAV_MIN;nextWeek.disabled=navOffset>=NAV_MAX}
 function renderHeader(){dayRow.innerHTML="<th>Notas</th>";const dates=viewDates(),today=isoDate(new Date());dates.forEach((s,i)=>{const th=document.createElement("th"),d=parseISO(s);th.innerHTML=DAYS[i]+"<span class='daynum'>"+d.getDate()+"</span>";if(s===today)th.classList.add("todayHead");dayRow.appendChild(th)})}
 function applyManualBackground(td,v,h){
@@ -621,6 +667,161 @@ document.getElementById("eventCancel").onclick=()=>eventModal.classList.remove("
 
 document.getElementById("eventListBtn").onclick=openEventList;
 document.getElementById("eventListClose").onclick=()=>eventListModal.classList.remove("show");eventListModal.onclick=e=>{if(e.target===eventListModal)eventListModal.classList.remove("show")};
+
+
+// ===== Cuentas regresivas =====
+const CD_COLORS=["#5a2de0","#e6a550","#cbb560","#568850","#436f9f","#7655a0","#8fa14c","#cdc04e","#acacac","#d03a20","#5a9c9c"];
+const CD_ICONS=["📅","🎉","🎂","❤️","🩺","✈️","🏖️","🎄","⚽","🏠","💼","🎓","🎁","🚗"];
+const CD_MON=["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
+const CD_DOW=["dom","lun","mar","mié","jue","vie","sáb"];
+function cdList(){if(!Array.isArray(state.countdowns))state.countdowns=[];return state.countdowns}
+function cdTagList(){if(!Array.isArray(state.cdTags))state.cdTags=[];return state.cdTags}
+function cdYearly(c){return c.repeat==="yearly"||c.occasion==="birthday"||c.occasion==="anniv"}
+function cdTarget(c,y){const [Y,M,D]=c.date.split("-").map(Number);const yy=y==null?Y:y;const day=Math.min(D,new Date(yy,M,0).getDate());let h=0,mi=0;if(c.time){[h,mi]=c.time.split(":").map(Number)}return new Date(yy,M-1,day,h||0,mi||0,0,0)}
+function cdIsPast(c,at,now){return c.time?at<=now:isoDate(at)<isoDate(now)}
+function cdNext(c,now){let at=cdTarget(c);if(cdYearly(c)){const y=Math.max(at.getFullYear(),now.getFullYear());at=cdTarget(c,y);if(cdIsPast(c,at,now))at=cdTarget(c,y+1)}return{at,past:cdIsPast(c,at,now)}}
+function cdDayDiff(a,b){return Math.round((new Date(b.getFullYear(),b.getMonth(),b.getDate())-new Date(a.getFullYear(),a.getMonth(),a.getDate()))/864e5)}
+function cdWeekdays(a,b){const diff=cdDayDiff(a,b);if(diff<=0)return 0;if(diff>3660)return Math.round(diff*5/7);let n=0;const d=new Date(a.getFullYear(),a.getMonth(),a.getDate());for(let i=0;i<diff;i++){d.setDate(d.getDate()+1);const w=d.getDay();if(w!==0&&w!==6)n++}return n}
+function cdInfo(c,now){
+ const {at,past}=cdNext(c,now);
+ let dl=`${CD_DOW[at.getDay()]}, ${at.getDate()} ${CD_MON[at.getMonth()]} ${at.getFullYear()}`;
+ if(c.time)dl+=" "+c.time;
+ if(c.occasion==="birthday"||c.occasion==="anniv"){const n=at.getFullYear()-(+c.date.slice(0,4));if(n>0)dl+=` · ${n} ${n===1?"año":"años"}`}
+ let big,unit;
+ if(past){big="✓";unit="pasado"}
+ else{
+  const ms=at-now;
+  if(c.time&&ms<864e5){const h=Math.max(1,Math.ceil(ms/36e5));big=String(h);unit=h===1?"hora":"horas"}
+  else{
+   const n=c.wd?cdWeekdays(now,at):cdDayDiff(now,at);
+   if(!c.wd&&n===0){big="Hoy";unit=""}
+   else{big=String(n);unit=c.wd?(n===1?"día lab.":"días lab."):(n===1?"día":"días")}
+  }
+ }
+ return{at,past,dl,big,unit}
+}
+function cdVisible(now){
+ return cdList().filter(c=>c&&c.date&&(cdFilter==="all"||(c.tags||[]).includes(cdFilter))).map(c=>({c,i:cdInfo(c,now)})).sort((a,b)=>(a.i.past-b.i.past)||(a.i.past?b.i.at-a.i.at:a.i.at-b.i.at));
+}
+let cdFilter="all";
+const cdColOk=x=>/^#[0-9a-f]{6}$/i.test(x||"")?x:"#7655a0";
+const cdScr=document.createElement("div");cdScr.className="cdScreen";cdScr.id="cdScreen";
+cdScr.innerHTML='<div class="cdTop"><button id="cdBack" class="cdBack" type="button">‹ Volver</button><div class="cdPill"><button id="cdIcsBtn" class="cdIconBtn" type="button" aria-label="Añadir al calendario">📆</button><button id="cdShare" class="cdIconBtn" type="button" aria-label="Compartir">📤</button></div></div><h1 class="cdH1">Cuentas Regresivas</h1><div class="cdChips" id="cdChips"></div><div class="cdList" id="cdListEl"></div><button id="cdAdd" class="cdAdd" type="button">＋ Nuevo evento</button>';
+document.body.appendChild(cdScr);
+const cdListEl=document.getElementById("cdListEl"),cdChipsEl=document.getElementById("cdChips");
+function cdRenderChips(){
+ const tags=cdTagList();if(cdFilter!=="all"&&!tags.some(t=>t.id===cdFilter))cdFilter="all";
+ cdChipsEl.innerHTML='<button class="cdChip'+(cdFilter==="all"?" on":"")+'" data-f="all" type="button">Todos</button>'+tags.map(t=>'<button class="cdChip'+(cdFilter===t.id?" on":"")+'" data-f="'+esc(t.id)+'" type="button">'+esc(t.name)+'</button>').join("")+'<button class="cdChip" data-f="__mgr" type="button" aria-label="Etiquetas">🏷️</button>';
+}
+function cdRender(){
+ if(!cdScr.classList.contains("show"))return;
+ cdRenderChips();
+ const rows=cdVisible(new Date());
+ cdListEl.innerHTML=rows.length?rows.map(({c,i})=>'<div class="cdCard'+(i.past?" past":"")+'" data-id="'+esc(c.id)+'" style="background:'+cdColOk(c.color)+'"><div class="cdIc">'+esc(c.icon||"📅")+'</div><div class="cdMid"><div class="cdTitle">'+esc(c.title)+'</div><div class="cdDate">'+esc(i.dl)+'</div></div><div class="cdNum"><b>'+esc(i.big)+'</b>'+(i.unit?'<span>'+esc(i.unit)+'</span>':'')+'</div></div>').join(""):'<div class="cdEmpty">No hay cuentas regresivas.<br>Pulsa «Nuevo evento».</div>';
+}
+function cdRefresh(){cdRender()}
+function cdToast(m){const t=document.createElement("div");t.className="cdToast";t.textContent=m;document.body.appendChild(t);setTimeout(()=>t.remove(),2200)}
+document.getElementById("cdBtn").onclick=()=>{cdScr.classList.add("show");cdRender()};
+document.getElementById("cdBack").onclick=()=>cdScr.classList.remove("show");
+cdChipsEl.addEventListener("click",e=>{const b=e.target.closest("[data-f]");if(!b)return;if(b.dataset.f==="__mgr"){cdOpenTags();return}cdFilter=b.dataset.f;cdRender()});
+cdListEl.addEventListener("click",e=>{const el=e.target.closest(".cdCard");if(!el)return;const c=cdList().find(x=>x.id===el.dataset.id);if(c)cdOpenForm(c)});
+document.getElementById("cdAdd").onclick=()=>cdOpenForm(null);
+
+// Formulario
+const cdModal=document.createElement("div");cdModal.className="modal";cdModal.id="cdModal";
+cdModal.innerHTML='<div class="sheet cdF"><h2 id="cdFTitle">Nuevo evento</h2><input id="cdName" type="text" placeholder="Nombra tu cuenta regresiva" maxlength="60" autocomplete="off"><label class="cdLbl">Icono</label><div class="cdIcRow"><input id="cdIcon" type="text" maxlength="8" style="width:62px;text-align:center;font-size:24px;padding:4px"><div class="cdIcs" id="cdIcs2"></div></div><label class="cdLbl">Fecha</label><input id="cdDate" type="date"><div class="cdChk"><span>Todo el día</span><input id="cdAll" type="checkbox"></div><div id="cdTimeRow" style="display:none"><input id="cdTime" type="time"></div><label class="cdLbl">Color</label><div class="cdCols" id="cdCols"></div><label class="cdLbl">Ocasión especial</label><div class="cdSeg" id="cdOcc"><button type="button" data-o="none">Ninguno</button><button type="button" data-o="birthday">Cumpleaños 🎂</button><button type="button" data-o="anniv">Aniversario ❤️</button></div><div class="cdChk"><span>Repetir cada año</span><input id="cdYearly" type="checkbox"></div><div class="cdChk"><span>Contar solo días de semana <small>(lun a vie)</small></span><input id="cdWd" type="checkbox"></div><label class="cdLbl">Etiquetas</label><div class="cdTagRow" id="cdTagPick"></div><button id="cdTagMgr" class="widebtn" type="button" style="width:100%;margin-bottom:8px">Administrar etiquetas</button><div class="cdErr" id="cdErr"></div><div class="actions"><button id="cdSave" type="button">Guardar</button><button id="cdDel" class="danger" type="button">Eliminar</button><button id="cdClose" type="button">Cerrar</button></div></div>';
+document.body.appendChild(cdModal);
+const $cd=id=>document.getElementById(id);
+let cdEd={id:null,color:CD_COLORS[5],occ:"none",tags:[],delArm:false};
+const CD_DEF_IC=["📅","🎂","❤️"];
+function cdDrawForm(){
+ $cd("cdIcs2").innerHTML=CD_ICONS.map(x=>'<button type="button" data-i="'+x+'" class="'+($cd("cdIcon").value===x?"on":"")+'">'+x+'</button>').join("");
+ $cd("cdCols").innerHTML=CD_COLORS.map(x=>'<button type="button" class="cdCol'+(cdEd.color===x?" on":"")+'" data-c="'+x+'" style="background:'+x+'" aria-label="Color"></button>').join("");
+ [...$cd("cdOcc").children].forEach(b=>b.classList.toggle("on",b.dataset.o===cdEd.occ));
+ const occ=cdEd.occ!=="none";$cd("cdYearly").disabled=occ;if(occ)$cd("cdYearly").checked=true;
+ $cd("cdTimeRow").style.display=$cd("cdAll").checked?"none":"block";
+ $cd("cdTagPick").innerHTML=cdTagList().map(t=>'<button type="button" data-t="'+esc(t.id)+'" class="'+(cdEd.tags.includes(t.id)?"on":"")+'">'+esc(t.name)+'</button>').join("");
+ $cd("cdDel").textContent=cdEd.delArm?"¿Seguro?":"Eliminar";
+}
+function cdOpenForm(c){
+ const now=new Date();
+ cdEd={id:c?c.id:null,color:c?cdColOk(c.color):CD_COLORS[5],occ:c?(c.occasion||"none"):"none",tags:c?[...(c.tags||[])]:[],delArm:false};
+ $cd("cdFTitle").textContent=c?"Editar evento":"Nuevo evento";
+ $cd("cdName").value=c?c.title:"";$cd("cdName").style.borderColor="";
+ $cd("cdIcon").value=c?(c.icon||"📅"):"📅";
+ $cd("cdDate").value=c?c.date:isoDate(now);
+ $cd("cdAll").checked=c?!c.time:true;$cd("cdTime").value=c&&c.time?c.time:"09:00";
+ $cd("cdYearly").checked=c?c.repeat==="yearly":false;
+ $cd("cdWd").checked=c?!!c.wd:false;
+ $cd("cdErr").textContent="";$cd("cdDel").style.display=c?"":"none";
+ cdDrawForm();cdModal.classList.add("show");
+}
+cdModal.addEventListener("click",e=>{
+ const t=e.target;
+ if(t===cdModal){cdModal.classList.remove("show");return}
+ const bi=t.closest("[data-i]");if(bi){$cd("cdIcon").value=bi.dataset.i;cdDrawForm();return}
+ const bc=t.closest("[data-c]");if(bc){cdEd.color=bc.dataset.c;cdDrawForm();return}
+ const bo=t.closest("[data-o]");if(bo){const o=bo.dataset.o;const cur=$cd("cdIcon").value;if(!cur||CD_DEF_IC.includes(cur))$cd("cdIcon").value=o==="birthday"?"🎂":o==="anniv"?"❤️":"📅";cdEd.occ=o;if(o==="none")$cd("cdYearly").checked=false;cdDrawForm();return}
+ const bt=t.closest("[data-t]");if(bt){const id=bt.dataset.t;cdEd.tags=cdEd.tags.includes(id)?cdEd.tags.filter(x=>x!==id):[...cdEd.tags,id];cdDrawForm();return}
+});
+$cd("cdAll").onchange=cdDrawForm;
+$cd("cdIcon").oninput=cdDrawForm;
+$cd("cdClose").onclick=()=>cdModal.classList.remove("show");
+$cd("cdTagMgr").onclick=()=>cdOpenTags();
+$cd("cdSave").onclick=()=>{
+ const title=$cd("cdName").value.trim(),date=$cd("cdDate").value,allDay=$cd("cdAll").checked,time=$cd("cdTime").value;
+ if(!title){$cd("cdErr").textContent="Escribe un título.";$cd("cdName").style.borderColor="#b80016";$cd("cdName").focus();return}
+ if(!/^\d{4}-\d{2}-\d{2}$/.test(date)){$cd("cdErr").textContent="Elige una fecha.";return}
+ if(!allDay&&!/^\d{2}:\d{2}$/.test(time)){$cd("cdErr").textContent="Elige una hora.";return}
+ const occ=cdEd.occ,o={id:cdEd.id||uid(),title,icon:$cd("cdIcon").value.trim()||"📅",date,time:allDay?null:time,color:cdEd.color,occasion:occ,repeat:(occ!=="none"||$cd("cdYearly").checked)?"yearly":"none",wd:$cd("cdWd").checked,tags:cdEd.tags.filter(id=>cdTagList().some(t=>t.id===id))};
+ const L=cdList(),k=L.findIndex(x=>x.id===o.id);if(k>=0)L[k]=o;else L.push(o);
+ saveState();cdModal.classList.remove("show");cdRender();
+};
+$cd("cdDel").onclick=()=>{
+ if(!cdEd.delArm){cdEd.delArm=true;cdDrawForm();setTimeout(()=>{if(cdEd.delArm){cdEd.delArm=false;cdDrawForm()}},3000);return}
+ state.countdowns=cdList().filter(x=>x.id!==cdEd.id);saveState();cdModal.classList.remove("show");cdRender();
+};
+
+// Etiquetas
+const cdTagModal=document.createElement("div");cdTagModal.className="modal";cdTagModal.id="cdTagModal";
+cdTagModal.innerHTML='<div class="sheet cdF"><h2>Etiquetas</h2><div id="cdTagList"></div><div class="cdTagLine"><input id="cdTagNew" type="text" placeholder="Nueva etiqueta (puedes añadir un emoji)" maxlength="30" autocomplete="off"><button id="cdTagAdd" type="button" style="color:#1677d2">Añadir</button></div><button id="cdTagClose" class="widebtn" type="button" style="width:100%">Cerrar</button></div>';
+document.body.appendChild(cdTagModal);
+function cdDrawTags(){
+ $cd("cdTagList").innerHTML=cdTagList().map(t=>'<div class="cdTagLine"><input type="text" data-r="'+esc(t.id)+'" value="'+esc(t.name)+'" maxlength="30"><button type="button" data-d="'+esc(t.id)+'">Borrar</button></div>').join("")||'<div class="smallnote" style="margin-bottom:8px">Aún no hay etiquetas.</div>';
+}
+function cdOpenTags(){$cd("cdTagNew").value="";cdDrawTags();cdTagModal.classList.add("show")}
+function cdAfterTags(){cdRender();if(cdModal.classList.contains("show")){cdEd.tags=cdEd.tags.filter(id=>cdTagList().some(t=>t.id===id));cdDrawForm()}}
+cdTagModal.addEventListener("click",e=>{
+ if(e.target===cdTagModal){cdTagModal.classList.remove("show");cdAfterTags();return}
+ const d=e.target.closest("[data-d]");if(d){const id=d.dataset.d;state.cdTags=cdTagList().filter(t=>t.id!==id);cdList().forEach(c=>{if(c.tags)c.tags=c.tags.filter(x=>x!==id)});saveState();cdDrawTags();}
+});
+cdTagModal.addEventListener("change",e=>{const r=e.target.closest("[data-r]");if(!r)return;const t=cdTagList().find(x=>x.id===r.dataset.r);if(!t)return;const v=r.value.trim();if(!v){r.value=t.name;return}t.name=v;saveState()});
+function cdAddTag(){const v=$cd("cdTagNew").value.trim();if(!v)return;cdTagList().push({id:uid(),name:v});saveState();$cd("cdTagNew").value="";cdDrawTags()}
+$cd("cdTagAdd").onclick=cdAddTag;
+$cd("cdTagNew").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();cdAddTag()}});
+$cd("cdTagClose").onclick=()=>{cdTagModal.classList.remove("show");cdAfterTags()};
+
+// Compartir y calendario
+$cd("cdShare").onclick=async()=>{
+ const now=new Date(),rows=cdVisible(now);if(!rows.length){cdToast("No hay nada que compartir");return}
+ const text="Cuentas regresivas\n"+rows.map(({c,i})=>`${c.icon||"📅"} ${c.title} — ${i.dl} — ${i.past?"pasado":i.big+(i.unit?" "+i.unit:"")}`).join("\n");
+ try{if(navigator.share){await navigator.share({title:"Cuentas regresivas",text});return}}catch(e){if(e&&e.name==="AbortError")return}
+ try{await navigator.clipboard.writeText(text);cdToast("Copiado")}catch(e){cdToast("No se pudo compartir")}
+};
+function cdIcsText(c,at){
+ const ds=d=>`${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}`,e=x=>String(x).replace(/\\/g,"\\\\").replace(/[;,]/g,"\\$&").replace(/\r?\n/g,"\\n");
+ const L=["BEGIN:VEVENT","UID:"+c.id+"@vista-semanal","DTSTAMP:"+new Date().toISOString().replace(/[-:]|\.\d{3}/g,"")];
+ if(c.time){const en=new Date(at.getTime()+36e5);L.push("DTSTART:"+ds(at)+"T"+pad(at.getHours())+pad(at.getMinutes())+"00","DTEND:"+ds(en)+"T"+pad(en.getHours())+pad(en.getMinutes())+"00")}
+ else{const n=new Date(at.getFullYear(),at.getMonth(),at.getDate()+1);L.push("DTSTART;VALUE=DATE:"+ds(at),"DTEND;VALUE=DATE:"+ds(n))}
+ L.push("SUMMARY:"+e((c.icon||"")+" "+c.title));
+ if(cdYearly(c))L.push("RRULE:FREQ=YEARLY");
+ L.push("END:VEVENT");return L.join("\r\n");
+}
+$cd("cdIcsBtn").onclick=()=>{
+ const now=new Date(),rows=cdVisible(now).filter(r=>!r.i.past);if(!rows.length){cdToast("No hay eventos futuros");return}
+ const txt=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Vista semanal//ES","CALSCALE:GREGORIAN",...rows.map(r=>cdIcsText(r.c,r.i.at)),"END:VCALENDAR"].join("\r\n")+"\r\n";
+ const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([txt],{type:"text/calendar"}));a.download="cuentas-regresivas.ics";document.body.appendChild(a);a.click();setTimeout(()=>{a.remove();URL.revokeObjectURL(a.href)},4000);
+};
 
 (async()=>{render();await syncCloud();localStorage.setItem(STATE_KEY,JSON.stringify(state));localStorage.setItem(WORDS_KEY,JSON.stringify(words));render();setInterval(render,60000);setInterval(async()=>{await syncCloud();render()},30000);window.addEventListener("online",()=>syncCloud().then(render));document.addEventListener("visibilitychange",()=>{if(!document.hidden)syncCloud().then(render)})})();
 })();
