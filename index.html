@@ -707,6 +707,7 @@ function cdVisible(now){
 }
 let cdFilter="all";
 function cdLight(x){const m=/^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(x||"");if(!m)return false;return (0.299*parseInt(m[1],16)+0.587*parseInt(m[2],16)+0.114*parseInt(m[3],16))>225}
+const cdTxOk=x=>/^#[0-9a-f]{6}$/i.test(x||"");
 const cdColOk=x=>/^#[0-9a-f]{6}$/i.test(x||"")?x:"#7655a0";
 const cdScr=document.createElement("div");cdScr.className="cdScreen";cdScr.id="cdScreen";
 cdScr.innerHTML='<div class="cdTop"><button id="cdBack" class="cdBack" type="button">‹ Volver</button><div class="cdPill"><button id="cdIcsBtn" class="cdIconBtn" type="button" aria-label="Añadir al calendario">📆</button><button id="cdShare" class="cdIconBtn" type="button" aria-label="Compartir">📤</button></div></div><h1 class="cdH1">Cuentas Regresivas</h1><div class="cdChips" id="cdChips"></div><div class="cdList" id="cdListEl"></div><button id="cdAdd" class="cdAdd" type="button">＋ Nuevo evento</button>';
@@ -720,7 +721,7 @@ function cdRender(){
  if(!cdScr.classList.contains("show"))return;
  cdRenderChips();
  const rows=cdVisible(new Date());
- cdListEl.innerHTML=rows.length?rows.map(({c,i})=>'<div class="cdCard'+(i.past?" past":"")+(cdLight(c.color)?" light":"")+'" data-id="'+esc(c.id)+'" style="background:'+cdColOk(c.color)+'"><div class="cdIc">'+esc(c.icon||"📅")+'</div><div class="cdMid"><div class="cdTitle">'+esc(c.title)+'</div><div class="cdDate">'+esc(i.dl)+'</div></div><div class="cdNum"><b>'+esc(i.big)+'</b>'+(i.unit?'<span>'+esc(i.unit)+'</span>':'')+'</div></div>').join(""):'<div class="cdEmpty">No hay cuentas regresivas.<br>Pulsa «Nuevo evento».</div>';
+ cdListEl.innerHTML=rows.length?rows.map(({c,i})=>'<div class="cdCard'+(i.past?" past":"")+(cdLight(c.color)?" light":"")+'" data-id="'+esc(c.id)+'" style="background:'+cdColOk(c.color)+(cdTxOk(c.textColor)?';color:'+c.textColor:'')+'"><div class="cdIc">'+esc(c.icon||"📅")+'</div><div class="cdMid"><div class="cdTitle">'+esc(c.title)+'</div><div class="cdDate">'+esc(i.dl)+'</div></div><div class="cdNum"><b>'+esc(i.big)+'</b>'+(i.unit?'<span>'+esc(i.unit)+'</span>':'')+'</div></div>').join(""):'<div class="cdEmpty">No hay cuentas regresivas.<br>Pulsa «Nuevo evento».</div>';
 }
 function cdRefresh(){cdRender()}
 function cdToast(m){const t=document.createElement("div");t.className="cdToast";t.textContent=m;document.body.appendChild(t);setTimeout(()=>t.remove(),2200)}
@@ -732,14 +733,15 @@ document.getElementById("cdAdd").onclick=()=>cdOpenForm(null);
 
 // Formulario
 const cdModal=document.createElement("div");cdModal.className="modal";cdModal.id="cdModal";
-cdModal.innerHTML='<div class="sheet cdF"><h2 id="cdFTitle">Nuevo evento</h2><input id="cdName" type="text" placeholder="Nombra tu cuenta regresiva" maxlength="60" autocomplete="off"><label class="cdLbl">Icono</label><div class="cdIcRow"><input id="cdIcon" type="text" maxlength="8" style="width:62px;text-align:center;font-size:24px;padding:4px"><div class="cdIcs" id="cdIcs2"></div></div><label class="cdLbl">Fecha</label><input id="cdDate" type="date"><div class="cdChk"><span>Todo el día</span><input id="cdAll" type="checkbox"></div><div id="cdTimeRow" style="display:none"><input id="cdTime" type="time"></div><label class="cdLbl">Color</label><div class="cdCols" id="cdCols"></div><label class="cdLbl">Ocasión especial</label><div class="cdSeg" id="cdOcc"><button type="button" data-o="none">Ninguno</button><button type="button" data-o="birthday">Cumpleaños 🎂</button><button type="button" data-o="anniv">Aniversario ❤️</button></div><div class="cdChk"><span>Repetir cada año</span><input id="cdYearly" type="checkbox"></div><div class="cdChk"><span>Contar solo días de semana <small>(lun a vie)</small></span><input id="cdWd" type="checkbox"></div><label class="cdLbl">Etiquetas</label><div class="cdTagRow" id="cdTagPick"></div><button id="cdTagMgr" class="widebtn" type="button" style="width:100%;margin-bottom:8px">Administrar etiquetas</button><div class="cdErr" id="cdErr"></div><div class="actions"><button id="cdSave" type="button">Guardar</button><button id="cdDel" class="danger" type="button">Eliminar</button><button id="cdClose" type="button">Cerrar</button></div></div>';
+cdModal.innerHTML='<div class="sheet cdF"><h2 id="cdFTitle">Nuevo evento</h2><input id="cdName" type="text" placeholder="Nombra tu cuenta regresiva" maxlength="60" autocomplete="off"><label class="cdLbl">Icono</label><div class="cdIcRow"><input id="cdIcon" type="text" maxlength="8" style="width:62px;text-align:center;font-size:24px;padding:4px"><div class="cdIcs" id="cdIcs2"></div></div><label class="cdLbl">Fecha</label><input id="cdDate" type="date"><div class="cdChk"><span>Todo el día</span><input id="cdAll" type="checkbox"></div><div id="cdTimeRow" style="display:none"><input id="cdTime" type="time"></div><label class="cdLbl">Color</label><div class="cdCols" id="cdCols"></div><label class="cdLbl">Color de letra</label><div class="cdSeg" id="cdTx"><button type="button" data-x="">Auto</button><button type="button" data-x="#e22400" style="color:#e22400">Rojo</button><button type="button" data-x="#111111">Negro</button><button type="button" data-x="#ffffff" style="background:#999">Blanco</button></div><label class="cdLbl">Ocasión especial</label><div class="cdSeg" id="cdOcc"><button type="button" data-o="none">Ninguno</button><button type="button" data-o="birthday">Cumpleaños 🎂</button><button type="button" data-o="anniv">Aniversario ❤️</button></div><div class="cdChk"><span>Repetir cada año</span><input id="cdYearly" type="checkbox"></div><div class="cdChk"><span>Contar solo días de semana <small>(lun a vie)</small></span><input id="cdWd" type="checkbox"></div><label class="cdLbl">Etiquetas</label><div class="cdTagRow" id="cdTagPick"></div><button id="cdTagMgr" class="widebtn" type="button" style="width:100%;margin-bottom:8px">Administrar etiquetas</button><div class="cdErr" id="cdErr"></div><div class="actions"><button id="cdSave" type="button">Guardar</button><button id="cdDel" class="danger" type="button">Eliminar</button><button id="cdClose" type="button">Cerrar</button></div></div>';
 document.body.appendChild(cdModal);
 const $cd=id=>document.getElementById(id);
-let cdEd={id:null,color:CD_COLORS[5],occ:"none",tags:[],delArm:false};
+let cdEd={id:null,tx:"",color:CD_COLORS[5],occ:"none",tags:[],delArm:false};
 const CD_DEF_IC=["📅","🎂","❤️"];
 function cdDrawForm(){
  $cd("cdIcs2").innerHTML=CD_ICONS.map(x=>'<button type="button" data-i="'+x+'" class="'+($cd("cdIcon").value===x?"on":"")+'">'+x+'</button>').join("");
  $cd("cdCols").innerHTML=CD_COLORS.map(x=>'<button type="button" class="cdCol'+(cdEd.color===x?" on":"")+'" data-c="'+x+'" style="background:'+x+'" aria-label="Color"></button>').join("");
+ [...$cd("cdTx").children].forEach(b=>b.classList.toggle("on",b.dataset.x===cdEd.tx));
  [...$cd("cdOcc").children].forEach(b=>b.classList.toggle("on",b.dataset.o===cdEd.occ));
  const occ=cdEd.occ!=="none";$cd("cdYearly").disabled=occ;if(occ)$cd("cdYearly").checked=true;
  $cd("cdTimeRow").style.display=$cd("cdAll").checked?"none":"block";
@@ -748,7 +750,7 @@ function cdDrawForm(){
 }
 function cdOpenForm(c){
  const now=new Date();
- cdEd={id:c?c.id:null,color:c?cdColOk(c.color):CD_COLORS[5],occ:c?(c.occasion||"none"):"none",tags:c?[...(c.tags||[])]:[],delArm:false};
+ cdEd={id:c?c.id:null,tx:c&&cdTxOk(c.textColor)?c.textColor:"",color:c?cdColOk(c.color):CD_COLORS[5],occ:c?(c.occasion||"none"):"none",tags:c?[...(c.tags||[])]:[],delArm:false};
  $cd("cdFTitle").textContent=c?"Editar evento":"Nuevo evento";
  $cd("cdName").value=c?c.title:"";$cd("cdName").style.borderColor="";
  $cd("cdIcon").value=c?(c.icon||"📅"):"📅";
@@ -764,6 +766,7 @@ cdModal.addEventListener("click",e=>{
  if(t===cdModal){cdModal.classList.remove("show");return}
  const bi=t.closest("[data-i]");if(bi){$cd("cdIcon").value=bi.dataset.i;cdDrawForm();return}
  const bc=t.closest("[data-c]");if(bc){cdEd.color=bc.dataset.c;cdDrawForm();return}
+ const bx=t.closest("[data-x]");if(bx){cdEd.tx=bx.dataset.x;cdDrawForm();return}
  const bo=t.closest("[data-o]");if(bo){const o=bo.dataset.o;const cur=$cd("cdIcon").value;if(!cur||CD_DEF_IC.includes(cur))$cd("cdIcon").value=o==="birthday"?"🎂":o==="anniv"?"❤️":"📅";cdEd.occ=o;if(o==="none")$cd("cdYearly").checked=false;cdDrawForm();return}
  const bt=t.closest("[data-t]");if(bt){const id=bt.dataset.t;cdEd.tags=cdEd.tags.includes(id)?cdEd.tags.filter(x=>x!==id):[...cdEd.tags,id];cdDrawForm();return}
 });
@@ -776,7 +779,7 @@ $cd("cdSave").onclick=()=>{
  if(!title){$cd("cdErr").textContent="Escribe un título.";$cd("cdName").style.borderColor="#b80016";$cd("cdName").focus();return}
  if(!/^\d{4}-\d{2}-\d{2}$/.test(date)){$cd("cdErr").textContent="Elige una fecha.";return}
  if(!allDay&&!/^\d{2}:\d{2}$/.test(time)){$cd("cdErr").textContent="Elige una hora.";return}
- const occ=cdEd.occ,o={id:cdEd.id||uid(),title,icon:$cd("cdIcon").value.trim()||"📅",date,time:allDay?null:time,color:cdEd.color,occasion:occ,repeat:(occ!=="none"||$cd("cdYearly").checked)?"yearly":"none",wd:$cd("cdWd").checked,tags:cdEd.tags.filter(id=>cdTagList().some(t=>t.id===id))};
+ const occ=cdEd.occ,o={id:cdEd.id||uid(),title,icon:$cd("cdIcon").value.trim()||"📅",date,time:allDay?null:time,color:cdEd.color,textColor:cdEd.tx||"",occasion:occ,repeat:(occ!=="none"||$cd("cdYearly").checked)?"yearly":"none",wd:$cd("cdWd").checked,tags:cdEd.tags.filter(id=>cdTagList().some(t=>t.id===id))};
  const L=cdList(),k=L.findIndex(x=>x.id===o.id);if(k>=0)L[k]=o;else L.push(o);
  saveState();cdModal.classList.remove("show");cdRender();
 };
