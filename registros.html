@@ -110,7 +110,7 @@ h2 .lk{margin-left:auto}
 .calg em{position:absolute;left:50%;bottom:5px;width:5px;height:5px;margin-left:-2.5px;border-radius:50%;background:var(--acc,#F2B632)}.calg button.on em{background:#111}
 .calt{display:block;width:100%;margin-top:10px;border:0;border-radius:12px;padding:11px;background:var(--c2,#202026);color:var(--acc,#F2B632);font-weight:800;cursor:pointer}
 .hoyb{border:0;border-radius:999px;background:var(--acc,#F2B632);color:#111;font:800 13px -apple-system,system-ui,sans-serif;padding:7px 11px;cursor:pointer}
-</style></head><body>
+.tgl{display:flex;justify-content:space-between;align-items:center;width:100%;border:1px solid var(--line,#2a2a30);background:var(--card,#16161A);color:inherit;border-radius:14px;padding:13px 14px;font:600 15px -apple-system,system-ui,sans-serif;cursor:pointer;margin-bottom:8px}.tgl b{color:var(--acc,#F2B632);font-size:14px}</style></head><body>
 <div id="dot"></div>
 <div id="out"></div>
 <div id="sh"><div class="bx" id="shb"></div></div>
@@ -160,7 +160,7 @@ async function sync(){if(busy){again=1;return}busy=1;let st="ok";
 addEventListener("online",sync);document.addEventListener("visibilitychange",()=>{if(!document.hidden)sync()});
 
 /* ---- Pantalla ---- */
-let V="hoy",DAY=today(),RG=30;try{RG=+localStorage.getItem("sobremi-rg")||30}catch(e){}
+let OPN=0,V="hoy",DAY=today(),RG=30;try{RG=+localStorage.getItem("sobremi-rg")||30}catch(e){}
 const bOf=id=>S.btn.find(b=>b.id===id);
 function apInfo(a){const b=bOf(a.b);return{e:a.e||(b&&b.e)||"📝",n:a.b==="nota"?"Nota":(b&&b.n)||a.n||"—"}}
 function render(){const sv=V==="res"?"hoy":V;document.querySelectorAll(".seg button").forEach(b=>b.classList.toggle("on",b.dataset.v===sv));
@@ -171,11 +171,12 @@ function hoy(){
  <div class="nt"><textarea id="nota" placeholder="Nota libre…" rows="1"></textarea><button data-a="nota">Guardar</button></div>`;
  const L=S.ap.filter(a=>ds(a.ts)===DAY).sort((a,b)=>b.ts-a.ts);
  h+=`<h2>Del día${DAY<today()?`<button class="hoyb" data-a="hoy" style="margin-left:auto">Hoy</button>`:""}<div class="dn" ${DAY<today()?'style="margin-left:6px"':""}><button data-a="pv">‹</button><span data-a="cal" style="cursor:pointer">${fdl(DAY)} ▾</span><button data-a="nx" ${DAY>=today()?"disabled":""}>›</button></div></h2>`;
- if(L.length){const c={};L.forEach(a=>{if(a.b==="nota")return;const k=a.b;c[k]=(c[k]||0)+1});
+ if(L.length){h+=`<button class="tgl" data-a="tgl"><span>${L.length} registro${L.length>1?"s":""}</span><b>${OPN?"Ocultar ▾":"Ver ▸"}</b></button>`;}
+ if(L.length&&OPN){const c={};L.forEach(a=>{if(a.b==="nota")return;const k=a.b;c[k]=(c[k]||0)+1});
   const ck=Object.keys(c);if(ck.length)h+=`<div class="cnt">${ck.map(k=>{const i=apInfo(L.find(a=>a.b===k));return`<span>${esc(i.e)} ${c[k]}</span>`}).join("")}</div>`;
   h+=L.map(a=>{const i=apInfo(a),tg=(a.i?`<span class="tg i${a.i}">${INT[a.i]}</span>`:"")+(a.tc?`<span class="tg tt">${String(a.tc).replace(".",",")} °C</span>`:"");
    return`<div class="it" data-id="${a.id}"><span class="e">${esc(i.e)}</span><div class="t"><b>${esc(i.n)}</b>${tg||a.no?`<small>${tg}${esc(a.no||"")}</small>`:""}</div><span class="h">${hh(a.ts)}</span></div>`}).join("")}
- else h+=`<div class="emp">Sin registros este día.</div>`;
+ else if(!L.length)h+=`<div class="emp">Sin registros este día.</div>`;
  return h+`<button class="more" data-a="res">Ver resumen</button>`}
 function resumen(){const end=today(),days=[];for(let i=RG-1;i>=0;i--)days.push(addD(end,-i));const from=days[0];
  const L=S.ap.filter(a=>a.b!=="nota"&&ds(a.ts)>=from);
@@ -287,6 +288,7 @@ document.addEventListener("click",e=>{if(e.target.closest("#sh")||e.target.close
  const af=e.target.closest("[data-af]");if(af){AF=af.dataset.af;document.querySelectorAll("#afl button").forEach(b=>b.classList.toggle("on",b.dataset.af===AF));drawAp();return}
  const r=e.target.closest("[data-rg]");if(r){RG=+r.dataset.rg;try{localStorage.setItem("sobremi-rg",RG)}catch(x){}render();return}
  const a=e.target.closest("[data-a]");if(!a)return;
+ if(a.dataset.a==="tgl"){OPN=OPN?0:1;render();return}
  if(a.dataset.a==="hoy"){DAY=today();render();return}
  if(a.dataset.a==="cal"){const ds2=new Set(S.ap.map(x=>ds(x.ts)));openCal(DAY,today(),d=>ds2.has(d),d=>{DAY=d;render()});return}
  if(a.dataset.a==="pv"){DAY=addD(DAY,-1);render()}

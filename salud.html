@@ -130,7 +130,7 @@ let MK="p",RG=7;try{MK=localStorage.getItem("salud-mk")||"p";RG=+localStorage.ge
 const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 let SV="r",HQ="",HE="";
 function render(){document.querySelectorAll(".seg button").forEach(b=>b.classList.toggle("on",b.dataset.sv===SV));$("dnav").style.visibility=SV==="d"?"":"hidden";
- if(SV==="r"){if(!$("rf")){$("out").innerHTML=`<iframe id="rf" src="registros.html?v=2" title="Registros" style="display:block;width:calc(100% + 24px);margin:0 -12px -40px;border:0"></iframe>`}const f=$("rf");f.style.height=(innerHeight-f.getBoundingClientRect().top-window.scrollY)+"px";return}
+ if(SV==="r"){if(!$("rf")){$("out").innerHTML=`<iframe id="rf" src="registros.html?v=3" title="Registros" style="display:block;width:calc(100% + 24px);margin:0 -12px -40px;border:0"></iframe>`}const f=$("rf");f.style.height=(innerHeight-f.getBoundingClientRect().top-window.scrollY)+"px";return}
  if(SV==="h"){histV();return}
  $("dl").textContent=fdl(DAY)+" ▾";$("nx").disabled=DAY>=HOY;$("hoyb").style.display=DAY===HOY?"none":"";
  const e=D[DAY]||{},su=e.sue||null,ph=[["pro","Profundo","#5F3DC4"],["lig","Ligero","#9775FA"],["rem","REM","#4DABF7"],["desp","Despierto","#FF8787"]],pt=ph.reduce((s,p)=>s+(e[p[0]]||0),0);
