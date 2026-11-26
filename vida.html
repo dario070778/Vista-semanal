@@ -25,7 +25,17 @@ body{padding:10px 12px 30px}
 .wk{display:grid;grid-template-columns:repeat(52,1fr);gap:1.5px;background:var(--card);border-radius:12px;padding:8px}
 .wk i{aspect-ratio:1;background:#2A2A30;border-radius:1px}
 .wk i.v{background:var(--az)}
-.wk i.y{margin-bottom:0}
+.wk i.p{background:#2A322C}.wk i.s{background:#28303A}.wk i.o{background:#3A2F27}.wk i.w{background:#30343A}
+.wk i.v.p{background:#51CF66}.wk i.v.s{background:#4DABF7}.wk i.v.o{background:#FF922B}.wk i.v.w{background:#E7F5FF}
+.es{text-align:center;margin:0 0 14px;font:700 17px 'Barlow Condensed','Arial Narrow',sans-serif;text-transform:uppercase;letter-spacing:1px;color:var(--mut)}
+.es b{color:var(--ink)}
+.eb{background:var(--card);border-radius:18px;padding:16px 18px;margin-top:10px}
+.eb .t{font:800 26px 'Barlow Condensed','Arial Narrow',sans-serif;text-transform:uppercase;letter-spacing:.5px}
+.eb .t em{display:block;font-style:normal;color:var(--mut);font-size:17px;margin-top:2px}
+.bar4{position:relative;display:flex;height:12px;border-radius:999px;overflow:visible;margin:14px 0 8px}
+.bar4 i{display:block;height:100%}.bar4 i:first-child{border-radius:999px 0 0 999px}.bar4 i:nth-child(4){border-radius:0 999px 999px 0}
+.bar4 u{position:absolute;top:-5px;width:4px;height:22px;margin-left:-2px;background:var(--ink);border-radius:2px}
+.eb small{display:block;color:var(--mut);font-size:14px;line-height:1.45}
 </style></head><body>
 <div class="top"><h1>Vida</h1></div>
 <div class="seg"><button data-v="c">Contador</button><button data-v="e">Edad</button><button data-v="s">100 años</button></div>
@@ -34,6 +44,14 @@ body{padding:10px 12px 30px}
 const NAC=new Date(1978,6,7,7,0,0),$=id=>document.getElementById(id);
 let V="c";try{V=localStorage.getItem("vida-v")||"c"}catch(e){}
 const nf=n=>n.toLocaleString("es-ES");
+/* Estaciones (OAN, 2026): primavera 92,74 d · verano 93,66 · otoño 89,86 · invierno 88,98 → 100 años de vida */
+const EST=[["p","Primavera","🌱",92.736,"#51CF66"],["s","Verano","☀️",93.653,"#4DABF7"],["o","Otoño","🍂",89.864,"#FF922B"],["w","Invierno","❄️",88.983,"#E7F5FF"]],TOT=EST.reduce((a,e)=>a+e[3],0);
+let acc=0;const LIM=EST.map(e=>{acc+=e[3];return acc/TOT*100});
+const anios=ms=>ms/(365.2425*864e5);
+const estDe=y=>{for(let k=0;k<4;k++)if(y<LIM[k])return k;return 3};
+const fecha=y=>{const d=new Date(2026,2,20,15,46);d.setTime(d.getTime()+y/100*TOT*864e5);return d.toLocaleDateString("es-ES",{day:"numeric",month:"long"})};
+const ym=y=>{const a=Math.floor(y),m=Math.floor((y-a)*12);return(a?a+(a===1?" año":" años"):"")+(a&&m?" y ":"")+(m||!a?m+(m===1?" mes":" meses"):"")};
+function estLinea(){const y=anios(Date.now()-NAC),k=estDe(y),e=EST[k];return`<div class="es">${e[2]} <b>${e[1]}</b> · ${fecha(y)} de tu vida</div>`}
 function addM(d,m){const x=new Date(d);const dia=x.getDate();x.setDate(1);x.setMonth(x.getMonth()+m);x.setDate(Math.min(dia,new Date(x.getFullYear(),x.getMonth()+1,0).getDate()));return x}
 function edad(now){let y=now.getFullYear()-NAC.getFullYear();if(addM(NAC,y*12)>now)y--;let m=0;while(addM(NAC,y*12+m+1)<=now)m++;
  const a=addM(NAC,y*12+m);let ms=now-a;const dias=Math.floor(ms/864e5);ms-=dias*864e5;const h=Math.floor(ms/36e5);ms-=h*36e5;const mi=Math.floor(ms/6e4);
@@ -43,9 +61,11 @@ function tick(){const now=new Date(),ms=now-NAC;
  else if(V==="e"){const e=edad(now);$("ey").textContent=e.y;$("em").textContent=e.m;$("ew").textContent=e.w;$("ed").textContent=e.d;$("eh").textContent=e.h+" h "+e.mi+" min";
   $("ly").textContent=e.y===1?"año":"años";$("lm").textContent=e.m===1?"mes":"meses";$("lw").textContent=e.w===1?"semana":"semanas";$("ld").textContent=e.d===1?"día":"días"}}
 function render(){document.querySelectorAll(".seg button").forEach(b=>b.classList.toggle("on",b.dataset.v===V));const o=$("out");
- if(V==="c")o.innerHTML=`<div class="cn"><div><b id="cs"></b><small>Segundos</small></div><div><b id="cm"></b><small>Minutos</small></div><div><b id="ch"></b><small>Horas</small></div><div><b id="cd"></b><small>Días</small></div></div>`;
- else if(V==="e")o.innerHTML=`<div class="ed"><div><b id="ey"></b><span id="ly"></span></div><div><b id="em"></b><span id="lm"></span></div><div><b id="ew"></b><span id="lw"></span></div><div><b id="ed"></b><span id="ld"></span></div><div><b id="eh" style="font-size:40px;min-width:0;text-align:left"></b></div></div>`;
- else{const hechas=Math.floor((Date.now()-NAC)/(7*864e5));let g="";for(let k=0;k<5200;k++)g+=k<hechas?'<i class="v"></i>':"<i></i>";o.innerHTML=`<div class="wk">${g}</div>`}
+ if(V==="c")o.innerHTML=estLinea()+`<div class="cn"><div><b id="cs"></b><small>Segundos</small></div><div><b id="cm"></b><small>Minutos</small></div><div><b id="ch"></b><small>Horas</small></div><div><b id="cd"></b><small>Días</small></div></div>`;
+ else if(V==="e")o.innerHTML=`<div class="ed"><div><b id="ey"></b><span id="ly"></span></div><div><b id="em"></b><span id="lm"></span></div><div><b id="ew"></b><span id="lw"></span></div><div><b id="ed"></b><span id="ld"></span></div><div><b id="eh" style="font-size:40px;min-width:0;text-align:left"></b></div></div>`+(()=>{const y=anios(Date.now()-NAC),k=estDe(y),e=EST[k],ini=k?LIM[k-1]:0,sig=EST[(k+1)%4];
+   return`<div class="eb"><div class="t">${e[2]} ${e[1]}<em>${fecha(y)} de tu vida</em></div><div class="bar4">${EST.map(x=>`<i style="width:${x[3]/TOT*100}%;background:${x[4]};opacity:${x===e?1:.35}"></i>`).join("")}<u style="left:${y}%"></u></div>
+   <small>Llevas ${ym(y-ini)} de tu ${e[1].toLowerCase()}.${k<3?` Te ${k===2?"llega el":"llega el"} ${sig[1].toLowerCase()} en ${ym(LIM[k]-y)}.`:""}</small></div>`})();
+ else{const hechas=Math.floor((Date.now()-NAC)/(7*864e5));let g="";for(let k=0;k<5200;k++){const c=EST[estDe(k*7/365.2425)][0];g+=k<hechas?`<i class="v ${c}"></i>`:`<i class="${c}"></i>`}o.innerHTML=`<div class="wk">${g}</div>`}
  tick()}
 document.querySelector(".seg").onclick=e=>{const b=e.target.closest("[data-v]");if(!b)return;V=b.dataset.v;try{localStorage.setItem("vida-v",V)}catch(x){}render()};
 render();setInterval(tick,1000);
