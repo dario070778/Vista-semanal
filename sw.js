@@ -1,5 +1,5 @@
 // Gym: caché para abrir la app sin conexión. Red primero (versión nueva) y, si falla o tarda, lo guardado.
-const CACHE = "gym-offline-21", FONTS = "gym-fonts-1", IMGS = "pelis-img-1";
+const CACHE = "gym-offline-22", FONTS = "gym-fonts-1", IMGS = "pelis-img-1";
 const PAGES = ["","index.html","icon.svg","CrisTinita/","CrisTinita/index.html","CrisTinita/manifest.json","app.html","gym.html","entreno.html","calendario.html","volumen.html","progreso.html","graficas.html","calorias.html","x.html","importar.html","sincronizar.html","icono-gym.png","icono-entreno.png","icono-vista.png","manifest.json","peliculas.html","tv.html","pelis.html","icono-peliculas.png","series.html","icono-series-4.png","dario.html","salud.html","sobremi.html","registros.html","icono-dario.png","util.html","ocio.html","futbol.html","vida.html"];
 const base = new URL("./", self.location).pathname;
 const key = p => new Request(new URL(p, self.location.origin).href);
