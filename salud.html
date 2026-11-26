@@ -76,7 +76,7 @@ svg text{font:600 10px -apple-system,system-ui,sans-serif;fill:var(--mut)}
 .hoyb{border:0;border-radius:999px;background:var(--acc,#F2B632);color:#111;font:800 13px -apple-system,system-ui,sans-serif;padding:7px 11px;cursor:pointer}
 </style></head><body><div id="zv"><button id="zx">Cerrar</button><img id="zi" alt=""></div>
 <div class="top"><h1>Salud</h1><div id="dnav" style="display:flex;gap:6px;align-items:center"><button class="hoyb" id="hoyb">Hoy</button><div class="dn"><button id="pv">‹</button><span id="dl" style="cursor:pointer">Hoy</span><button id="nx">›</button></div></div></div>
-<div class="seg"><button data-sv="r">Registros</button><button data-sv="d">Datos</button><button data-sv="h">Historial</button></div>
+<div class="seg"><button data-sv="r">Registros</button><button data-sv="d">Datos</button><button data-sv="h">Historial</button><button data-sv="x">X</button></div>
 <div class="msg" id="msg"></div>
 <div id="out"></div><div id="det"></div>
 <script>
@@ -130,6 +130,7 @@ let MK="p",RG=7;try{MK=localStorage.getItem("salud-mk")||"p";RG=+localStorage.ge
 const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 let SV="r",HQ="",HE="";
 function render(){document.querySelectorAll(".seg button").forEach(b=>b.classList.toggle("on",b.dataset.sv===SV));$("dnav").style.visibility=SV==="d"?"":"hidden";
+ if(SV==="x"){if(!$("xf")){$("out").innerHTML=`<iframe id="xf" src="x.html?v=21" title="X" style="display:block;width:calc(100% + 24px);margin:0 -12px -40px;border:0;background:#000"></iframe>`}const f=$("xf");f.style.height=(innerHeight-f.getBoundingClientRect().top-window.scrollY)+"px";return}
  if(SV==="r"){if(!$("rf")){$("out").innerHTML=`<iframe id="rf" src="registros.html?v=4" title="Registros" style="display:block;width:calc(100% + 24px);margin:0 -12px -40px;border:0"></iframe>`}const f=$("rf");f.style.height=(innerHeight-f.getBoundingClientRect().top-window.scrollY)+"px";return}
  if(SV==="h"){histV();return}
  $("dl").textContent=fdl(DAY)+" ▾";$("nx").disabled=DAY>=HOY;$("hoyb").style.display=DAY===HOY?"none":"";

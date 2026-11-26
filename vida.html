@@ -14,7 +14,7 @@ body{padding:10px 12px 30px}
 .seg{display:flex;background:var(--card);border-radius:999px;padding:4px;width:fit-content;margin:0 auto 18px}
 .seg button{border:0;background:none;padding:10px 18px;border-radius:999px;font-weight:800;font-size:16px;color:var(--mut);cursor:pointer}
 .seg button.on{background:var(--acc);color:#111}
-.cn{display:grid;gap:10px}
+.cn{display:grid;gap:10px}.edw{display:flex;flex-direction:column}
 .cn div{background:rgba(18,18,22,.62);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);border-radius:18px;padding:12px 18px}
 .cn b{display:block;font:200 34px/1.1 -apple-system,system-ui,sans-serif;color:var(--acc);font-variant-numeric:tabular-nums;letter-spacing:.5px;overflow-wrap:anywhere}
 .cn small{display:block;margin-top:2px;font:400 14px -apple-system,system-ui,sans-serif;color:#B9B4AA;opacity:.75}
@@ -22,11 +22,9 @@ body{padding:10px 12px 30px}
 .ed div{background:transparent;border-radius:0;padding:4px 18px;display:flex;align-items:baseline;gap:14px}
 .ed b{font:200 50px/1 -apple-system,system-ui,sans-serif;color:var(--acc);font-variant-numeric:tabular-nums;min-width:74px;text-align:right}
 .ed span{font:400 18px -apple-system,system-ui,sans-serif;color:#B9B4AA;opacity:.8}
-.wk{display:grid;grid-template-columns:repeat(52,1fr);grid-template-rows:repeat(100,1fr);gap:1px;background:var(--card);border-radius:12px;padding:6px}
-.wk i{background:#2A2A30;border-radius:1px;min-height:0}
-.wk i.v{background:var(--az)}
-.wk i.p{background:#2A322C}.wk i.s{background:#28303A}.wk i.o{background:#3A2F27}.wk i.w{background:#30343A}
-.wk i.v.p{background:#51CF66}.wk i.v.s{background:#4DABF7}.wk i.v.o{background:#FF922B}.wk i.v.w{background:#E7F5FF}
+.wk{display:grid;grid-template-columns:repeat(52,1fr);grid-template-rows:repeat(103,1fr);gap:0;padding:4px 2px;place-items:center}
+.wk i{width:72%;aspect-ratio:1;max-height:88%;background:#26262B;border-radius:50%;min-height:0}
+.wk .gp{grid-column:1/-1}
 .es{text-align:center;margin:0 0 14px;font:700 17px 'Barlow Condensed','Arial Narrow',sans-serif;text-transform:uppercase;letter-spacing:1px;color:var(--mut)}
 .es b{color:var(--ink)}
 .eb{background:var(--card);border-radius:18px;padding:16px 18px;margin-top:10px}
@@ -37,7 +35,7 @@ body{padding:10px 12px 30px}
 .bar4 u{position:absolute;top:-5px;width:4px;height:22px;margin-left:-2px;background:var(--ink);border-radius:2px}
 .eb small{display:block;color:var(--mut);font-size:14px;line-height:1.45}
 #bgs{position:fixed;inset:0;z-index:-1;pointer-events:none}#bgs svg{width:100%;height:100%;display:block}
-body{position:relative;z-index:0}.arc{margin-top:18px;text-align:center}.arc svg{width:100%;height:auto;display:block}.arc p{margin:2px 0 0;font:300 16px -apple-system,system-ui,sans-serif;color:#B9B4AA;opacity:.8}</style></head><body>
+body{position:relative;z-index:0}.arc{text-align:center;margin-top:auto;padding-top:24px}.hoy{text-align:center;margin:0 0 14px;font:300 20px -apple-system,system-ui,sans-serif;color:#F4F1EA;text-shadow:0 1px 6px rgba(0,0,0,.6)}.arc svg{width:100%;height:auto;display:block}.arc p{margin:2px 0 0;font:300 16px -apple-system,system-ui,sans-serif;color:#B9B4AA;opacity:.8}</style></head><body>
 <div class="top"><h1>Vida</h1></div>
 <div class="seg"><button data-v="c">Contador</button><button data-v="e">Edad</button><button data-v="s">100 años</button></div>
 <div id="bgs"></div><div id="out"></div>
@@ -53,11 +51,7 @@ const estDe=y=>{for(let k=0;k<4;k++)if(y<LIM[k])return k;return 3};
 const fecha=y=>{const d=new Date(2026,2,20,15,46);d.setTime(d.getTime()+y/100*TOT*864e5);return d.toLocaleDateString("es-ES",{day:"numeric",month:"long"})};
 const ym=y=>{const a=Math.floor(y),m=Math.floor((y-a)*12);return(a?a+(a===1?" año":" años"):"")+(a&&m?" y ":"")+(m||!a?m+(m===1?" mes":" meses"):"")};
 const ESC={
-s:`<svg viewBox="0 0 400 800" preserveAspectRatio="xMidYMax slice"><defs><linearGradient id="ci" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0B0B0C"/><stop offset=".45" stop-color="#0E2236"/><stop offset=".62" stop-color="#1F5A86"/></linearGradient><linearGradient id="ma" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1C7CB5"/><stop offset="1" stop-color="#0F4C74"/></linearGradient></defs>
-<rect width="400" height="800" fill="url(#ci)"/><circle cx="300" cy="470" r="46" fill="#FFD43B" opacity=".9"/><circle cx="300" cy="470" r="70" fill="#FFD43B" opacity=".12"/>
-<path d="M0 520h400v280H0z" fill="url(#ma)"/><path d="M0 560c40-8 80 6 120 0s80-10 120-2 80 8 160-4" stroke="#7CC4F0" stroke-width="2" fill="none" opacity=".5"/>
-<path d="M0 640c50 0 70-60 130-70c50-8 85 20 80 52c-4 24-34 30-46 12c22 2 30-20 10-30c-30-14-62 10-74 40l-20 60H0z" fill="#3FA2DD"/><path d="M60 650c30-40 70-62 110-56" stroke="#E7F5FF" stroke-width="5" fill="none" stroke-linecap="round" opacity=".85"/>
-<path d="M0 700c80-24 160-14 240-4s120 8 160 0v104H0z" fill="#E9C46A"/><path d="M0 724c90-18 180-6 260 2s110 2 140-4v78H0z" fill="#D9AE52"/></svg>`,
+s:`<div style="position:absolute;inset:0;background:url(vida-verano.jpg?v=1) center/cover no-repeat"></div><div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(8,8,10,.55),rgba(8,8,10,.35) 45%,rgba(8,8,10,.55))"></div>`,
 p:`<svg viewBox="0 0 400 800" preserveAspectRatio="xMidYMax slice"><rect width="400" height="800" fill="#0B0B0C"/><path d="M0 600c80-40 160-30 220 0s120 20 180-10v210H0z" fill="#2F6B3A"/><path d="M0 680c100-30 200-20 280 0s90 0 120-10v130H0z" fill="#3E8E4C"/>${[40,110,180,250,320,80,210,350].map((x,i)=>`<circle cx="${x}" cy="${700+(i%3)*25}" r="5" fill="${["#FFD43B","#F783AC","#E7F5FF"][i%3]}"/>`).join("")}</svg>`,
 o:`<svg viewBox="0 0 400 800" preserveAspectRatio="xMidYMax slice"><rect width="400" height="800" fill="#0B0B0C"/><path d="M0 700c100-20 200-10 400 10v90H0z" fill="#5C3A1E"/>${[60,140,230,320,100,270,190,350].map((x,i)=>`<ellipse cx="${x}" cy="${380+i*45}" rx="9" ry="5" transform="rotate(${i*40} ${x} ${380+i*45})" fill="${["#FF922B","#E8590C","#FAB005"][i%3]}" opacity=".8"/>`).join("")}</svg>`,
 w:`<svg viewBox="0 0 400 800" preserveAspectRatio="xMidYMax slice"><rect width="400" height="800" fill="#0B0B0C"/><path d="M0 690c100-30 200-20 400 0v110H0z" fill="#DDE6EE"/>${Array.from({length:40},(_,i)=>`<circle cx="${(i*97)%400}" cy="${(i*173)%680}" r="${1+(i%3)}" fill="#fff" opacity=".7"/>`).join("")}</svg>`};
@@ -69,7 +63,7 @@ function arco(){const y=anios(Date.now()-NAC),W=360,H=200,x0=24,x1=W-24,yb=170,h
  const[sx,sy]=P(Math.min(y,100)/100);
  return`<div class="arc"><svg viewBox="0 0 ${W} ${H}"><defs><radialGradient id="so"><stop offset="0" stop-color="#FFD43B" stop-opacity=".55"/><stop offset="1" stop-color="#FFD43B" stop-opacity="0"/></radialGradient></defs>
  <line x1="${x0-10}" y1="${yb}" x2="${x1+10}" y2="${yb}" stroke="#F4F1EA" stroke-opacity=".08"/><path d="${d}" fill="none" stroke="#F4F1EA" stroke-opacity=".3" stroke-width="1.3"/>${tk}
- <circle cx="${sx}" cy="${sy}" r="26" fill="url(#so)"/><circle cx="${sx}" cy="${sy}" r="8" fill="#FFD43B"/></svg><p>${fecha(y)}</p></div>`}
+ <circle cx="${sx}" cy="${sy}" r="26" fill="url(#so)"/><circle cx="${sx}" cy="${sy}" r="8" fill="#FFD43B"/></svg></div>`}
 function estLinea(){const y=anios(Date.now()-NAC),k=estDe(y),e=EST[k];return`<div class="es">${e[2]} <b>${e[1]}</b> · ${fecha(y)} de tu vida</div>`}
 function addM(d,m){const x=new Date(d);const dia=x.getDate();x.setDate(1);x.setMonth(x.getMonth()+m);x.setDate(Math.min(dia,new Date(x.getFullYear(),x.getMonth()+1,0).getDate()));return x}
 function edad(now){let y=now.getFullYear()-NAC.getFullYear();if(addM(NAC,y*12)>now)y--;let m=0;while(addM(NAC,y*12+m+1)<=now)m++;
@@ -81,13 +75,16 @@ function tick(){const now=new Date(),ms=now-NAC;
   $("ly").textContent=e.y===1?"año":"años";$("lm").textContent=e.m===1?"mes":"meses";$("lw").textContent=e.w===1?"semana":"semanas";$("ld").textContent=e.d===1?"día":"días"}}
 function render(){document.querySelectorAll(".seg button").forEach(b=>b.classList.toggle("on",b.dataset.v===V));const o=$("out");
  $("bgs").innerHTML=V==="c"?ESC[EST[estDe(anios(Date.now()-NAC))][0]]:"";
- if(V==="c")o.innerHTML=`<div class="cn"><div><b id="cs"></b><small>Segundos</small></div><div><b id="cm"></b><small>Minutos</small></div><div><b id="ch"></b><small>Horas</small></div><div><b id="cd"></b><small>Días</small></div><div><b id="cw"></b><small>Semanas</small></div><div><b id="cmo"></b><small>Meses</small></div></div>`;
- else if(V==="e")o.innerHTML=`<div class="ed"><div><b id="ey"></b><span id="ly"></span></div><div><b id="em"></b><span id="lm"></span></div><div><b id="ew"></b><span id="lw"></span></div><div><b id="ed"></b><span id="ld"></span></div><div><b id="eh" style="font-size:40px;min-width:0;text-align:left"></b></div></div>`+arco();
- else{const hechas=Math.floor((Date.now()-NAC)/(7*864e5));let g="";for(let k=0;k<5200;k++){const c=EST[estDe(k*7/365.2425)][0];g+=k<hechas?`<i class="v ${c}"></i>`:`<i class="${c}"></i>`}o.innerHTML=`<div class="wk" id="wk">${g}</div>`;requestAnimationFrame(fitWk)}
+ if(V==="c")o.innerHTML=`<p class="hoy">Hoy es ${fecha(anios(Date.now()-NAC))}</p><div class="cn"><div><b id="cs"></b><small>Segundos</small></div><div><b id="cm"></b><small>Minutos</small></div><div><b id="ch"></b><small>Horas</small></div><div><b id="cd"></b><small>Días</small></div><div><b id="cw"></b><small>Semanas</small></div><div><b id="cmo"></b><small>Meses</small></div></div>`;
+ else if(V==="e"){o.innerHTML=`<div class="edw" id="edw"><div class="ed"><div><b id="ey"></b><span id="ly"></span></div><div><b id="em"></b><span id="lm"></span></div><div><b id="ew"></b><span id="lw"></span></div><div><b id="ed"></b><span id="ld"></span></div><div><b id="eh" style="font-size:40px;min-width:0;text-align:left"></b></div></div>`+arco()+`</div>`;requestAnimationFrame(fitEd)}
+ else{const hechas=Math.floor((Date.now()-NAC)/(7*864e5));let g="";const G=[[255,236,170],[255,196,92],[255,140,66],[244,96,76]],col=t=>{const x=t*(G.length-1),i=Math.min(G.length-2,Math.floor(x)),f=x-i,a=G[i],b=G[i+1];return`rgb(${a.map((v,k)=>Math.round(v+(b[k]-v)*f)).join(",")})`};
+ const cut=LIM.slice(0,3).map(l=>Math.round(l/100*5200/52));
+ for(let k=0;k<5200;k++){if(k%52===0&&cut.includes(k/52))g+='<b class="gp"></b>';g+=k<hechas?`<i style="background:${col(k/Math.max(1,hechas-1))}"></i>`:"<i></i>"}o.innerHTML=`<div class="wk" id="wk">${g}</div>`;requestAnimationFrame(fitWk)}
  tick()}
 document.querySelector(".seg").onclick=e=>{const b=e.target.closest("[data-v]");if(!b)return;V=b.dataset.v;try{localStorage.setItem("vida-v",V)}catch(x){}render()};
+function fitEd(){const w=$("edw");if(w)w.style.minHeight=(innerHeight-w.getBoundingClientRect().top-16)+"px"}
 function fitWk(){const w=$("wk");if(!w)return;w.style.height=Math.max(300,innerHeight-w.getBoundingClientRect().top-14)+"px"}
-addEventListener("resize",fitWk);
+addEventListener("resize",()=>{fitWk();fitEd()});
 render();setInterval(tick,1000);
 setInterval(()=>{if(V==="s")render()},36e5);
 </script>
