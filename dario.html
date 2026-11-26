@@ -42,7 +42,7 @@ nav button.on{color:var(--ink)}
 const SB="https://tdundqjsixqrddszumly.supabase.co",SBK="sb_publishable_KTvtNJcl64iOH4Hee-3L-Q__vSiCgrP";
 /* Una sola sesión para todas las apps */
 const KS=["gym-session","entreno-session","pelis-session","series-session"];
-const T={ocio:"ocio.html?v=3",dep:"app.html",sal:"salud.html?v=7",yo:"util.html?v=6"};
+const T={ocio:"ocio.html?v=3",dep:"app.html",sal:"salud.html?v=8",yo:"util.html?v=6"};
 const J=k=>{try{return JSON.parse(localStorage.getItem(k)||"null")}catch(e){return null}};
 function best(){let b=null;KS.forEach(k=>{const v=J(k);if(v&&v.refresh_token&&(!b||(v.expires_at||0)>(b.expires_at||0)))b=v});return b}
 function sync(){try{const b=best();if(b){const j=JSON.stringify(b);KS.forEach(k=>localStorage.setItem(k,j))}return!!b}catch(e){return false}}

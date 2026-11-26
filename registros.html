@@ -160,7 +160,7 @@ async function sync(){if(busy){again=1;return}busy=1;let st="ok";
 addEventListener("online",sync);document.addEventListener("visibilitychange",()=>{if(!document.hidden)sync()});
 
 /* ---- Pantalla ---- */
-let OPN=0,V="hoy",DAY=today(),RG=30;try{RG=+localStorage.getItem("sobremi-rg")||30}catch(e){}
+let OPN=0,V="hoy",DAY=today(),RG=30;try{const g=localStorage.getItem("sobremi-rg");if(g!==null&&!isNaN(+g))RG=+g}catch(e){}
 const bOf=id=>S.btn.find(b=>b.id===id);
 function apInfo(a){const b=bOf(a.b);return{e:a.e||(b&&b.e)||"📝",n:a.b==="nota"?"Nota":(b&&b.n)||a.n||"—"}}
 function render(){const sv=V==="res"?"hoy":V;document.querySelectorAll(".seg button").forEach(b=>b.classList.toggle("on",b.dataset.v===sv));
@@ -178,17 +178,18 @@ function hoy(){
    return`<div class="it" data-id="${a.id}"><span class="e">${esc(i.e)}</span><div class="t"><b>${esc(i.n)}</b>${tg||a.no?`<small>${tg}${esc(a.no||"")}</small>`:""}</div><span class="h">${hh(a.ts)}</span></div>`}).join("")}
  else if(!L.length)h+=`<div class="emp">Sin registros este día.</div>`;
  return h+`<button class="more" data-a="res">Ver resumen</button>`}
-function resumen(){const end=today(),days=[];for(let i=RG-1;i>=0;i--)days.push(addD(end,-i));const from=days[0];
- const L=S.ap.filter(a=>a.b!=="nota"&&ds(a.ts)>=from);
- let h=`<button class="lk" data-a="back" style="margin:-4px 0 8px">‹ Registros</button><div class="chips">${[7,30,90].map(n=>`<button data-rg="${n}" class="${n===RG?"on":""}">${n} días</button>`).join("")}</div>`;
+function resumen(){const end=today(),AL=S.ap.filter(a=>a.b!=="nota"),first=AL.length?AL.map(a=>ds(a.ts)).sort()[0]:end;
+ let from=RG?addD(end,-(RG-1)):first;if(from<first)from=first;const days=[];for(let d=from;d<=end;d=addD(d,1))days.push(d);const ND=days.length;
+ const L=AL.filter(a=>ds(a.ts)>=from);
+ let h=`<button class="lk" data-a="back" style="margin:-4px 0 8px">‹ Registros</button><div class="chips">${[7,30,90].map(n=>`<button data-rg="${n}" class="${n===RG?"on":""}">${n} días</button>`).join("")}<button data-rg="0" class="${RG===0?"on":""}">Desde el inicio</button></div><div class="ft" style="margin:0 0 10px;text-align:left">Desde el ${new Date(from+"T12:00").toLocaleDateString("es-ES",{day:"numeric",month:"long"})} · ${ND} día${ND>1?"s":""}</div>`;
  const ids=[...new Set(L.map(a=>a.b))].sort((x,y)=>L.filter(a=>a.b===y).length-L.filter(a=>a.b===x).length);
- if(!ids.length)return h+`<div class="emp">Sin apuntes en los últimos ${RG} días.</div>`;
+ if(!ids.length)return h+`<div class="emp">Sin apuntes en este periodo.</div>`;
  ids.forEach(id=>{const A=L.filter(a=>a.b===id),i=apInfo(A[0]),n=A.length,dd=new Set(A.map(a=>ds(a.ts))).size;
   const fr=[0,0,0,0];A.forEach(a=>{fr[Math.floor(new Date(a.ts).getHours()/6)]++});const fm=Math.max(...fr,1);
   const pd={};A.forEach(a=>{const d=ds(a.ts);pd[d]=(pd[d]||0)+1});const pm=Math.max(...Object.values(pd),1);
   const ins=A.filter(a=>a.i),im=ins.length?ins.reduce((s,a)=>s+a.i,0)/ins.length:0;
   h+=`<div class="rs"><div class="hd"><span class="e">${esc(i.e)}</span><b>${esc(i.n)}</b><span class="n">${n}</span></div>
-   <div class="st"><div><small>Por día</small><span>${(n/RG).toLocaleString("es-ES",{maximumFractionDigits:n/RG<0.1?2:1})}</span></div><div><small>Por semana</small><span>${(n/RG*7).toLocaleString("es-ES",{maximumFractionDigits:1})}</span></div><div><small>Días</small><span>${dd} de ${RG}</span></div></div>
+   <div class="st"><div><small>Por día</small><span>${(n/ND).toLocaleString("es-ES",{maximumFractionDigits:n/ND<0.1?2:1})}</span></div><div><small>Por semana</small><span>${(n/ND*7).toLocaleString("es-ES",{maximumFractionDigits:1})}</span></div><div><small>Días</small><span>${dd} de ${ND}</span></div></div>
    <div class="fr">${["Madrugada","Mañana","Tarde","Noche"].map((t,k)=>`<div><i><b style="height:${fr[k]/fm*100}%"></b></i>${t}<em>${fr[k]}</em></div>`).join("")}</div>
    <div class="sp">${days.map(d=>`<i class="${pd[d]?"":"z"}" style="height:${pd[d]?pd[d]/pm*100:6}%"></i>`).join("")}</div>
    ${im?`<div class="ft" style="margin:8px 0 0;text-align:left">Intensidad media: ${INT[Math.round(im)]} (${ins.length} con intensidad)</div>`:""}</div>`});
