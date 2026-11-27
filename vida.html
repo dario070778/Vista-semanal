@@ -69,9 +69,8 @@ function arco(){const y=anios(Date.now()-NAC),W=360,H=200,x0=24,x1=W-24,yb=170,h
 function estLinea(){const y=anios(Date.now()-NAC),k=estDe(y),e=EST[k];return`<div class="es">${e[2]} <b>${e[1]}</b> · ${fecha(y)} de tu vida</div>`}
 function addM(d,m){const x=new Date(d);const dia=x.getDate();x.setDate(1);x.setMonth(x.getMonth()+m);x.setDate(Math.min(dia,new Date(x.getFullYear(),x.getMonth()+1,0).getDate()));return x}
 function edad(now){let y=now.getFullYear()-NAC.getFullYear();if(addM(NAC,y*12)>now)y--;let m=0;while(addM(NAC,y*12+m+1)<=now)m++;
- const a=addM(NAC,y*12+m),A=new Date(a.getFullYear(),a.getMonth(),a.getDate()),T=new Date(now.getFullYear(),now.getMonth(),now.getDate()),F=new Date(T);F.setDate(T.getDate()-((T.getDay()-5+7)%7));
- const dd=(x,z)=>Math.round((z-x)/864e5);let w,d;if(F>A){w=Math.floor((dd(A,F)-1)/7)+1;d=dd(F,T)}else{w=0;d=dd(A,T)}
- return{y,m,w,d}}
+ const a=addM(NAC,y*12+m);const dias=Math.floor((now-a)/864e5);
+ return{y,m,w:Math.floor(dias/7),d:dias%7}}
 function tick(){const now=new Date(),ms=now-NAC;
  if(V==="c"){$("cs").textContent=nf(Math.floor(ms/1e3));$("cm").textContent=nf(Math.floor(ms/6e4));$("ch").textContent=nf(Math.floor(ms/36e5));$("cd").textContent=nf(Math.floor(ms/864e5));$("cw").textContent=nf(Math.floor(ms/(7*864e5)));const e=edad(now);$("cmo").textContent=nf(e.y*12+e.m)}
  else if(V==="e"){const e=edad(now);$("ey").textContent=e.y;$("em").textContent=e.m;$("ew").textContent=e.w;$("ed").textContent=e.d;
