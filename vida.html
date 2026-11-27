@@ -25,6 +25,7 @@ body{padding:10px 12px 30px}
 .wk{display:grid;grid-template-columns:repeat(53,1fr);grid-template-rows:repeat(100,1fr);gap:0;padding:4px 2px;place-items:center}
 .wk i{width:72%;aspect-ratio:1;max-height:88%;background:#26262B;border-radius:50%;min-height:0}
 .wk i.lu{width:140%;max-height:none;position:relative;z-index:1;background:none;border-radius:50%;box-shadow:inset -2.2px 0 0 0 #FFF1D0;filter:drop-shadow(0 0 3px rgba(255,236,190,.7))}
+.wk i.co{width:150%;max-height:none;position:relative;z-index:1;border-radius:0;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23FF6B81' d='M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 4.5 6.7 4.5c2.1 0 3.6 1.2 5.3 3.2 1.7-2 3.2-3.2 5.3-3.2 3.7 0 5.8 3.9 4.3 7.3C19.5 16.4 12 21 12 21z'/%3E%3C/svg%3E") center/contain no-repeat!important;filter:drop-shadow(0 0 3px rgba(255,107,129,.7))}
 .wk i.so{position:relative;z-index:1;background:#FFD43B!important;box-shadow:0 0 4px 1.5px rgba(255,212,59,.65)}
 .wk i.st{width:150%;max-height:none;position:relative;z-index:1;background:#FFE8A3!important;box-shadow:0 0 0 1.5px rgba(255,214,102,.9),0 0 8px 3px rgba(255,200,80,.75)}
 .es{text-align:center;margin:0 0 14px;font:700 17px 'Barlow Condensed','Arial Narrow',sans-serif;text-transform:uppercase;letter-spacing:1px;color:var(--mut)}
@@ -84,8 +85,10 @@ function render(){document.querySelectorAll(".seg button").forEach(b=>b.classLis
  /* Lunas: fallecimientos (añadir fechas aquí) */
  /* Soles pequeños (añadir fechas aquí) */
  const SOL=[new Date(2001,9,19),new Date(2007,5,9),new Date(2007,9,31),new Date(2008,9,8)].map(wkOf);
+ /* Corazones (añadir fechas aquí) */
+ const COR=[new Date(2024,10,11)].map(wkOf);
  const LUN=[new Date(1992,3,23),new Date(2001,6,18),new Date(2006,6,22),new Date(2026,9,3)].map(wkOf);
- for(let k=0;k<5300;k++){const yy=Math.floor(k/53),cc=k%53,fin=Math.min(cum(yy)+(cc+1)*7*864e5,cum(yy+1)),hecho=fin<=now;if(LUN.includes(k)){g+='<i class="lu"></i>';continue}if(SOL.includes(k)){g+='<i class="so"></i>';continue}const st=HIJ.includes(k)?' class="st"':"";g+=hecho||st?`<i${st} style="background:${col(k/5299)}"></i>`:"<i></i>"}o.innerHTML=`<div class="wk" id="wk">${g}</div>`;requestAnimationFrame(fitWk)}
+ for(let k=0;k<5300;k++){const yy=Math.floor(k/53),cc=k%53,fin=Math.min(cum(yy)+(cc+1)*7*864e5,cum(yy+1)),hecho=fin<=now;if(LUN.includes(k)){g+='<i class="lu"></i>';continue}if(SOL.includes(k)){g+='<i class="so"></i>';continue}if(COR.includes(k)){g+='<i class="co"></i>';continue}const st=HIJ.includes(k)?' class="st"':"";g+=hecho||st?`<i${st} style="background:${col(k/5299)}"></i>`:"<i></i>"}o.innerHTML=`<div class="wk" id="wk">${g}</div>`;requestAnimationFrame(fitWk)}
  tick()}
 document.querySelector(".seg").onclick=e=>{const b=e.target.closest("[data-v]");if(!b)return;V=b.dataset.v;try{localStorage.setItem("vida-v",V)}catch(x){}render()};
 function fitEd(){const w=$("edw");if(w)w.style.minHeight=(innerHeight-w.getBoundingClientRect().top-16)+"px"}
